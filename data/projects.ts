@@ -122,13 +122,13 @@ export const projects: Project[] = [
     {
         id: "cloud-modernization",
         code: "DL-02",
-        title: "Snowflake Consumption Layer",
+        title: "Enterprise Analytics Factory",
         type: "professional",
         categories: ["Data Architecture & Engineering"],
-        iconKey: "Cloud",
+        iconKey: "Database",
         heroImage: "/images/project2.png",
         galleryImages: ["/images/project2.png"],
-        shortDescription: "Scaling enterprise analytics for a top-tier U.S. regional financial institution",
+        shortDescription: "Scaling a Snowflake consumption layer for enterprise analytics",
         overview: "A top-tier U.S. regional financial institution executed a multi-year Data Factory initiative to modernize enterprise analytics and standardize how data is consumed across the organization. The Snowflake Hydration Pod served as the centralized execution team responsible for delivering approved enterprise data elements into Snowflake.",
         problem: [
             "Enterprise data elements were identified by multiple upstream teams, but no centralized execution owner existed to move them into production analytics platforms",
@@ -136,10 +136,10 @@ export const projects: Project[] = [
             "High coordination overhead across teams slowed time-to-availability for analytics consumers",
             "Production delivery required tight release management across domains and environments"
         ],
-        solution: "Led the Snowflake Hydration Pod, the centralized execution team responsible for delivering approved enterprise data elements into Snowflake. Managed a global team of 12 engineers across time zones.",
+        solution: "Led the Snowflake Hydration Pod, the centralized execution team responsible for delivering approved enterprise data elements into Snowflake. Implemented automated data validation using Gherkinator to ensure production quality.",
         keyCapabilities: [
             "Established a repeatable intake, mapping, build, test, and release process for all analytics-ready data",
-            "Owned production deployment for Tier-1 and federated analytics domains",
+            "Automated data quality testing using Gherkinator framework",
             "Served as the primary interface between engineering teams, product owners, and senior stakeholders",
             "Managed formal RFC and approval processes for production releases"
         ],
@@ -189,10 +189,10 @@ export const projects: Project[] = [
             "Tier-1 and federated domain ownership with clear accountability"
         ],
         baselineKPIs: [
-            "Delivery Backlog: Growing",
-            "Production Views: Inconsistent delivery",
-            "Team Coordination: High overhead",
-            "Release Process: Ad-hoc"
+            "Delivery Backlog: High & Accumulating",
+            "Production Reliability: Inconsistent",
+            "Release Cycle: Ad-hoc / Slow",
+            "Data Trust: Low due to lack of automated testing"
         ],
         approach: [
             "Centralized execution ownership for enterprise data elements",
@@ -201,12 +201,11 @@ export const projects: Project[] = [
             "Formal release management with RFC approvals"
         ],
         impact: [
-            "435 JIRA tickets completed with zero delivery backlog",
-            "338 Snowflake consumption views delivered across enterprise domains",
-            "265 / 265 Tier-1 enterprise consumption views deployed to production (100%)",
-            "28 / 28 net-new data pipelines deployed to PROD",
-            "Recognized as the highest-performing pod in the Data Factory based on throughput and backlog metrics",
-            "Consistently met or exceeded Program Increment commitments"
+            "Eliminated delivery bottlenecks, clearing 435+ requests with zero backlog",
+            "Guaranteed 100% availability for 265 Tier-1 critical reporting assets",
+            "Democratized data access by delivering 338+ consumption views across the enterprise",
+            "Ensured production capability with 28 net-new data pipelines deployed",
+            "Set the organizational standard for high-velocity data engineering execution"
         ],
         techStack: ["Snowflake", "GitLab CI/CD", "Gherkinator", "JIRA"],
         links: {}
