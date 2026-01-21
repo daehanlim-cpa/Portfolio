@@ -27,7 +27,7 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
 
     const IconComponent = Icons[project.iconKey as keyof typeof Icons];
 
-    // Custom Architecture Visualization for DL-01
+    // Custom Architecture Visualization for DL-01 and DL-02
     const renderArchitectureVisual = () => {
         if (project.id === "liquidity-platform") {
             return (
@@ -73,6 +73,70 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                                     <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Consume</span>
                                     <span className="text-xl font-light">16</span>
                                     <span className="text-[9px] text-gray-400">DASHBOARDS</span>
+                                </div>
+                                <span className="text-[9px] text-gray-400 uppercase tracking-widest">Insights</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Custom Architecture Visualization for DL-02 (Snowflake Consumption Layer)
+        if (project.id === "cloud-modernization") {
+            return (
+                <div className="w-full py-12 overflow-x-auto">
+                    <div className="min-w-[700px] px-4 relative">
+                        {/* Connecting Line */}
+                        <div className="absolute top-12 left-0 w-full h-[1px] bg-gray-200 -z-10" />
+
+                        <div className="flex justify-between items-start">
+                            {/* Node 1: Intake */}
+                            <div className="flex flex-col items-center bg-white px-2">
+                                <div className="w-24 h-24 rounded-full border border-gray-200 flex flex-col items-center justify-center bg-white shadow-sm mb-4">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Intake</span>
+                                    <span className="text-xl font-light">435</span>
+                                    <span className="text-[9px] text-gray-400">TICKETS</span>
+                                </div>
+                                <span className="text-[9px] text-gray-400 uppercase tracking-widest">JIRA</span>
+                            </div>
+
+                            {/* Node 2: Build */}
+                            <div className="flex flex-col items-center bg-white px-2">
+                                <div className="w-24 h-24 rounded-full border border-gray-900 flex flex-col items-center justify-center bg-white shadow-sm mb-4">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Build</span>
+                                    <span className="text-sm font-bold tracking-wider">338</span>
+                                    <span className="text-[9px] text-gray-400 mt-1">VIEWS</span>
+                                </div>
+                                <span className="text-[9px] text-gray-400 uppercase tracking-widest">Snowflake</span>
+                            </div>
+
+                            {/* Node 3: Release */}
+                            <div className="flex flex-col items-center bg-white px-2">
+                                <div className="w-24 h-24 rounded-full border border-gray-900 flex flex-col items-center justify-center bg-white shadow-sm mb-4">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Release</span>
+                                    <span className="text-sm font-bold tracking-wider">CI/CD</span>
+                                    <span className="text-[9px] text-gray-400 mt-1">GITLAB</span>
+                                </div>
+                                <span className="text-[9px] text-gray-400 uppercase tracking-widest">RFC</span>
+                            </div>
+
+                            {/* Node 4: Production */}
+                            <div className="flex flex-col items-center bg-white px-2">
+                                <div className="w-24 h-24 rounded-full border border-gray-900 flex flex-col items-center justify-center bg-white shadow-sm mb-4">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Prod</span>
+                                    <span className="text-xl font-light">265</span>
+                                    <span className="text-[9px] text-gray-400">TIER-1</span>
+                                </div>
+                                <span className="text-[9px] text-gray-400 uppercase tracking-widest">100%</span>
+                            </div>
+
+                            {/* Node 5: Analytics */}
+                            <div className="flex flex-col items-center bg-white px-2">
+                                <div className="w-24 h-24 rounded-full border border-gray-200 flex flex-col items-center justify-center bg-white shadow-sm mb-4">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Consume</span>
+                                    <span className="text-xs font-bold tracking-wider">ENTERPRISE</span>
+                                    <span className="text-[9px] text-gray-400 mt-1">ANALYTICS</span>
                                 </div>
                                 <span className="text-[9px] text-gray-400 uppercase tracking-widest">Insights</span>
                             </div>

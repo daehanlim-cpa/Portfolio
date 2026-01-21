@@ -122,29 +122,93 @@ export const projects: Project[] = [
     {
         id: "cloud-modernization",
         code: "DL-02",
-        title: "Cloud Data Modernization",
+        title: "Snowflake Consumption Layer",
         type: "professional",
         categories: ["Data Architecture & Engineering"],
         iconKey: "Cloud",
         heroImage: "/images/project2.png",
         galleryImages: ["/images/project2.png"],
-        shortDescription: "CI/CD and monitoring frameworks for top-25 U.S. financial institution",
+        shortDescription: "Scaling enterprise analytics for a top-tier U.S. regional financial institution",
+        overview: "A top-tier U.S. regional financial institution executed a multi-year Data Factory initiative to modernize enterprise analytics and standardize how data is consumed across the organization. The Snowflake Hydration Pod served as the centralized execution team responsible for delivering approved enterprise data elements into Snowflake.",
         problem: [
-            "Legacy infrastructure limiting scalability",
-            "Inconsistent deployment processes",
-            "Limited observability across systems"
+            "Enterprise data elements were identified by multiple upstream teams, but no centralized execution owner existed to move them into production analytics platforms",
+            "Snowflake consumption assets were delivered inconsistently and at risk of backlog as demand increased",
+            "High coordination overhead across teams slowed time-to-availability for analytics consumers",
+            "Production delivery required tight release management across domains and environments"
+        ],
+        solution: "Led the Snowflake Hydration Pod, the centralized execution team responsible for delivering approved enterprise data elements into Snowflake. Managed a global team of 12 engineers across time zones.",
+        keyCapabilities: [
+            "Established a repeatable intake, mapping, build, test, and release process for all analytics-ready data",
+            "Owned production deployment for Tier-1 and federated analytics domains",
+            "Served as the primary interface between engineering teams, product owners, and senior stakeholders",
+            "Managed formal RFC and approval processes for production releases"
+        ],
+        architectureDiagram: `graph TD
+    subgraph Intake
+        REQ[Enterprise Data Requests]
+        JIRA[JIRA Tickets]
+    end
+
+    subgraph Build
+        MAP[Data Mapping]
+        DEV[View Development]
+        TEST[Gherkinator Testing]
+    end
+
+    subgraph Release
+        CI[GitLab CI/CD]
+        PROD[Production Deploy]
+    end
+
+    subgraph Consumption
+        T1[Tier-1 Views]
+        FED[Federated Domains]
+        ANALYTICS[Enterprise Analytics]
+    end
+
+    REQ --> JIRA
+    JIRA --> MAP
+    MAP --> DEV
+    DEV --> TEST
+    TEST --> CI
+    CI --> PROD
+    PROD --> T1
+    PROD --> FED
+    T1 --> ANALYTICS
+    FED --> ANALYTICS`,
+        architectureComponents: [
+            "Platform: Snowflake Data Cloud",
+            "CI/CD: GitLab with automated deployment pipelines",
+            "Testing: Gherkinator for data validation",
+            "Project Management: JIRA for intake and tracking"
+        ],
+        governance: [
+            "Formal RFC and approval processes for all production releases",
+            "Repeatable intake, mapping, build, test, and release workflow",
+            "Cross-domain coordination with engineering and product teams",
+            "Tier-1 and federated domain ownership with clear accountability"
+        ],
+        baselineKPIs: [
+            "Delivery Backlog: Growing",
+            "Production Views: Inconsistent delivery",
+            "Team Coordination: High overhead",
+            "Release Process: Ad-hoc"
         ],
         approach: [
-            "Implemented CI/CD pipelines",
-            "Established monitoring frameworks",
-            "Built control frameworks for governance"
+            "Centralized execution ownership for enterprise data elements",
+            "Global team management across time zones",
+            "Standardized intake-to-production workflow",
+            "Formal release management with RFC approvals"
         ],
         impact: [
-            "Enterprise standards for performance",
-            "Scalable treasury reporting",
-            "Improved system auditability"
+            "435 JIRA tickets completed with zero delivery backlog",
+            "338 Snowflake consumption views delivered across enterprise domains",
+            "265 / 265 Tier-1 enterprise consumption views deployed to production (100%)",
+            "28 / 28 net-new data pipelines deployed to PROD",
+            "Recognized as the highest-performing pod in the Data Factory based on throughput and backlog metrics",
+            "Consistently met or exceeded Program Increment commitments"
         ],
-        techStack: ["Azure", "Snowflake", "CI/CD", "Monitoring"],
+        techStack: ["Snowflake", "GitLab CI/CD", "Gherkinator", "JIRA"],
         links: {}
     },
     {

@@ -17,7 +17,7 @@ export default function Footer() {
 
                     <div className="flex gap-6">
                         <a
-                            href="https://github.com"
+                            href="https://github.com/daehanlim-cpa"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
@@ -25,7 +25,7 @@ export default function Footer() {
                             GitHub
                         </a>
                         <a
-                            href="https://linkedin.com"
+                            href="https://www.linkedin.com/in/daehanlim"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
