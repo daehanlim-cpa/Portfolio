@@ -2,7 +2,6 @@ export default function SkillsSection() {
     const skills = [
         "SQL",
         "Python",
-        "PyTorch",
         "Docker",
         "Snowflake",
         "Databricks",

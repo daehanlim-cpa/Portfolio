@@ -397,6 +397,16 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                                                 )}
                                             </div>
                                         </div>
+
+                                        {/* Back Button */}
+                                        <div className="mt-16 pt-8 border-t border-gray-100 flex justify-center">
+                                            <button
+                                                onClick={onClose}
+                                                className="text-xs uppercase tracking-widest text-gray-500 hover:text-black transition-colors font-medium"
+                                            >
+                                                ← BACK TO PROJECTS
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

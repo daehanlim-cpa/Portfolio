@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { projects } from "@/data/projects";
+import { projects, categories } from "@/data/projects";
 import ProjectCard from "@/components/ProjectCard";
 import ProjectModal from "@/components/ProjectModal";
 import { Project } from "@/data/projects";
@@ -10,7 +10,7 @@ export default function HomePage() {
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const [activeSkill, setActiveSkill] = useState<string>("ALL");
 
-    const skillCategories = ["ALL", "Data Architecture & Engineering", "Data Governance", "AI & ML"];
+    const skillCategories = categories;
 
     // Filter by skill only
     const filteredProjects = projects.filter(p => {

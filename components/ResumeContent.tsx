@@ -189,7 +189,7 @@ export default function ResumeContent() {
             <div>
                 <h3 className="text-lg font-normal mb-3">Languages & Tools</h3>
                 <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded border border-gray-200">
-                    SQL, Python, PyTorch, Docker, Spark, Snowflake, Databricks, dbt, Prefect, AWS, Azure
+                    SQL, Python, Docker, Spark, Snowflake, Databricks, dbt, Prefect, AWS, Azure
                 </p>
             </div>
 

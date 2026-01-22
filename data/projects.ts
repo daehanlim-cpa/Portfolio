@@ -34,34 +34,33 @@ export const projects: Project[] = [
         code: "DL-01",
         title: "Enterprise Liquidity Reporting",
         type: "professional",
-        categories: ["Data Architecture & Engineering"],
+        categories: ["Data", "Governance & Compliance"],
         iconKey: "Liquidity",
         heroImage: "/images/project1.png",
         galleryImages: ["/images/project1.png"],
         shortDescription: "Automated liquidity reporting for large government pension fund",
-        overview: "A large government pension fund relied on manual, Excel-based workflows to produce critical investment and operational reports. These processes were time-consuming, error-prone, and limited leadership visibility due to delayed data availability. The initiative focused on modernizing reporting through automated data ingestion, SQL-based transformations, and orchestrated pipelines to improve reliability, reduce operational risk, and enable faster decision-making.",
+        overview: "A large government pension fund relied on manual, Excel-based workflows to produce critical investment and operational reports used by leadership. These processes were time-consuming, error-prone, and limited decision-making due to delayed data availability. The initiative focused on modernizing reporting through automated ingestion, SQL-based transformations, and orchestrated pipelines to improve reliability, reduce operational risk, and enable faster, data-driven decisions.",
         problem: [
-            "Manual execution: Weekly Excel workflows required significant analyst effort and manual validation.",
-            "Limited cadence: Reports ran once per week, with data unavailable until T+2.",
-            "High rework risk: Errors were common and required manual fixes, increasing operational friction.",
-            "Key-person dependency: Reporting execution relied on a single analyst, creating continuity risk.",
-            "No controlled environments: Lack of DEV/TEST/PROD separation led to data silos and inconsistent outputs."
+            "Manual execution: Weekly Excel workflows required significant analyst effort and manual validation, creating inefficiency and operational fragility.",
+            "Limited cadence: Reports ran once per week, with data unavailable sometimes until T+2, limiting leadership's ability to monitor conditions proactively.",
+            "High rework risk: Errors were frequently discovered late, requiring manual fixes and reprocessing.",
+            "Key-person dependency: Reporting execution relied on a single analyst, creating continuity and operational risk.",
+            "Lack of environment controls: No DEV / TEST / PROD separation resulted in data silos and inconsistent outputs."
         ],
         baselineKPIs: [
             "Reporting cadence: Weekly",
             "Analyst effort: ~6 hours per run (1 FTE)",
-            "Data latency: T+2",
-            "Error handling: Manual fixes after reports were produced",
-            "Visibility: Limited ability to detect issues early"
+            "Error handling: Manual fixes post-report generation",
+            "Early issue detection: Limited"
         ],
-        solution: "Designed and implemented an automated, production-grade reporting platform with governance, monitoring, and scalability built in.",
+        solution: "Designed and delivered an automated, production-grade reporting platform with governance, monitoring, and scalability built into the architecture.",
         keyCapabilities: [
-            "Automated ingestion from 8 source systems (30–40 files)",
+            "Automated ingestion from 8 upstream source systems (30–40 files per cycle)",
             "SQL-driven transformations using dbt",
-            "Orchestrated pipelines with retry logic and dependency management",
+            "Orchestrated workflows with dependency management and retry logic",
             "Controlled DEV / STG / PROD environments with CI/CD approvals",
             "Centralized semantic layer powering leadership dashboards",
-            "Data quality checks and early-warning detection before reports are consumed"
+            "Embedded data quality checks with early-warning detection prior to consumption"
         ],
         architectureDiagram: `graph TD
     subgraph Sources
@@ -105,16 +104,17 @@ export const projects: Project[] = [
             "Ability to overwrite or suppress bad data early, preventing downstream impact"
         ],
         approach: [
-            "Structured data ingestion pipelines",
-            "SQL transformations with dbt",
-            "Orchestrated workflows in cloud environment"
+            "Structured ingestion pipelines to standardize raw data intake",
+            "Modular SQL transformations using dbt for maintainability and transparency",
+            "Orchestrated execution in a cloud-native environment",
+            "Incremental rollout to production with validation checkpoints"
         ],
         impact: [
-            "Reporting effort reduced from 6 hours → ~1 hour per run (~5 analyst hours saved weekly)",
-            "Reporting cadence improved from weekly → daily (Data available T+1 by 8:00 AM PT)",
-            "Eliminated key-person dependency through automation",
-            "Daily pipelines run with ~90% on-time SLA",
-            "Errors detected before leadership consumption, not after"
+            "Reduced reporting effort from ~6 hours → ~1 hour per run, saving ~5 analyst hours weekly",
+            "Improved reporting cadence from weekly → daily, with data available T+1 by 8:00 AM PT",
+            "Eliminated key-person dependency through automated execution",
+            "Achieved ~90% on-time SLA for daily production pipelines",
+            "Shifted error detection upstream, preventing issues from reaching leadership dashboards"
         ],
         techStack: ["Azure", "Snowflake", "dbt", "Prefect", "Power BI", "GitHub"],
         links: {}
@@ -124,24 +124,25 @@ export const projects: Project[] = [
         code: "DL-02",
         title: "Enterprise Analytics Factory",
         type: "professional",
-        categories: ["Data Architecture & Engineering"],
+        categories: ["Data"],
         iconKey: "Database",
         heroImage: "/images/project2.png",
         galleryImages: ["/images/project2.png"],
         shortDescription: "Scaling a Snowflake consumption layer for enterprise analytics",
-        overview: "A top-tier U.S. regional financial institution executed a multi-year Data Factory initiative to modernize enterprise analytics and standardize how data is consumed across the organization. The Snowflake Hydration Pod served as the centralized execution team responsible for delivering approved enterprise data elements into Snowflake.",
+        overview: "A top-tier U.S. regional financial institution launched a multi-year Data Factory initiative to modernize enterprise analytics and standardize how data is delivered to downstream consumers. The Snowflake Hydration Pod served as the centralized execution team responsible for delivering approved enterprise data elements into Snowflake with production-grade quality and reliability.",
         problem: [
-            "Enterprise data elements were identified by multiple upstream teams, but no centralized execution owner existed to move them into production analytics platforms",
-            "Snowflake consumption assets were delivered inconsistently and at risk of backlog as demand increased",
-            "High coordination overhead across teams slowed time-to-availability for analytics consumers",
-            "Production delivery required tight release management across domains and environments"
+            "Fragmented execution ownership: Enterprise data elements were identified by multiple upstream teams, but no single team owned execution into analytics platforms.",
+            "Inconsistent delivery: Snowflake consumption assets were delivered unevenly, creating risk of backlog as demand increased.",
+            "High coordination overhead: Significant effort was required to align across teams, slowing time-to-availability for analytics consumers.",
+            "Release complexity: Production deployments required careful coordination across domains and environments without standardized release patterns."
         ],
-        solution: "Led the Snowflake Hydration Pod, the centralized execution team responsible for delivering approved enterprise data elements into Snowflake. Implemented automated data validation using Gherkinator to ensure production quality.",
+        solution: "Led the Snowflake Hydration Pod as the centralized execution layer responsible for delivering approved enterprise data elements into Snowflake. Implemented standardized workflows, automated data validation, and formal release governance to ensure production-quality analytics at scale.",
         keyCapabilities: [
-            "Established a repeatable intake, mapping, build, test, and release process for all analytics-ready data",
-            "Automated data quality testing using Gherkinator framework",
-            "Served as the primary interface between engineering teams, product owners, and senior stakeholders",
-            "Managed formal RFC and approval processes for production releases"
+            "Centralized ownership of Snowflake consumption delivery",
+            "Repeatable intake, mapping, build, test, and release workflow",
+            "Automated data quality testing using Gherkin framework",
+            "Formal RFC-based production release management",
+            "Executive-facing delivery reporting and stakeholder communication"
         ],
         architectureDiagram: `graph TD
     subgraph Intake
@@ -178,36 +179,37 @@ export const projects: Project[] = [
     FED --> ANALYTICS`,
         architectureComponents: [
             "Platform: Snowflake Data Cloud",
-            "CI/CD: GitLab with automated deployment pipelines",
-            "Testing: Gherkinator for data validation",
-            "Project Management: JIRA for intake and tracking"
+            "CI/CD: GitLab automated deployment pipelines",
+            "Testing: Gherkin data validation framework",
+            "Project Management: JIRA for intake and delivery governance"
         ],
         governance: [
-            "Formal RFC and approval processes for all production releases",
-            "Repeatable intake, mapping, build, test, and release workflow",
-            "Cross-domain coordination with engineering and product teams",
-            "Tier-1 and federated domain ownership with clear accountability"
+            "Formal RFC and approval processes for all production deployments",
+            "Standardized intake-to-production workflow with clear accountability",
+            "Cross-team dependency management to ensure release readiness",
+            "Tier-1 and federated domain ownership with defined responsibilities"
         ],
         baselineKPIs: [
-            "Delivery Backlog: High & Accumulating",
-            "Production Reliability: Inconsistent",
-            "Release Cycle: Ad-hoc / Slow",
-            "Data Trust: Low due to lack of automated testing"
+            "Delivery backlog: High and accumulating",
+            "Production reliability: Inconsistent",
+            "Release cycle: Ad-hoc / slow",
+            "Data trust: Low due to limited automated validation"
         ],
         approach: [
-            "Centralized execution ownership for enterprise data elements",
-            "Global team management across time zones",
-            "Standardized intake-to-production workflow",
-            "Formal release management with RFC approvals"
+            "Intake-driven execution using structured JIRA workflows",
+            "Standardized intake-to-production lifecycle",
+            "Embedded automated validation in CI/CD pipelines",
+            "Global team coordination across time zones",
+            "Formal approval checkpoints for production readiness"
         ],
         impact: [
-            "Eliminated delivery bottlenecks, clearing 435+ requests with zero backlog",
-            "Guaranteed 100% availability for 265 Tier-1 critical reporting assets",
-            "Democratized data access by delivering 338+ consumption views across the enterprise",
-            "Ensured production capability with 28 net-new data pipelines deployed",
-            "Set the organizational standard for high-velocity data engineering execution"
+            "Eliminated delivery bottlenecks by completing 435+ requests with zero backlog",
+            "Guaranteed 100% production availability for 265 Tier-1 critical analytics assets",
+            "Expanded enterprise analytics access by delivering 338+ Snowflake consumption views",
+            "Enabled scalable production delivery with 28 net-new data pipelines deployed",
+            "Established the organizational benchmark for high-velocity, production-grade data execution"
         ],
-        techStack: ["Snowflake", "GitLab CI/CD", "Gherkinator", "JIRA"],
+        techStack: ["Snowflake", "GitLab CI/CD", "Gherkin", "JIRA"],
         links: {}
     },
     {
@@ -215,7 +217,7 @@ export const projects: Project[] = [
         code: "DL-03",
         title: "EY Certification Center",
         type: "professional",
-        categories: ["Data Architecture & Engineering", "AI & ML"],
+        categories: [],
         iconKey: "Community",
         heroImage: "/images/project3.png",
         galleryImages: ["/images/project3.png"],
@@ -267,322 +269,396 @@ export const projects: Project[] = [
     {
         id: "teradata-migration",
         code: "DL-04",
-        title: "Teradata to Cloud Migration",
+        title: "Low-Latency Operational Data Store",
         type: "professional",
-        categories: ["Data Architecture & Engineering"],
+        categories: ["Data", "Governance & Compliance"],
         iconKey: "Migration",
         heroImage: "/images/project4.png",
         galleryImages: ["/images/project4.png"],
-        shortDescription: "Legacy system modernization for regulatory reporting",
+        shortDescription: "Designing a low-latency operational data store for customer support APIs",
+        overview: "A Caribbean financial institution experienced slow and costly API calls when customer support systems queried customer data in real time. Each customer inquiry triggered direct calls to analytical systems, creating latency, reliability issues, and unnecessary cost at scale. The objective was to improve response time and reduce per-call cost while maintaining secure, consistent access to operational customer data.",
         problem: [
-            "Legacy Teradata limiting agility",
-            "High maintenance costs",
-            "Scalability constraints"
+            "Customer support workflows depended on real-time API calls to retrieve customer information",
+            "API calls were slow, degrading agent experience and customer satisfaction",
+            "API calls were expensive, as every request incurred platform and compute costs",
+            "Analytical platforms were being used for operational workloads, which is an architectural anti-pattern"
+        ],
+        solution: "Designed and delivered a cloud-based Operational Data Store (ODS) purpose-built for customer support APIs. Shifted API read traffic away from analytical systems into an AWS-backed operational model with structured ingestion and transformation pipelines to keep operational data current.",
+        keyCapabilities: [
+            "AWS Aurora as primary operational read store",
+            "Amazon Redshift for downstream analytics and reporting",
+            "Modeled customer entities for read-optimized access",
+            "Defined update cadence aligned to business SLAs rather than real-time overengineering",
+            "Validated API response times and failure modes under load"
+        ],
+        architectureComponents: [
+            "Cloud & Platform: AWS Aurora, Amazon Redshift",
+            "API Testing: Postman for validation and performance testing",
+            "Security: Access controls aligned with financial data requirements"
+        ],
+        governance: [
+            "Separated operational reads from analytical workloads",
+            "Optimized for low-latency, high-concurrency access",
+            "Maintained data consistency without over-engineering real-time sync",
+            "Ensured security and access controls aligned with financial data requirements"
         ],
         approach: [
-            "Ingestion design and validation",
-            "Data quality testing framework",
-            "Downstream analytics readiness"
+            "Identified architectural mismatch between operational and analytical workloads",
+            "Designed systems aligned to workload characteristics",
+            "Implemented read-optimized customer entity models",
+            "Validated performance under load with Postman"
         ],
         impact: [
-            "Successful cloud migration",
-            "Maintained data integrity",
-            "Enhanced reporting capabilities"
+            "Reduced API response latency, improving agent productivity",
+            "Lowered per-call infrastructure cost by removing unnecessary analytical queries",
+            "Improved reliability and consistency of customer support workflows",
+            "Established a scalable pattern for future operational data use cases"
         ],
-        techStack: ["Teradata", "Cloud", "Data Quality", "SQL"],
+        techStack: ["AWS Aurora", "Amazon Redshift", "Postman", "SQL"],
         links: {}
     },
     {
         id: "regulatory-reporting",
         code: "DL-05",
-        title: "Regulatory Reporting Models",
+        title: "Enterprise Platform Evaluation: Snowflake vs Databricks",
         type: "professional",
-        categories: ["Data Governance"],
+        categories: ["Strategy", "Data"],
         iconKey: "Regulatory",
         heroImage: "/images/project5.png",
         galleryImages: ["/images/project5.png"],
-        shortDescription: "FR-Y14, NSFR, HQLA reporting for top-5 financial institution",
+        shortDescription: "Strategic platform selection POC for Teradata migration",
+        overview: "A large enterprise was migrating off Teradata, which had become a bottleneck for both analytics and advanced use cases. Leadership needed to decide between Snowflake and Databricks as the strategic data platform. This decision would influence years of delivery, cost structure, and capability.",
         problem: [
-            "Complex regulatory requirements",
-            "Data model inconsistencies",
-            "Manual reporting processes"
+            "Existing Teradata environment suffered from long query runtimes",
+            "Limited scalability for modern workloads",
+            "Poor fit for machine learning and API-based integrations",
+            "Leadership needed clarity on which platform best supports current and future data needs"
+        ],
+        solution: "Structured a comprehensive POC around real decision drivers, not feature checklists. Evaluated both platforms across external API integration, complex enterprise data modeling, and machine learning workflows. Assessed performance, developer experience, operational complexity, security and governance, and cost considerations.",
+        keyCapabilities: [
+            "Designed evaluation criteria and success metrics",
+            "Coordinated hands-on platform testing across use cases",
+            "Led stakeholder sessions with engineering, data science, and IT security",
+            "Guided vendor onboarding and platform enablement",
+            "Acted as project manager and technical lead"
         ],
         approach: [
-            "Designed standardized data models",
-            "Aligned with regulatory frameworks",
-            "Automated reporting workflows"
+            "Structured POC around three use cases: API integration, data modeling, ML workflows",
+            "Evaluated platforms across performance, developer experience, operational complexity, security, and cost",
+            "Coordinated hands-on testing and stakeholder alignment",
+            "Provided executive decision support under uncertainty"
         ],
         impact: [
-            "Accurate supervisory compliance",
-            "Supported risk oversight",
-            "Foundation for ongoing reporting"
+            "Databricks selected as the strategic platform",
+            "Resulted in the firm winning multi-year cloud transformation work",
+            "Delivered 3,000+ hours of platform training",
+            "Completed infrastructure and environment setup",
+            "Achieved security approvals with IT and InfoSec",
+            "Successfully onboarded the platform to production"
         ],
-        techStack: ["Data Modeling", "Regulatory", "Compliance"],
+        techStack: ["Snowflake", "Databricks", "Teradata", "Machine Learning"],
         links: {}
     },
     {
         id: "data-governance",
         code: "DL-06",
-        title: "Global Data Governance",
+        title: "Liquidity Reporting Data Controls Assessment",
         type: "professional",
-        categories: ["Data Governance"],
+        categories: ["Governance & Compliance"],
         iconKey: "Governance",
         heroImage: "/images/project6.png",
         galleryImages: ["/images/project6.png"],
-        shortDescription: "Governance framework for 12-person global team",
+        shortDescription: "Data controls assessment for regulatory liquidity reporting",
+        overview: "Major U.S. financial institutions are required to maintain highly reliable liquidity reporting under regulatory scrutiny. The engagement focused on assessing data controls supporting liquidity reporting, including completeness, accuracy, and change detection.",
         problem: [
-            "Inconsistent data practices",
-            "Limited auditability",
-            "Operational inefficiencies"
+            "Liquidity reporting is among the most scrutinized regulatory reporting domains",
+            "Errors in liquidity data can lead to regulatory findings, capital restrictions, or loss of supervisory confidence",
+            "Need to assess whether controls could detect and prevent data issues",
+            "Required evaluation of 200+ critical data elements"
+        ],
+        solution: "Performed comprehensive assessment of data controls supporting liquidity reporting. Reviewed data sourcing, transformation logic, control design, and control effectiveness. Evaluated gaps in detection and prevention controls.",
+        keyCapabilities: [
+            "Reviewed 200+ critical data fields",
+            "Assessed data sourcing and lineage",
+            "Evaluated transformation logic and control points",
+            "Identified where breakdowns could occur",
+            "Assessed whether controls were preventative, detective, or merely compensating"
+        ],
+        governance: [
+            "Traced data from source to report",
+            "Evaluated severity and likelihood of potential failures",
+            "Prepared documentation suitable for regulatory review",
+            "Clearly articulated residual risk for leadership"
         ],
         approach: [
-            "Established governance standards",
-            "Implemented operational controls",
-            "Created auditability frameworks"
+            "Performed current-state assessment",
+            "Documented data flows and control points",
+            "Identified failure modes and control weaknesses",
+            "Proposed improvements aligned to regulatory expectations"
         ],
         impact: [
-            "Improved reporting reliability",
-            "Clear governance standards",
-            "Enhanced operational controls"
+            "Delivered defensible documentation for leadership and regulators",
+            "Improved clarity on data lineage and control ownership",
+            "Reduced regulatory and operational risk",
+            "Strengthened control frameworks supporting regulatory reporting",
+            "Improved transparency into liquidity data risks"
         ],
-        techStack: ["AWS", "Snowflake", "Power BI", "Governance"],
+        techStack: ["Data Controls", "Regulatory Reporting", "SQL", "Compliance"],
+        links: {}
+    },
+    {
+        id: "aml-framework",
+        code: "DL-07",
+        title: "AML Framework & Model Assessment",
+        type: "professional",
+        categories: ["Governance & Compliance"],
+        iconKey: "Regulatory",
+        heroImage: "/images/project7.png",
+        galleryImages: ["/images/project7.png"],
+        shortDescription: "Independent AML framework assessment for major crypto institution",
+        overview: "A large crypto institution engaged an independent assessment of its AML framework and transaction monitoring systems amid increasing regulatory scrutiny on digital asset platforms. The work directly supported executive and regulatory-facing decisions, where gaps or misstatements could result in enforcement actions, remediation mandates, or operational restrictions.",
+        problem: [
+            "Leadership needed to understand whether existing AML systems were fit for purpose",
+            "Required assessment of whether transaction monitoring models were conceptually sound",
+            "Need to verify whether controls were operating as intended under real-world conditions",
+            "Core question: Can this institution defend its AML posture to regulators with evidence, not assumptions?"
+        ],
+        solution: "Applied independent challenge and critical assessment, focusing on framework-level evaluation, model assumption examination, and independent test case execution to validate whether models would trigger when expected or miss material risk scenarios.",
+        keyCapabilities: [
+            "Reviewed end-to-end AML architecture (data ingestion → monitoring → escalation)",
+            "Assessed alignment between business risk profile and control coverage",
+            "Examined model assumptions and rule logic",
+            "Evaluated whether scenarios aligned with known crypto-specific risks",
+            "Designed and executed independent test cases to validate model effectiveness"
+        ],
+        governance: [
+            "Applied skepticism and independent judgment",
+            "Compared expected vs actual outcomes in model testing",
+            "Identified gaps between theoretical design and operational reality",
+            "All findings written with assumption that reports could be read by regulators"
+        ],
+        approach: [
+            "Framework-level assessment of AML architecture",
+            "Model evaluation of assumptions and rule logic",
+            "Independent test case design and execution",
+            "Authored formal audit-style assessment reports"
+        ],
+        impact: [
+            "Enabled leadership to make informed decisions on AML investment and remediation",
+            "Strengthened the defensibility of AML controls",
+            "Reduced regulatory exposure through early identification of weaknesses",
+            "Delivered executive-ready summaries for Chief Compliance Officer",
+            "Produced documentation suitable for regulatory examination"
+        ],
+        techStack: ["AML", "Compliance", "Model Validation", "Regulatory"],
+        links: {}
+    },
+    {
+        id: "internal-audit",
+        code: "DL-08",
+        title: "AML / BSA / OFAC Controls Assessment",
+        type: "professional",
+        categories: ["Governance & Compliance"],
+        iconKey: "Governance",
+        heroImage: "/images/project8.png",
+        galleryImages: ["/images/project8.png"],
+        shortDescription: "AML, BSA, and OFAC controls assessment across multiple financial institutions",
+        overview: "Served as a co-sourced internal auditor embedded within financial institutions' audit functions to assess the design and operating effectiveness of AML, BSA, and OFAC controls supporting regulatory compliance. The work supported management assurance and regulatory readiness, requiring a balance of independence and professional skepticism, deep understanding of AML regulatory expectations, and clear, defensible communication with audit leadership and business stakeholders.",
+        problem: [
+            "Financial institutions must demonstrate that their AML programs are not only documented, but operating effectively in practice",
+            "Controls needed evaluation across customer due diligence, transaction monitoring, sanctions screening, and escalation processes",
+            "Core question: Are AML / BSA / OFAC controls designed appropriately, operating as intended, and defensible under regulatory review?"
+        ],
+        solution: "Conducted end-to-end evaluation of AML program components including Suspicious Activity Reporting (SARs), Enhanced Due Diligence (EDD), transaction monitoring alerts, case reviews & investigations, and PEP & sanctions screening (OFAC). Applied independent challenge through substantive testing and control evaluation.",
+        keyCapabilities: [
+            "Evaluated Suspicious Activity Reporting (SARs): case escalation logic, timeliness and completeness of filings, alignment between alerts, investigations, and SAR decisions",
+            "Assessed Enhanced Due Diligence (EDD): risk-based customer segmentation, documentation sufficiency, ongoing review and refresh controls",
+            "Reviewed Transaction Monitoring Alerts: alert generation and triage processes, case prioritization and analyst workflows, coverage relative to customer and product risk",
+            "Evaluated Case Reviews & Investigations: consistency of investigative procedures, evidence retention and decision rationale, quality of analyst judgment",
+            "Assessed PEP & Sanctions Screening (OFAC): screening logic and match resolution, escalation and disposition controls, governance over false positives and true matches"
+        ],
+        governance: [
+            "Built AML-focused Risk & Control Matrices (RCMs)",
+            "Mapped regulatory requirements to specific control activities",
+            "Reviewed case files, alert histories, investigation narratives, and supporting documentation",
+            "Challenged management assertions where evidence was incomplete or control execution did not align with documented procedures",
+            "All reporting written with explicit assumption that audit workpapers and conclusions may be reviewed by regulators or external examiners"
+        ],
+        approach: [
+            "Applied independent challenge through substantive testing",
+            "Designed test cases to assess control design effectiveness (is the control sufficient?) and control operating effectiveness (is it executed consistently?)",
+            "Documented findings in audit-ready language",
+            "Communicated findings to Chief Audit Executives (CAEs), AML compliance leadership, and business stakeholders"
+        ],
+        impact: [
+            "Strengthened AML, BSA, and OFAC control environments",
+            "Improved clarity around control ownership and accountability",
+            "Enabled management to remediate control gaps before regulatory escalation",
+            "Increased defensibility of AML programs under supervisory scrutiny",
+            "Delivered written outputs that support governance, audit, and regulatory confidence"
+        ],
+        techStack: ["AML", "BSA", "OFAC", "Internal Audit", "Risk Management"],
+        links: {}
+    },
+    {
+        id: "liquidity-controls",
+        code: "DL-09",
+        title: "Liquidity Data Controls & Regulatory Reporting",
+        type: "professional",
+        categories: ["Governance & Compliance"],
+        iconKey: "Regulatory",
+        heroImage: "/images/project9.png",
+        galleryImages: ["/images/project9.png"],
+        shortDescription: "Data controls assessment for liquidity regulatory reporting",
+        overview: "Liquidity reporting is among the most scrutinized regulatory reporting domains in financial services. Errors in liquidity data can lead to regulatory findings, capital restrictions, or loss of supervisory confidence. This engagement focused on assessing data controls supporting liquidity reporting, including accuracy, completeness, and change management.",
+        problem: [
+            "Liquidity reporting errors can lead to regulatory findings and capital restrictions",
+            "Need to assess data controls across 200+ critical data elements",
+            "Required evaluation of whether controls could detect and prevent data issues",
+            "Need to assess severity and likelihood of potential failures"
+        ],
+        solution: "Performed comprehensive assessment of data controls supporting liquidity reporting. Traced data from source to report, identified where breakdowns could occur, and evaluated whether controls were preventative, detective, or merely compensating.",
+        keyCapabilities: [
+            "Reviewed 200+ critical data elements used in liquidity reporting",
+            "Assessed data sourcing and lineage",
+            "Evaluated transformation logic and control points across data lifecycle",
+            "Traced data from source to report to identify potential breakdown points",
+            "Assessed severity and likelihood of potential failures"
+        ],
+        governance: [
+            "Evaluated whether controls were preventative, detective, or merely compensating",
+            "Assessed control effectiveness beyond documented controls at face value",
+            "Prepared documentation to standard suitable for regulatory review and supervisory examination",
+            "Clearly articulated residual risk for leadership"
+        ],
+        approach: [
+            "Current-state assessment documentation",
+            "Identification of control gaps and weaknesses",
+            "Proposed enhancements to improve detection and prevention",
+            "Traced data lineage from source to final report"
+        ],
+        impact: [
+            "Improved transparency into liquidity data risks",
+            "Strengthened control frameworks supporting regulatory reporting",
+            "Reduced the risk of inaccurate or unsupported liquidity submissions",
+            "Delivered defensible documentation for regulatory review",
+            "Enhanced clarity on data lineage and control ownership"
+        ],
+        techStack: ["Regulatory Reporting", "Data Controls", "Liquidity", "SQL", "Compliance"],
         links: {}
     },
 
-    // PERSONAL PROJECTS (New 5)
+    // PERSONAL PROJECTS (1 entry)
     {
         id: "ai-portfolio",
         code: "P-01",
-        title: "AI-Powered Portfolio",
+        title: "BSA/AML & OFAC Auditor Agent",
         type: "project",
         categories: ["AI & ML"],
         iconKey: "Neural",
-        heroImage: "/images/project7.png",
-        galleryImages: ["/images/project7.png"],
-        shortDescription: "Personal portfolio with RAG-based resume chat",
-        problem: [
-            "Static portfolios lack interactivity",
-            "Recruiters need quick answers",
-            "Traditional resumes are one-dimensional"
-        ],
-        approach: [
-            "Built with Next.js and TypeScript",
-            "Implemented RAG with Google Gemini",
-            "Yeezy-inspired minimal design"
-        ],
-        impact: [
-            "Interactive resume exploration",
-            "Instant answers to recruiter questions",
-            "Modern, memorable presentation"
-        ],
-        techStack: ["Next.js", "TypeScript", "Gemini AI", "Framer Motion"],
-        links: {
-            repo: "https://github.com/daehanlim-cpa/portfolio"
-        }
-    },
-    {
-        id: "blockchain-explorer",
-        code: "P-02",
-        title: "Blockchain Analytics",
-        type: "project",
-        categories: ["AI & ML"],
-        iconKey: "Blockchain",
-        heroImage: "/images/project8.png",
-        galleryImages: ["/images/project8.png"],
-        shortDescription: "Real-time blockchain transaction analyzer",
-        problem: [
-            "Blockchain data is complex and opaque",
-            "Difficult to track transaction patterns",
-            "Limited visualization tools"
-        ],
-        approach: [
-            "Real-time data ingestion from blockchain nodes",
-            "Pattern recognition algorithms",
-            "Interactive visualization dashboard"
-        ],
-        impact: [
-            "Clear transaction flow visibility",
-            "Anomaly detection capabilities",
-            "User-friendly blockchain insights"
-        ],
-        techStack: ["Python", "Web3.py", "React", "D3.js"],
-        links: {}
-    },
-    {
-        id: "mobile-fintech",
-        code: "P-03",
-        title: "Personal Finance Tracker",
-        type: "project",
-        categories: ["Data Architecture & Engineering"],
-        iconKey: "App",
-        heroImage: "/images/project9.png",
-        galleryImages: ["/images/project9.png"],
-        shortDescription: "Mobile app for expense tracking and budgeting",
-        problem: [
-            "Existing apps are too complex",
-            "Privacy concerns with cloud storage",
-            "Lack of customization"
-        ],
-        approach: [
-            "Local-first data architecture",
-            "Intuitive gesture-based UI",
-            "Customizable budget categories"
-        ],
-        impact: [
-            "Simple, privacy-focused tracking",
-            "Improved spending awareness",
-            "Flexible budget management"
-        ],
-        techStack: ["React Native", "SQLite", "TypeScript"],
-        links: {}
-    },
-    {
-        id: "api-gateway",
-        code: "P-04",
-        title: "Microservices API Gateway",
-        type: "project",
-        categories: ["Data Architecture & Engineering"],
-        iconKey: "API",
         heroImage: "/images/project10.png",
         galleryImages: ["/images/project10.png"],
-        shortDescription: "Scalable API gateway with rate limiting and auth",
+        shortDescription: "RAG-based AI system for assessing analyst review quality using structured and unstructured data",
+        overview: "Built an AI-powered system that combines Retrieval-Augmented Generation (RAG) and Large Language Models (LLMs) to assess the quality of analyst dispositions on transaction monitoring alerts. The system integrates structured data (analyst reviews, alert details, case outcomes) with unstructured data (business policies, procedures, semantic context) to answer complex business questions about analyst decision-making quality and consistency.",
         problem: [
-            "Microservices need unified entry point",
-            "Rate limiting and auth scattered across services",
-            "Monitoring and logging inconsistent"
+            "Analyst disposition quality is difficult to assess at scale across thousands of alerts",
+            "Business policies and procedures are scattered across unstructured documents",
+            "No systematic way to evaluate whether analyst decisions align with documented policies",
+            "Manual quality reviews are time-consuming and inconsistent",
+            "Difficult to identify patterns in analyst behavior or systemic quality issues"
+        ],
+        solution: "Designed and implemented a RAG-based AI system that ingests structured analyst review data and unstructured policy documents, creates semantic embeddings, and uses LLMs to answer business questions about disposition quality, policy alignment, and decision consistency.",
+        keyCapabilities: [
+            "Structured Data Integration: Ingested analyst reviews, alert metadata, and case outcomes from transaction monitoring systems",
+            "Unstructured Data Processing: Parsed and embedded business policies, procedures, and regulatory guidance documents",
+            "Semantic Search: Built vector database with embeddings for efficient retrieval of relevant policy context",
+            "RAG Pipeline: Combined retrieved policy context with structured alert data to provide LLM with comprehensive context",
+            "Quality Assessment: LLM evaluates analyst dispositions against policies and identifies gaps or inconsistencies"
+        ],
+        architectureComponents: [
+            "Data Sources: Transaction monitoring system (structured), policy documents (unstructured)",
+            "Embedding Model: Text embeddings for semantic search across policies and procedures",
+            "Vector Database: Stored embeddings for efficient similarity search",
+            "LLM: Google Gemini for natural language understanding and quality assessment",
+            "RAG Framework: Orchestrated retrieval and generation pipeline"
         ],
         approach: [
-            "Built centralized gateway with Kong",
-            "Implemented JWT authentication",
-            "Unified logging and metrics"
+            "Ingested structured analyst review data (alert ID, analyst decision, rationale, outcome)",
+            "Processed unstructured policy documents and created semantic embeddings",
+            "Built RAG pipeline to retrieve relevant policy context for each analyst decision",
+            "Used LLM to evaluate disposition quality by comparing analyst rationale against retrieved policies",
+            "Generated insights on policy alignment, decision consistency, and quality patterns"
         ],
         impact: [
-            "Simplified service access",
-            "Consistent security policies",
-            "Centralized monitoring"
+            "Enabled automated quality assessment of analyst dispositions at scale",
+            "Identified policy gaps and areas where analyst decisions diverged from documented procedures",
+            "Reduced manual quality review time by providing AI-assisted assessments",
+            "Improved analyst training by highlighting common decision-making gaps",
+            "Demonstrated practical application of RAG for combining structured and unstructured data in compliance use cases"
         ],
-        techStack: ["Kong", "Docker", "Redis", "Prometheus"],
-        links: {}
-    },
-    {
-        id: "ml-pipeline",
-        code: "P-05",
-        title: "AutoML Pipeline",
-        type: "project",
-        categories: ["AI & ML"],
-        iconKey: "Code",
-        heroImage: "/images/project11.png",
-        galleryImages: ["/images/project11.png"],
-        shortDescription: "Automated machine learning pipeline for model training",
-        problem: [
-            "Manual ML workflows are time-consuming",
-            "Hyperparameter tuning is tedious",
-            "Model versioning is complex"
-        ],
-        approach: [
-            "Automated feature engineering",
-            "Hyperparameter optimization with Optuna",
-            "MLflow for experiment tracking"
-        ],
-        impact: [
-            "10x faster model iteration",
-            "Reproducible experiments",
-            "Simplified deployment"
-        ],
-        techStack: ["Python", "PyTorch", "MLflow", "Optuna"],
-        links: {}
-    },
-    {
-        id: "data-dashboard",
-        code: "P-06",
-        title: "Real-Time Analytics Dashboard",
-        type: "project",
-        categories: ["Data Architecture & Engineering"],
-        iconKey: "Chart",
-        heroImage: "/images/project12.png",
-        galleryImages: ["/images/project12.png"],
-        shortDescription: "Interactive dashboard for real-time business metrics",
-        problem: [
-            "Business metrics scattered across multiple tools",
-            "No real-time visibility into KPIs",
-            "Static reports lack interactivity"
-        ],
-        approach: [
-            "Built streaming data pipeline",
-            "Created interactive visualizations with D3.js",
-            "Implemented WebSocket for real-time updates"
-        ],
-        impact: [
-            "Real-time business insights",
-            "Reduced reporting time by 80%",
-            "Improved decision-making speed"
-        ],
-        techStack: ["React", "D3.js", "WebSocket", "PostgreSQL"],
+        techStack: ["Python", "Google Gemini", "RAG", "Vector Embeddings", "LangChain", "Semantic Search"],
         links: {}
     },
 
-    // PURPOSE/PHILANTHROPY WORK (2 entries)
+    // PURPOSE/PHILANTHROPY WORK (1 entry)
     {
         id: "youth-mentorship",
         code: "PH-01",
-        title: "Youth Tech Mentorship",
+        title: "School Finance & Mission Sustainability",
         type: "purpose",
-        categories: ["AI & ML"],
+        categories: ["Strategy", "Impact"],
         iconKey: "Community",
         heroImage: "/images/purpose1.png",
         galleryImages: ["/images/purpose1.png"],
-        shortDescription: "Teaching coding and data science to underserved youth",
+        shortDescription: "Strategic advisor to Cambodia Hope Foundation supporting 500+ students",
+        overview: "Served as a Strategic Advisor to the founders of the Cambodia Hope Foundation, supporting long-term financial sustainability and strategic direction for a mission-driven education organization. The foundation provides affordable, values-based education to 500+ students and employs 40 faculty and staff, operating in a resource-constrained environment where financial decisions directly affect access, quality, and continuity of education.",
         problem: [
-            "Limited tech education access in underserved communities",
-            "Lack of diverse role models in STEM",
-            "Skills gap preventing career opportunities"
+            "Mission sustainability risk: As the organization scaled, there was a growing risk that financial pressures could dilute or unintentionally shift the founder-led mission",
+            "Affordability constraints: Maintaining low-cost access to education required careful tradeoffs between operating expenses, staffing, and program expansion",
+            "Founder dependency: Strategic decision-making was heavily centered on founders, creating risk as the organization matured",
+            "Limited financial structure: Financial planning needed to balance day-to-day operations with long-term sustainability without adopting corporate-first incentives misaligned with the mission"
+        ],
+        baselineKPIs: [
+            "Student population: 500+",
+            "Faculty & staff: 40",
+            "Cost sensitivity: High",
+            "Margin for error: Low",
+            "Mission alignment risk: Increasing with scale"
+        ],
+        solution: "Acted as a strategic thought partner to the founders, focusing on school finance and cost structure evaluation, long-term strategic direction, governance and decision-making discipline, and ensuring the founder mission remained central as the organization scaled.",
+        keyCapabilities: [
+            "Worked directly with founders to clarify non-negotiable mission principles",
+            "Evaluated financial decisions through a mission-first lens, not pure growth optimization",
+            "Advised on tradeoffs between tuition affordability, faculty compensation and retention, and infrastructure and program investments",
+            "Introduced structured thinking around cost sustainability, scenario-based planning, and long-term impact vs short-term pressure"
+        ],
+        governance: [
+            "School Finance: Assessed affordability thresholds to ensure continued access for students, evaluated operating costs to avoid mission drift",
+            "Strategic Direction: Supported founders in translating mission values into operational decisions, helped prioritize initiatives that reinforced educational quality",
+            "Mission Continuity: Ensured growth decisions did not undermine founding principles, reinforced alignment between leadership intent and on-the-ground execution"
         ],
         approach: [
-            "Volunteer instructor at local coding bootcamp",
-            "Developed beginner-friendly Python curriculum",
-            "1-on-1 mentorship for aspiring data scientists"
+            "Applied strategic and financial thinking in high-constraint environments",
+            "Advised founders without imposing misaligned corporate frameworks",
+            "Balanced sustainability, affordability, and human impact",
+            "Operated as a trusted advisor where decisions affect real lives, not abstract metrics"
         ],
         impact: [
-            "Mentored 20+ students over 2 years",
-            "5 students secured tech internships",
-            "Increased diversity in local tech pipeline"
+            "500+ students continue to receive affordable, mission-driven education",
+            "40 faculty and staff benefit from sustainable, values-aligned organizational direction",
+            "Improved clarity and confidence in long-term decision-making",
+            "Reduced risk of mission dilution as the organization evolves"
         ],
-        techStack: ["Python", "Jupyter", "Teaching"],
-        links: {}
-    },
-    {
-        id: "nonprofit-data",
-        code: "PH-02",
-        title: "Pro Bono Data Analytics",
-        type: "purpose",
-        categories: ["Data Architecture & Engineering"],
-        iconKey: "Heart",
-        heroImage: "/images/purpose2.png",
-        galleryImages: ["/images/purpose2.png"],
-        shortDescription: "Free data infrastructure for nonprofit organizations",
-        problem: [
-            "Nonprofits lack resources for data systems",
-            "Manual processes limiting impact measurement",
-            "Difficulty demonstrating outcomes to donors"
-        ],
-        approach: [
-            "Built donation tracking dashboard",
-            "Automated impact reporting workflows",
-            "Trained staff on data-driven decision making"
-        ],
-        impact: [
-            "Helped 3 nonprofits optimize operations",
-            "Increased donor retention by 25%",
-            "Enabled data-driven program improvements"
-        ],
-        techStack: ["SQL", "Power BI", "Excel", "Automation"],
+        techStack: ["Strategic Planning", "Finance", "Nonprofit Management", "Governance"],
         links: {}
     }
 ];
 
 export const categories = [
     "ALL",
-    "Data Architecture & Engineering",
-    "Data Governance",
-    "AI & ML"
+    "Strategy",
+    "Data",
+    "Governance & Compliance",
+    "AI & ML",
+    "Impact"
 ];
