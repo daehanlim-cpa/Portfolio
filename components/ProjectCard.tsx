@@ -29,7 +29,7 @@ export default function ProjectCard({ project, onClick, isEmphasized = true }: P
             </div>
 
             {/* Code Label */}
-            <div className="text-center mt-2 px-2">
+            <div className="text-left mt-2">
                 <p className={`text-[10px] uppercase tracking-widest transition-colors mb-2 ${isEmphasized
                     ? "text-gray-400 font-medium group-hover:text-black"
                     : "text-gray-300"
@@ -42,7 +42,7 @@ export default function ProjectCard({ project, onClick, isEmphasized = true }: P
                     }`}>
                     {project.title}
                 </h3>
-                <p className={`text-[11px] leading-relaxed transition-colors line-clamp-2 ${isEmphasized
+                <p className={`text-[11px] leading-snug transition-colors line-clamp-2 ${isEmphasized
                     ? "text-gray-500"
                     : "text-gray-300"
                     }`}>

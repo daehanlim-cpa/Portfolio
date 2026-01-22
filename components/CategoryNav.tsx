@@ -23,7 +23,7 @@ export default function CategoryNav() {
     return (
         <>
             <nav className="sticky top-0 z-50 bg-white border-b border-gray-200">
-                <div className="px-8 py-6">
+                <div className="px-8 py-3">
                     <div className="flex items-center justify-between">
                         {/* Left - Name */}
                         <Link href="/" className="text-sm font-light tracking-tight">
@@ -35,8 +35,8 @@ export default function CategoryNav() {
                             <Link
                                 href="/"
                                 className={`text-xs uppercase tracking-wider transition-colors hover:text-black ${activeType === "all"
-                                        ? "text-black font-medium"
-                                        : "text-gray-400"
+                                    ? "text-black font-medium"
+                                    : "text-gray-400"
                                     }`}
                             >
                                 ALL
@@ -44,8 +44,8 @@ export default function CategoryNav() {
                             <Link
                                 href="/professional"
                                 className={`text-xs uppercase tracking-wider transition-colors hover:text-black ${activeType === "professional"
-                                        ? "text-black font-medium"
-                                        : "text-gray-400"
+                                    ? "text-black font-medium"
+                                    : "text-gray-400"
                                     }`}
                             >
                                 PROFESSIONAL
@@ -53,8 +53,8 @@ export default function CategoryNav() {
                             <Link
                                 href="/projects"
                                 className={`text-xs uppercase tracking-wider transition-colors hover:text-black ${activeType === "project"
-                                        ? "text-black font-medium"
-                                        : "text-gray-400"
+                                    ? "text-black font-medium"
+                                    : "text-gray-400"
                                     }`}
                             >
                                 PROJECTS
@@ -62,8 +62,8 @@ export default function CategoryNav() {
                             <Link
                                 href="/purpose"
                                 className={`text-xs uppercase tracking-wider transition-colors hover:text-black ${activeType === "purpose"
-                                        ? "text-black font-medium"
-                                        : "text-gray-400"
+                                    ? "text-black font-medium"
+                                    : "text-gray-400"
                                     }`}
                             >
                                 PURPOSE

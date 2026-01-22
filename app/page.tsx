@@ -20,7 +20,7 @@ export default function HomePage() {
 
     return (
         <>
-            <div className="min-h-screen px-6 py-20">
+            <div className="min-h-screen px-6 py-12">
                 <div className="max-w-7xl mx-auto">
                     {/* Skill Filter - Smaller, Left-aligned */}
                     <div className="mb-12 flex justify-start">
@@ -30,8 +30,8 @@ export default function HomePage() {
                                     key={skill}
                                     onClick={() => setActiveSkill(skill)}
                                     className={`text-[10px] uppercase tracking-wider transition-colors ${activeSkill === skill
-                                            ? "text-black font-medium"
-                                            : "text-gray-400 hover:text-black"
+                                        ? "text-black font-medium"
+                                        : "text-gray-400 hover:text-black"
                                         }`}
                                 >
                                     {skill}
