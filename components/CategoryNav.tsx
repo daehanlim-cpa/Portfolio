@@ -23,7 +23,7 @@ export default function CategoryNav() {
     return (
         <>
             <nav className="sticky top-0 z-50 bg-white border-b border-gray-200">
-                <div className="px-8 py-3">
+                <div className="px-8 py-6">
                     <div className="flex items-center justify-between">
                         {/* Left - Name */}
                         <Link href="/" className="text-sm font-light tracking-tight">
