@@ -20,7 +20,7 @@ export default function ProjectCard({ project, onClick, isEmphasized = true }: P
         >
             {/* Icon Container */}
             <div className="relative aspect-square mb-4 flex items-center justify-center bg-transparent">
-                <div className={`w-1/3 h-1/3 transition-all duration-300 group-hover:scale-110 ${isEmphasized
+                <div className={`w-1/2 h-1/2 transition-all duration-300 group-hover:scale-110 ${isEmphasized
                     ? "text-gray-800 group-hover:text-black"
                     : "text-gray-400"
                     }`}>
@@ -42,12 +42,6 @@ export default function ProjectCard({ project, onClick, isEmphasized = true }: P
                     }`}>
                     {project.title}
                 </h3>
-                <p className={`text-[11px] leading-snug transition-colors line-clamp-2 ${isEmphasized
-                    ? "text-gray-500"
-                    : "text-gray-300"
-                    }`}>
-                    {project.shortDescription}
-                </p>
             </div>
         </button>
     );
