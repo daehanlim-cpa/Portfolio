@@ -146,6 +146,50 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
             );
         }
 
+        // Custom Architecture Visualization for DL-03 (EY Certification Center)
+        if (project.id === "certification-center") {
+            return (
+                <div className="w-full py-12 overflow-x-auto">
+                    <div className="min-w-[500px] px-12 relative">
+                        {/* Connecting Line */}
+                        <div className="absolute top-12 left-0 w-full h-[1px] bg-gray-200 -z-10" />
+
+                        <div className="flex justify-between items-start">
+                            {/* Node 1: Inputs */}
+                            <div className="flex flex-col items-center bg-white px-4">
+                                <div className="w-24 h-24 rounded-full border border-gray-200 flex flex-col items-center justify-center bg-white shadow-sm mb-4">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Partners</span>
+                                    <span className="text-xl font-light">5+</span>
+                                    <span className="text-[9px] text-gray-400">ALLIANCES</span>
+                                </div>
+                                <span className="text-[9px] text-gray-400 uppercase tracking-widest">Curriculum</span>
+                            </div>
+
+                            {/* Node 2: The Platform (Highlighted) */}
+                            <div className="flex flex-col items-center bg-white px-4">
+                                <div className="w-24 h-24 rounded-full border border-gray-900 bg-black flex flex-col items-center justify-center shadow-lg mb-4">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Platform</span>
+                                    <span className="text-sm font-bold tracking-wider text-white">CENTER</span>
+                                    <span className="text-[9px] text-gray-400 mt-1">COMMUNITY</span>
+                                </div>
+                                <span className="text-[9px] text-gray-400 uppercase tracking-widest">Enablement</span>
+                            </div>
+
+                            {/* Node 3: Outputs */}
+                            <div className="flex flex-col items-center bg-white px-4">
+                                <div className="w-24 h-24 rounded-full border border-gray-200 flex flex-col items-center justify-center bg-white shadow-sm mb-4">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Talent</span>
+                                    <span className="text-xl font-light">600+</span>
+                                    <span className="text-[9px] text-gray-400">CERTIFIED</span>
+                                </div>
+                                <span className="text-[9px] text-gray-400 uppercase tracking-widest">Impact</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
         // Default generic code block for other projects if they have diagram code
         return project.architectureDiagram && (
             <div className="bg-gray-50 p-4 mb-6 rounded border border-gray-100 overflow-x-auto">

@@ -211,31 +211,57 @@ export const projects: Project[] = [
         links: {}
     },
     {
-        id: "operational-datastore",
+        id: "certification-center",
         code: "DL-03",
-        title: "Operational Data Store",
+        title: "EY Certification Center",
         type: "professional",
-        categories: ["Data Architecture & Engineering"],
-        iconKey: "Database",
+        categories: ["Data Architecture & Engineering", "AI & ML"],
+        iconKey: "Community",
         heroImage: "/images/project3.png",
         galleryImages: ["/images/project3.png"],
-        shortDescription: "Cloud-based ODS for customer support workflows",
+        shortDescription: "Building a scalable learning platform to upskill enterprise data talent",
+        overview: "Within EY, rapid growth in data and cloud engagements created demand for certified talent across modern platforms—but learning efforts were fragmented, hard to scale, and difficult to track. The Certification Center was established as a centralized learning and talent enablement platform to address this gap.",
         problem: [
-            "Siloed operational data sources",
-            "Inefficient customer inquiry resolution",
-            "Limited analytics capabilities"
+            "No centralized learning community or platform for certification preparation",
+            "Alliance-led certifications (Snowflake, Databricks, Azure, AWS, Neo4j) were siloed and difficult to manage",
+            "Professionals lacked visibility into certification paths and progress",
+            "Leadership could not easily identify or staff engagement opportunities with certified talent",
+            "Training focused on theory, with limited hands-on application"
+        ],
+        solution: "Co-founded and scaled the Certification Center as a centralized learning and talent enablement platform. Built a community-driven model combining structured certification prep, participating-led experience sharing, and hands-on coding challenges.",
+        keyCapabilities: [
+            "Centralized learning and talent enablement platform",
+            "Community-driven model with participant-led experience sharing",
+            "Hands-on coding challenges to complement certifications",
+            "Structured tracking for participation, progress, and readiness",
+            "Leadership pipeline cultivation to scale delivery"
+        ],
+        governance: [
+            "Unified operating model for all data & cloud certifications",
+            "Structured tracking of participant progress and readiness",
+            "Alliance-aligned learning tracks",
+            "Consistent certification pipelines for engagement staffing"
+        ],
+        baselineKPIs: [
+            "Learning Model: Fragmented & Siloed",
+            "Visibility: None into talent pool",
+            "Scalability: Limited by manual effort",
+            "Hands-on Practice: Theory-focused only"
         ],
         approach: [
-            "Designed cloud-based data store",
-            "Secure ingestion and transformation",
-            "Self-service analytics enablement"
+            "Co-founded the Certification Center from ground up",
+            "Designed alliance-aligned learning tracks",
+            "Introduced hands-on coding challenges",
+            "Established leadership cultivation program"
         ],
         impact: [
-            "Efficient customer support workflows",
-            "Improved data accessibility",
-            "Maintained security and compliance"
+            "Upskilled 600+ professionals across data and cloud certifications",
+            "Cultivated 30+ leaders to run cohorts, bootcamps, and learning tracks",
+            "Awarded AI & Data Learning Champion of the Year for impact and leadership",
+            "Transformed upskilling into a scalable capability, increasing the firm's certified talent pool",
+            "Improved engagement staffing efficiency and delivery readiness"
         ],
-        techStack: ["Cloud", "ETL", "Analytics", "Data Governance"],
+        techStack: ["Snowflake", "Databricks", "Azure", "AWS", "Neo4j"],
         links: {}
     },
     {
