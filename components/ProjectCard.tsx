@@ -30,13 +30,13 @@ export default function ProjectCard({ project, onClick, isEmphasized = true }: P
 
             {/* Code Label */}
             <div className="text-center">
-                <p className={`text-xs uppercase tracking-widest transition-colors mb-1 ${isEmphasized
+                <p className={`text-sm sm:text-xs uppercase tracking-widest transition-colors mb-1 ${isEmphasized
                     ? "text-gray-500 font-medium group-hover:text-black"
                     : "text-gray-400"
                     }`}>
                     {project.code}
                 </p>
-                <p className={`text-[10px] transition-colors ${isEmphasized
+                <p className={`text-xs sm:text-[10px] transition-colors ${isEmphasized
                     ? "text-gray-400 group-hover:text-gray-600"
                     : "text-gray-300"
                     }`}>

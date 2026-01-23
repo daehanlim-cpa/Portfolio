@@ -20,16 +20,16 @@ export default function ProjectsPage() {
 
     return (
         <>
-            <div className="min-h-screen px-6 py-20">
+            <div className="min-h-screen px-6 sm:px-8 py-20">
                 <div className="max-w-7xl mx-auto">
                     {/* Skill Filter - Smaller, Left-aligned */}
                     <div className="mb-12 flex justify-start">
-                        <div className="flex gap-4">
+                        <div className="flex flex-wrap gap-3 sm:gap-4">
                             {skillCategories.map((skill) => (
                                 <button
                                     key={skill}
                                     onClick={() => setActiveSkill(skill)}
-                                    className={`text-[10px] uppercase tracking-wider transition-colors ${activeSkill === skill
+                                    className={`text-xs sm:text-[10px] uppercase tracking-wider transition-colors px-2 py-1 ${activeSkill === skill
                                         ? "text-black font-medium"
                                         : "text-gray-400 hover:text-black"
                                         }`}
@@ -41,7 +41,7 @@ export default function ProjectsPage() {
                     </div>
 
                     {/* Project Grid - All projects with visual emphasis */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8">
                         {filteredProjects.map((project) => (
                             <div
                                 key={project.id}

@@ -45,16 +45,16 @@ export default function Hero() {
                             </p>
                         </div>
 
-                        <div className="flex gap-4 pt-4">
+                        <div className="flex flex-col sm:flex-row gap-4 pt-4">
                             <Link
                                 href="/projects"
-                                className="px-6 py-3 bg-black text-white rounded-md hover:bg-gray-800 transition-colors text-sm font-medium"
+                                className="px-8 py-4 bg-black text-white rounded-md hover:bg-gray-800 transition-colors text-sm font-medium text-center"
                             >
                                 View Projects
                             </Link>
                             <Link
                                 href="/resume"
-                                className="px-6 py-3 border border-gray-300 text-gray-900 rounded-md hover:bg-gray-50 transition-colors text-sm font-medium"
+                                className="px-8 py-4 border border-gray-300 text-gray-900 rounded-md hover:bg-gray-50 transition-colors text-sm font-medium text-center"
                             >
                                 Resume
                             </Link>

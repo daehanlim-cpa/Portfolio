@@ -222,58 +222,61 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                         transition={{ type: "spring", duration: 0.5, bounce: 0.2 }}
                         className="fixed inset-0 z-[70] overflow-y-auto"
                     >
-                        <div className="min-h-screen px-6 py-20">
+                        <div className="min-h-screen px-6 sm:px-8 py-20">
                             <div className="max-w-4xl mx-auto">
-                                {/* Close Button */}
+                                {/* Close Button - Improved for mobile */}
                                 <button
                                     onClick={onClose}
-                                    className="fixed top-8 right-8 text-xs uppercase tracking-widest opacity-50 hover:opacity-100 transition-opacity z-50"
+                                    className="fixed top-6 right-6 sm:top-8 sm:right-8 w-11 h-11 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:shadow-md transition-all z-50 border border-gray-200"
+                                    aria-label="Close modal"
                                 >
-                                    CLOSE
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
                                 </button>
 
                                 {/* Project Detail Content - Vertical Layout */}
                                 <div className="flex flex-col items-center">
                                     {/* Icon - Centered at Top */}
-                                    <div className="w-48 h-48 md:w-64 md:h-64 text-gray-800 mb-12">
+                                    <div className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 text-gray-800 mb-8 sm:mb-12">
                                         {IconComponent && <IconComponent />}
                                     </div>
 
                                     {/* Content Below - Centered */}
-                                    <div className="w-full max-w-2xl space-y-12">
+                                    <div className="w-full max-w-2xl space-y-8 sm:space-y-12">
                                         {/* Header: Title & Description */}
                                         <div className="text-center">
-                                            <p className="text-xs font-bold tracking-widest text-gray-500 mb-2">{project.code}</p>
-                                            <h2 className="text-2xl font-light mb-4">{project.title}</h2>
-                                            <p className="text-xl text-gray-600 font-light leading-relaxed">{project.shortDescription}</p>
+                                            <p className="text-sm sm:text-xs font-bold tracking-widest text-gray-500 mb-2">{project.code}</p>
+                                            <h2 className="text-xl sm:text-2xl font-light mb-3 sm:mb-4">{project.title}</h2>
+                                            <p className="text-base sm:text-xl text-gray-600 font-light leading-relaxed">{project.shortDescription}</p>
                                         </div>
 
                                         {/* OVERVIEW SECTION */}
                                         {project.overview && (
                                             <div>
-                                                <h3 className="text-xs font-bold tracking-widest uppercase border-b border-black pb-2 mb-4">Overview</h3>
-                                                <p className="text-gray-600 font-light leading-relaxed">{project.overview}</p>
+                                                <h3 className="text-sm sm:text-xs font-bold tracking-widest uppercase border-b border-black pb-2 mb-4">Overview</h3>
+                                                <p className="text-sm sm:text-base text-gray-600 font-light leading-relaxed">{project.overview}</p>
                                             </div>
                                         )}
 
                                         {/* PROBLEM & KPIs SECTION */}
                                         <div>
-                                            <h3 className="text-xs font-bold tracking-widest uppercase border-b border-black pb-2 mb-4">Problem & Baseline</h3>
+                                            <h3 className="text-sm sm:text-xs font-bold tracking-widest uppercase border-b border-black pb-2 mb-4">Problem & Baseline</h3>
                                             <ul className="space-y-4 mb-6">
                                                 {project.problem.map((item, i) => (
-                                                    <li key={i} className="flex gap-4">
-                                                        <span className="text-xs font-bold shrink-0 mt-1">0{i + 1}</span>
-                                                        <span className="text-gray-600 font-light">{item}</span>
+                                                    <li key={i} className="flex gap-3 sm:gap-4">
+                                                        <span className="text-sm sm:text-xs font-bold shrink-0 mt-1">0{i + 1}</span>
+                                                        <span className="text-sm sm:text-base text-gray-600 font-light">{item}</span>
                                                     </li>
                                                 ))}
                                             </ul>
 
                                             {project.baselineKPIs && (
-                                                <div className="bg-gray-50 p-6 rounded-sm border border-gray-100">
-                                                    <h4 className="text-xs font-bold uppercase mb-4 text-gray-400">Baseline KPIs</h4>
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="bg-gray-50 p-4 sm:p-6 rounded-sm border border-gray-100">
+                                                    <h4 className="text-sm sm:text-xs font-bold uppercase mb-4 text-gray-400">Baseline KPIs</h4>
+                                                    <div className="grid grid-cols-1 gap-4">
                                                         {project.baselineKPIs.map((kpi, i) => (
-                                                            <div key={i} className="text-sm font-mono text-gray-600 border-l-2 border-gray-200 pl-3">
+                                                            <div key={i} className="text-xs sm:text-sm font-mono text-gray-600 border-l-2 border-gray-200 pl-3">
                                                                 {kpi}
                                                             </div>
                                                         ))}
@@ -284,17 +287,17 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
 
                                         {/* SOLUTION & APPROACH SECTION */}
                                         <div>
-                                            <h3 className="text-xs font-bold tracking-widest uppercase border-b border-black pb-2 mb-4">Solution</h3>
+                                            <h3 className="text-sm sm:text-xs font-bold tracking-widest uppercase border-b border-black pb-2 mb-4">Solution</h3>
                                             {project.solution && (
-                                                <p className="text-gray-600 font-light leading-relaxed mb-6">{project.solution}</p>
+                                                <p className="text-sm sm:text-base text-gray-600 font-light leading-relaxed mb-6">{project.solution}</p>
                                             )}
 
                                             {project.keyCapabilities && (
                                                 <div className="mb-8">
-                                                    <h4 className="text-xs font-bold uppercase mb-3 text-gray-400">Key Capabilities</h4>
+                                                    <h4 className="text-sm sm:text-xs font-bold uppercase mb-3 text-gray-400">Key Capabilities</h4>
                                                     <ul className="space-y-2">
                                                         {project.keyCapabilities.map((cap, i) => (
-                                                            <li key={i} className="flex gap-3 text-sm text-gray-600 font-light">
+                                                            <li key={i} className="flex gap-3 text-xs sm:text-sm text-gray-600 font-light">
                                                                 <span className="text-black">•</span>
                                                                 {cap}
                                                             </li>
@@ -304,9 +307,9 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                                             )}
 
                                             <div className="space-y-2">
-                                                <h4 className="text-xs font-bold uppercase mb-3 text-gray-400">Approach</h4>
+                                                <h4 className="text-sm sm:text-xs font-bold uppercase mb-3 text-gray-400">Approach</h4>
                                                 {project.approach.map((step, i) => (
-                                                    <p key={i} className="text-gray-600 font-light border-l border-black pl-4 py-1">
+                                                    <p key={i} className="text-xs sm:text-sm text-gray-600 font-light border-l border-black pl-4 py-1">
                                                         {step}
                                                     </p>
                                                 ))}
@@ -316,7 +319,7 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                                         {/* TECHNICAL ARCHITECTURE SECTION */}
                                         {(project.architectureDiagram || project.architectureComponents) && (
                                             <div>
-                                                <h3 className="text-xs font-bold tracking-widest uppercase border-b border-black pb-2 mb-8">Technical Architecture</h3>
+                                                <h3 className="text-sm sm:text-xs font-bold tracking-widest uppercase border-b border-black pb-2 mb-8">Technical Architecture</h3>
 
                                                 {/* Creative Visual Diagram */}
                                                 <div className="mb-0">
@@ -326,7 +329,7 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                                                 {project.architectureComponents && (
                                                     <ul className="grid grid-cols-1 gap-3 mt-4">
                                                         {project.architectureComponents.map((comp, i) => (
-                                                            <li key={i} className="text-sm border border-gray-100 p-3 bg-white shadow-sm">
+                                                            <li key={i} className="text-xs sm:text-sm border border-gray-100 p-3 bg-white shadow-sm">
                                                                 <span className="font-semibold block text-xs uppercase text-gray-400 mb-1">{comp.split(':')[0]}</span>
                                                                 <span className="text-gray-700 font-light">{comp.split(':')[1]}</span>
                                                             </li>
@@ -339,10 +342,10 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                                         {/* GOVERNANCE SECTION */}
                                         {project.governance && (
                                             <div>
-                                                <h3 className="text-xs font-bold tracking-widest uppercase border-b border-black pb-2 mb-4">Governance & Reliability</h3>
-                                                <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <h3 className="text-sm sm:text-xs font-bold tracking-widest uppercase border-b border-black pb-2 mb-4">Governance & Reliability</h3>
+                                                <ul className="grid grid-cols-1 gap-4">
                                                     {project.governance.map((item, i) => (
-                                                        <li key={i} className="flex gap-3 text-sm text-gray-600 font-light items-start">
+                                                        <li key={i} className="flex gap-3 text-xs sm:text-sm text-gray-600 font-light items-start">
                                                             <svg className="w-4 h-4 mt-0.5 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                             </svg>
@@ -355,15 +358,15 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
 
                                         {/* IMPACT / VALUE DELIVERED SECTION */}
                                         <div>
-                                            <h3 className="text-xs font-bold tracking-widest uppercase border-b border-black pb-2 mb-4 flex justify-between items-center">
+                                            <h3 className="text-sm sm:text-xs font-bold tracking-widest uppercase border-b border-black pb-2 mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                                                 <span>Value Delivered</span>
-                                                <span className="text-[10px] text-gray-400 normal-case font-normal border border-gray-200 px-2 py-0.5 rounded-full"> ROI Verified </span>
+                                                <span className="text-[10px] text-gray-400 normal-case font-normal border border-gray-200 px-2 py-0.5 rounded-full self-start sm:self-auto"> ROI Verified </span>
                                             </h3>
                                             <ul className="grid grid-cols-1 gap-4">
                                                 {project.impact.map((result, i) => (
-                                                    <li key={i} className="bg-gray-50 p-4 flex flex-col md:flex-row md:items-center gap-2 md:gap-4 border-l-2 border-black">
-                                                        <span className="text-xs font-bold uppercase tracking-widest text-black/50 min-w-[80px]">Result {i + 1}</span>
-                                                        <span className="text-gray-800 font-medium">{result}</span>
+                                                    <li key={i} className="bg-gray-50 p-3 sm:p-4 flex flex-col gap-2 border-l-2 border-black">
+                                                        <span className="text-xs font-bold uppercase tracking-widest text-black/50">Result {i + 1}</span>
+                                                        <span className="text-sm sm:text-base text-gray-800 font-medium">{result}</span>
                                                     </li>
                                                 ))}
                                             </ul>
