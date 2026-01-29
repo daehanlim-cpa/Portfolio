@@ -5,6 +5,7 @@ import { projects, categories } from "@/data/projects";
 import ProjectCard from "@/components/ProjectCard";
 import ProjectModal from "@/components/ProjectModal";
 import { Project } from "@/data/projects";
+import BlogSection from "@/components/BlogSection";
 
 export default function HomePage() {
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -52,6 +53,9 @@ export default function HomePage() {
                     </div>
                 </div>
             </div>
+
+            {/* Blog Section */}
+            <BlogSection />
 
             {/* Project Modal */}
             <ProjectModal

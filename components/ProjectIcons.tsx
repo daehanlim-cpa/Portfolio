@@ -52,6 +52,44 @@ export const Icons = {
         </svg>
     ),
 
+    // Strategy - Compass/Decision making
+    Strategy: () => (
+        <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M12 3V5M12 19V21M21 12H19M5 12H3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square" />
+            <path d="M12 8L14 12L12 16L10 12L12 8Z" fill="currentColor" />
+        </svg>
+    ),
+
+    // Audit - Checklist/Inspection
+    Audit: () => (
+        <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="3" width="12" height="18" rx="1" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M9 8L11 10L15 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M9 14H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M9 18H13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+    ),
+
+    // Compliance - Document with seal/stamp
+    Compliance: () => (
+        <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="5" y="4" width="14" height="16" stroke="currentColor" strokeWidth="1.5" />
+            <circle cx="15" cy="15" r="4" stroke="currentColor" strokeWidth="1.5" fill="white" />
+            <path d="M13 15L14.5 16.5L17 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M9 9H12" stroke="currentColor" strokeWidth="1.5" />
+        </svg>
+    ),
+
+    // Investigation - Magnifying glass for forensic/investigative work
+    Investigation: () => (
+        <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="10" cy="10" r="6" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M14.5 14.5L20 20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M8 10H12M10 8V12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+    ),
+
     // PROJECT ICONS (6 total)
     // Code/Terminal - For coding projects
     Code: () => (
@@ -113,6 +151,15 @@ export const Icons = {
             <circle cx="17" cy="7" r="2" stroke="currentColor" strokeWidth="1.5" />
             <path d="M8.5 15.5L10.5 11.5M13.5 8.5L15.5 8.5" stroke="currentColor" strokeWidth="1.5" />
             <path d="M4 20H20" stroke="currentColor" strokeWidth="1.5" />
+        </svg>
+    ),
+
+    // Education - For learning/certification projects
+    Education: () => (
+        <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3L2 8L12 13L22 8L12 3Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M2 16L12 21L22 16" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
         </svg>
     ),
 
