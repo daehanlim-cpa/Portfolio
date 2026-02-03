@@ -1,7 +1,6 @@
 "use client";
 
 import { BlogPost } from "@/data/blog";
-import Image from "next/image";
 
 interface BlogCardProps {
     post: BlogPost;
@@ -10,29 +9,19 @@ interface BlogCardProps {
 export default function BlogCard({ post }: BlogCardProps) {
     return (
         <a
-            href={post.link || "#"}
+            href={`/blog/${post.slug}`}
             className="group block bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300"
         >
-            {/* Image Container */}
-            <div className="relative aspect-[16/9] bg-gray-100 overflow-hidden">
-                <Image
-                    src={post.image}
-                    alt={post.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-            </div>
-
             {/* Content */}
             <div className="p-4">
                 {/* Title */}
                 <h3 className="text-sm font-medium text-gray-900 mb-2 line-clamp-2 group-hover:text-black transition-colors">
-                    {post.title}
+                    {post.title.en}
                 </h3>
 
                 {/* Description */}
                 <p className="text-xs text-gray-500 mb-3 line-clamp-2">
-                    {post.description}
+                    {post.description.en}
                 </p>
 
                 {/* Footer: Date and Tags */}
