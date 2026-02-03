@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import React, { useState } from "react";
 import ResumeDrawer from "./ResumeDrawer";
 import Logo from "./Logo";
 
