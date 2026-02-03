@@ -1,17 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { blogPosts } from "@/data/blog";
 
 type Language = "ko" | "en";
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
+export default function BlogPostPage() {
+    const params = useParams();
     const [language, setLanguage] = useState<Language>("en");
 
     // Find the blog post by slug
-    const post = blogPosts.find((p) => p.slug === params.slug);
+    const post = blogPosts.find((p) => p.slug === params?.slug);
 
     if (!post) {
         notFound();
