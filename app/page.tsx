@@ -21,7 +21,7 @@ export default function HomePage() {
 
     return (
         <>
-            <div className="min-h-screen px-6 sm:px-8 py-20">
+            <div className="min-h-screen px-4 sm:px-8 py-20">
                 <div className="max-w-7xl mx-auto">
                     {/* Skill Filter - Smaller, Left-aligned */}
                     <div className="mb-12 flex justify-start">

@@ -222,12 +222,12 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                         transition={{ type: "spring", duration: 0.5, bounce: 0.2 }}
                         className="fixed inset-0 z-[70] overflow-y-auto"
                     >
-                        <div className="min-h-screen px-6 sm:px-8 py-20">
+                        <div className="min-h-screen px-4 sm:px-8 py-20">
                             <div className="max-w-4xl mx-auto">
                                 {/* Close Button - Improved for mobile */}
                                 <button
                                     onClick={onClose}
-                                    className="fixed top-6 right-6 sm:top-8 sm:right-8 w-11 h-11 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:shadow-md transition-all z-50 border border-gray-200"
+                                    className="fixed top-4 right-4 sm:top-8 sm:right-8 w-11 h-11 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:shadow-md transition-all z-50 border border-gray-200"
                                     aria-label="Close modal"
                                 >
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import Logo from "./Logo";
 
 export default function Navigation() {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -43,10 +44,10 @@ export default function Navigation() {
                 <div className="max-w-content mx-auto px-6 md:px-6 py-4 flex items-center justify-between">
                     <Link
                         href="/"
-                        className="text-lg font-normal tracking-tight hover:opacity-70 transition-opacity relative z-50"
+                        className="relative z-50"
                         onClick={handleLinkClick}
                     >
-                        Daehan Lim
+                        <Logo />
                     </Link>
 
                     {/* Desktop Navigation - Hidden on mobile */}
