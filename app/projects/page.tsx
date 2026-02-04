@@ -18,6 +18,21 @@ export default function ProjectsPage() {
         return matchesSkill;
     });
 
+    // Navigation handlers for project modal
+    const handleNextProject = () => {
+        if (!selectedProject) return;
+        const currentIndex = filteredProjects.findIndex(p => p.id === selectedProject.id);
+        const nextIndex = (currentIndex + 1) % filteredProjects.length;
+        setSelectedProject(filteredProjects[nextIndex]);
+    };
+
+    const handlePreviousProject = () => {
+        if (!selectedProject) return;
+        const currentIndex = filteredProjects.findIndex(p => p.id === selectedProject.id);
+        const previousIndex = (currentIndex - 1 + filteredProjects.length) % filteredProjects.length;
+        setSelectedProject(filteredProjects[previousIndex]);
+    };
+
     return (
         <>
             <div className="min-h-screen px-6 sm:px-8 py-20">
@@ -64,6 +79,8 @@ export default function ProjectsPage() {
                 project={selectedProject}
                 isOpen={!!selectedProject}
                 onClose={() => setSelectedProject(null)}
+                onNext={handleNextProject}
+                onPrevious={handlePreviousProject}
             />
         </>
     );
