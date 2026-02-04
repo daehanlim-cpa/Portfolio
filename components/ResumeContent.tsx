@@ -31,14 +31,7 @@ export default function ResumeContent() {
             <div>
                 <h3 className="text-lg font-normal mb-3">Summary</h3>
                 <p className="text-sm text-gray-700 leading-relaxed">
-                    Finance and Data Transformation Leader with Big 4 financial services
-                    experience supporting treasury, liquidity, and regulatory reporting
-                    functions within CFO organizations. Leads large-scale modernization of
-                    data platforms, embedding automation, analytics, and control frameworks
-                    to improve reporting reliability, governance, and decision support in
-                    regulated environments. Brings a CPA foundation and advanced AI and
-                    analytics skillsets to deliver scalable, audit-ready solutions aligned
-                    with enterprise risk and assurance expectations.
+                    Forward deployed data and analytics professional with 6+ years of experience owning enterprise customer engagements from discovery through deployment. Leads executive conversations, shapes ambiguous business problems into practical solutions, and personally builds production workflows to deliver measurable results in regulated environments. Brings a CPA background with strong hands-on execution across data modernization and reporting platforms.
                 </p>
             </div>
 
@@ -55,33 +48,23 @@ export default function ResumeContent() {
                                 </p>
                                 <p className="text-sm text-gray-600">Ernst & Young | Los Angeles, California</p>
                             </div>
-                            <p className="text-sm text-gray-500 whitespace-nowrap">July 2024 – Present</p>
+                            <p className="text-sm text-gray-500 whitespace-nowrap">2019 – Present</p>
                         </div>
                         <ul className="list-disc list-outside ml-4 space-y-2 text-sm text-gray-700">
                             <li>
-                                Led delivery of enterprise liquidity and financial reporting
-                                modernization for a $590B public pension fund, automating
-                                previously manual Excel-based workflows through structured data
-                                ingestion, SQL transformations, and orchestrated pipelines to
-                                improve reporting reliability and reduce operational risk.
+                                Serve as forward-deployed technical owner across multiple enterprise customers, leading executive discovery, business walkthroughs, and solution design, then building and deploying production data platforms directly with client teams.
                             </li>
                             <li>
-                                Led global delivery teams supporting a top-25 U.S. financial
-                                institution’s cloud and data modernization program, implementing
-                                CI/CD, monitoring, and control frameworks across Azure and
-                                Snowflake to support treasury and payments reporting.
+                                Design end-to-end modernization architectures spanning data ingestion, governance, analytics, and BI, translating business workflows into operational systems covering metadata, lineage, data quality, and reporting layers.
                             </li>
                             <li>
-                                Directed cross-functional teams of engineers and analysts,
-                                providing hands-on technical leadership while ensuring solutions
-                                met enterprise standards for performance, governance, and
-                                auditability.
+                                Hands-on delivery with data operations (analytics engineering and governance) and development operations (CI/CD, environment management) validating solutions and conducting demonstration with users.
                             </li>
                             <li>
-                                Co-founded EY’s Certification Center, scaling cloud and data
-                                engineering capabilities across AWS, Snowflake, Databricks, and
-                                Azure to support secure and compliant delivery across financial
-                                services engagements.
+                                Helped clients establish metadata management practices by defining business terms, aligning data definitions across teams, and leverage available data lineage features to improve trust, discovery, and analytics adoption.
+                            </li>
+                            <li>
+                                Acted as primary technical advisor across engagements, partnering with platform partners to scope solutions, support account growth, and own outcomes from discovery through value realization.
                             </li>
                         </ul>
                     </div>
@@ -95,36 +78,22 @@ export default function ResumeContent() {
                                 </p>
                                 <p className="text-sm text-gray-600">Ernst & Young | Los Angeles, California</p>
                             </div>
-                            <p className="text-sm text-gray-500 whitespace-nowrap">July 2021 – July 2024</p>
                         </div>
                         <ul className="list-disc list-outside ml-4 space-y-2 text-sm text-gray-700">
                             <li>
-                                Designed and delivered a cloud-based operational data store to
-                                support customer support and inquiry workflows for a Caribbean
-                                financial institution, enabling secure ingestion, transformation,
-                                and analytics across operational data sources.
+                                Served as on-site lead for multiple customer engagements, running walkthroughs with business teams to understand workflows and pain points, translating requirements into data architectures, and building production data models and analytics pipelines.
                             </li>
                             <li>
-                                Led Teradata-to-cloud migration initiatives, owning ingestion
-                                design, data quality validation, testing, and downstream
-                                analytical readiness for regulatory and risk reporting use cases.
+                                Led hands-on proof-of-concepts to evaluate cloud data platforms, designing ingestion frameworks and analytics layers to guide client modernization decisions.
                             </li>
                             <li>
-                                Partnered with a top 5 U.S. financial institution to design and
-                                assess regulatory and liquidity reporting data models (FR-Y14,
-                                PRA-110, NSFR, HQLA), supporting supervisory compliance and
-                                prudential risk oversight.
+                                Partnered with business and privacy teams to identify PII across enterprise datasets, translate regulatory and business requirements into technical controls, and personally implement data masking solutions in production environments.
                             </li>
                             <li>
-                                Managed a 12-person global delivery team across AWS, Snowflake,
-                                and Power BI, establishing data governance practices, auditability
-                                standards, and operational controls to improve reporting
-                                reliability and resilience.
+                                Owned delivery of cloud operational data platforms end-to-end, from discovery and schema design through implementation, deployment, and user enablement.
                             </li>
                             <li>
-                                Acted as a liaison between engineering teams and business
-                                stakeholders, translating regulatory, risk, and operational
-                                requirements into implementable data and analytics solutions.
+                                Hands-on work to transform source data into analytics-ready datasets, integrated APIs for upstream data ingestion, and deployed working solutions within the defined SLA.
                             </li>
                         </ul>
                     </div>
@@ -138,26 +107,16 @@ export default function ResumeContent() {
                                 </p>
                                 <p className="text-sm text-gray-600">Ernst & Young | Los Angeles, California</p>
                             </div>
-                            <p className="text-sm text-gray-500 whitespace-nowrap">Sept 2019 – July 2021</p>
                         </div>
                         <ul className="list-disc list-outside ml-4 space-y-2 text-sm text-gray-700">
                             <li>
-                                Conducted enterprise risk assessments and detailed controls
-                                testing across AML and sanctions programs, evaluating design and
-                                operating effectiveness, identifying control gaps, and supporting
-                                management in developing and prioritizing remediation actions.
+                                Led independent AML, BSA, and OFAC risk and controls assessments across financial institutions and digital asset platforms, evaluating end-to-end AML frameworks, transaction monitoring, sanctions screening, and escalation processes for design and operating effectiveness.
                             </li>
                             <li>
-                                Authored formal audit and model validation reports, synthesizing
-                                complex findings into clear risk assessments and recommendations,
-                                and presented results to Chief Compliance Officers (CCOs) and
-                                senior compliance stakeholders.
+                                Built testing frameworks and reporting workflows to support AML and sanctions engagements, working directly with business stakeholders through implementation.
                             </li>
                             <li>
-                                Worked closely with Chief Audit Executives (CAEs), internal audit,
-                                and compliance teams to communicate audit observations, track
-                                remediation progress, validate corrective actions, and support
-                                timely audit issue closure.
+                                Authored audit-ready AML framework and model validation reports, translating complex findings into clear risk assessments and prioritized remediation actions; presented results to Chief Compliance Officers (CCOs), Chief Audit Executives (CAEs), and senior compliance leadership, and supported remediation tracking through issue closure.
                             </li>
                         </ul>
                     </div>
