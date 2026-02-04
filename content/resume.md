@@ -1,5 +1,5 @@
 # Daehan Lim, CPA
-[LinkedIn](https://www.linkedin.com/in/daehan-lim-cpa/) / [Portfolio](https://daehanlim.com) / daehanlim1@gmail.com / 520-288-9470
+[LinkedIn](https://www.linkedin.com/in/daehan-lim-cpa/) / [Portfolio](https://daehanlim.com) / daehanlim1@gmail.com
 
 ## SUMMARY
 Forward deployed data and analytics professional with 6+ years of experience owning enterprise customer engagements from discovery through deployment. Leads executive conversations, shapes ambiguous business problems into practical solutions, and personally builds production workflows to deliver measurable results in regulated environments. Brings a CPA background with strong hands-on execution across data modernization and reporting platforms.

@@ -9,9 +9,11 @@ interface ProjectModalProps {
     project: Project | null;
     isOpen: boolean;
     onClose: () => void;
+    onNext: () => void;
+    onPrevious: () => void;
 }
 
-export default function ProjectModal({ project, isOpen, onClose }: ProjectModalProps) {
+export default function ProjectModal({ project, isOpen, onClose, onNext, onPrevious }: ProjectModalProps) {
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = "hidden";
@@ -224,7 +226,19 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                     >
                         <div className="min-h-screen px-4 sm:px-8 py-20">
                             <div className="max-w-4xl mx-auto">
-                                {/* Close Button - Improved for mobile */}
+                                {/* Navigation and Close Buttons */}
+                                {/* Previous Button - Left side */}
+                                <button
+                                    onClick={onPrevious}
+                                    className="fixed top-4 left-4 sm:top-8 sm:left-8 w-11 h-11 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:shadow-md transition-all z-50 border border-gray-200"
+                                    aria-label="Previous project"
+                                >
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+
+                                {/* Close Button - Top right */}
                                 <button
                                     onClick={onClose}
                                     className="fixed top-4 right-4 sm:top-8 sm:right-8 w-11 h-11 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:shadow-md transition-all z-50 border border-gray-200"
@@ -232,6 +246,17 @@ export default function ProjectModal({ project, isOpen, onClose }: ProjectModalP
                                 >
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+
+                                {/* Next Button - Right side, below close */}
+                                <button
+                                    onClick={onNext}
+                                    className="fixed top-20 right-4 sm:top-24 sm:right-8 w-11 h-11 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:shadow-md transition-all z-50 border border-gray-200"
+                                    aria-label="Next project"
+                                >
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                     </svg>
                                 </button>
 

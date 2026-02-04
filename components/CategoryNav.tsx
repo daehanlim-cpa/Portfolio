@@ -44,47 +44,49 @@ export default function CategoryNav() {
                             </button>
                         </div>
 
-                        {/* Center - Type Categories - Scrollable on mobile */}
-                        <div className="w-full sm:flex-1 flex justify-start sm:justify-center overflow-x-auto sm:overflow-visible scrollbar-hide pb-1 sm:pb-0 -mx-6 px-6 sm:mx-0 sm:px-0">
-                            <div className="flex gap-6 sm:gap-8 min-w-max">
-                                <Link
-                                    href="/"
-                                    className={`text-[10px] sm:text-xs uppercase tracking-wider transition-colors hover:text-black ${activeType === "all"
-                                        ? "text-black font-medium"
-                                        : "text-gray-400"
-                                        }`}
-                                >
-                                    ALL
-                                </Link>
-                                <Link
-                                    href="/professional"
-                                    className={`text-[10px] sm:text-xs uppercase tracking-wider transition-colors hover:text-black ${activeType === "professional"
-                                        ? "text-black font-medium"
-                                        : "text-gray-400"
-                                        }`}
-                                >
-                                    PROFESSIONAL
-                                </Link>
-                                <Link
-                                    href="/projects"
-                                    className={`text-[10px] sm:text-xs uppercase tracking-wider transition-colors hover:text-black ${activeType === "project"
-                                        ? "text-black font-medium"
-                                        : "text-gray-400"
-                                        }`}
-                                >
-                                    PROJECTS
-                                </Link>
-                                <Link
-                                    href="/purpose"
-                                    className={`text-[10px] sm:text-xs uppercase tracking-wider transition-colors hover:text-black ${activeType === "purpose"
-                                        ? "text-black font-medium"
-                                        : "text-gray-400"
-                                        }`}
-                                >
-                                    PURPOSE
-                                </Link>
+                        {/* Center - Type Categories - Scrollable on mobile - Hidden on /resume */}
+                        {pathname !== '/resume' && (
+                            <div className="w-full sm:flex-1 flex justify-start sm:justify-center overflow-x-auto sm:overflow-visible scrollbar-hide pb-1 sm:pb-0 -mx-6 px-6 sm:mx-0 sm:px-0">
+                                <div className="flex gap-6 sm:gap-8 min-w-max">
+                                    <Link
+                                        href="/"
+                                        className={`text-[10px] sm:text-xs uppercase tracking-wider transition-colors hover:text-black ${activeType === "all"
+                                            ? "text-black font-medium"
+                                            : "text-gray-400"
+                                            }`}
+                                    >
+                                        ALL
+                                    </Link>
+                                    <Link
+                                        href="/professional"
+                                        className={`text-[10px] sm:text-xs uppercase tracking-wider transition-colors hover:text-black ${activeType === "professional"
+                                            ? "text-black font-medium"
+                                            : "text-gray-400"
+                                            }`}
+                                    >
+                                        PROFESSIONAL
+                                    </Link>
+                                    <Link
+                                        href="/projects"
+                                        className={`text-[10px] sm:text-xs uppercase tracking-wider transition-colors hover:text-black ${activeType === "project"
+                                            ? "text-black font-medium"
+                                            : "text-gray-400"
+                                            }`}
+                                    >
+                                        PROJECTS
+                                    </Link>
+                                    <Link
+                                        href="/purpose"
+                                        className={`text-[10px] sm:text-xs uppercase tracking-wider transition-colors hover:text-black ${activeType === "purpose"
+                                            ? "text-black font-medium"
+                                            : "text-gray-400"
+                                            }`}
+                                    >
+                                        PURPOSE
+                                    </Link>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Right - Resume Bag Icon - Hidden on mobile, valid on desktop */}
                         <button
