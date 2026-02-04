@@ -20,6 +20,8 @@ export default function BlogPostPage() {
 
     // Simple markdown-to-HTML converter for basic formatting
     const formatContent = (content: string) => {
+        let firstH1Skipped = false;
+
         return content
             .split('\n')
             .map((line, index) => {
@@ -31,6 +33,11 @@ export default function BlogPostPage() {
                     return `<h2 key="${index}" class="text-lg font-light text-gray-900 mt-12 mb-4">${line.slice(3)}</h2>`;
                 }
                 if (line.startsWith('# ')) {
+                    // Skip the first H1 header (it's already shown as the page title)
+                    if (!firstH1Skipped) {
+                        firstH1Skipped = true;
+                        return '';
+                    }
                     return `<h1 key="${index}" class="text-2xl font-light text-gray-900 mb-8">${line.slice(2)}</h1>`;
                 }
 
@@ -78,16 +85,6 @@ export default function BlogPostPage() {
                     {/* Language Toggle */}
                     <div className="flex gap-2">
                         <button
-                            onClick={() => setLanguage("ko")}
-                            className={`text-[10px] uppercase tracking-wider transition-colors px-2 py-1 ${language === "ko"
-                                ? "text-black font-medium"
-                                : "text-gray-400 hover:text-black"
-                                }`}
-                        >
-                            KO
-                        </button>
-                        <span className="text-gray-300">/</span>
-                        <button
                             onClick={() => setLanguage("en")}
                             className={`text-[10px] uppercase tracking-wider transition-colors px-2 py-1 ${language === "en"
                                 ? "text-black font-medium"
@@ -95,6 +92,16 @@ export default function BlogPostPage() {
                                 }`}
                         >
                             EN
+                        </button>
+                        <span className="text-gray-300">/</span>
+                        <button
+                            onClick={() => setLanguage("ko")}
+                            className={`text-[10px] uppercase tracking-wider transition-colors px-2 py-1 ${language === "ko"
+                                ? "text-black font-medium"
+                                : "text-gray-400 hover:text-black"
+                                }`}
+                        >
+                            KO
                         </button>
                     </div>
                 </div>

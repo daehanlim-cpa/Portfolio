@@ -15,21 +15,11 @@ export default function BlogSection() {
                 {/* Section Header with Language Toggle */}
                 <div className="mb-12 flex items-center justify-between">
                     <h2 className="text-xs uppercase tracking-wider text-gray-400">
-                        지식창고
+                        SS Archive
                     </h2>
 
                     {/* Language Toggle */}
                     <div className="flex gap-2">
-                        <button
-                            onClick={() => setLanguage("ko")}
-                            className={`text-[10px] uppercase tracking-wider transition-colors px-2 py-1 ${language === "ko"
-                                ? "text-black font-medium"
-                                : "text-gray-400 hover:text-black"
-                                }`}
-                        >
-                            KO
-                        </button>
-                        <span className="text-gray-300">/</span>
                         <button
                             onClick={() => setLanguage("en")}
                             className={`text-[10px] uppercase tracking-wider transition-colors px-2 py-1 ${language === "en"
@@ -38,6 +28,16 @@ export default function BlogSection() {
                                 }`}
                         >
                             EN
+                        </button>
+                        <span className="text-gray-300">/</span>
+                        <button
+                            onClick={() => setLanguage("ko")}
+                            className={`text-[10px] uppercase tracking-wider transition-colors px-2 py-1 ${language === "ko"
+                                ? "text-black font-medium"
+                                : "text-gray-400 hover:text-black"
+                                }`}
+                        >
+                            KO
                         </button>
                     </div>
                 </div>
