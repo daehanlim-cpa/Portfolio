@@ -133,6 +133,25 @@ export default function BlogPostPage() {
                     className="prose prose-sm max-w-none"
                     dangerouslySetInnerHTML={{ __html: formatContent(post.content[language]) }}
                 />
+
+                {/* LinkedIn Contact Section */}
+                <div className="mt-16 pt-8 border-t border-gray-200">
+                    <div className="text-center">
+                        <p className="text-sm text-gray-600 mb-4">
+                            {language === "ko"
+                                ? "궁금한 점이 있으시거나 더 이야기하고 싶으시다면"
+                                : "Have questions or want to connect?"}
+                        </p>
+                        <a
+                            href="https://www.linkedin.com/in/daehan-lim-cpa/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block text-xs uppercase tracking-wider text-gray-900 hover:text-gray-600 transition-colors border-b border-gray-900 hover:border-gray-600 pb-0.5"
+                        >
+                            {language === "ko" ? "링크드인에서 메시지 보내기" : "Message me on LinkedIn"}
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     );
