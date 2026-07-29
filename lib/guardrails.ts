@@ -16,27 +16,51 @@ export type ValidationSuccess = { ok: true; messages: ChatMessage[]; question: s
 /**
  * Rejects requests that didn't come from the site. This is the cheapest possible
  * filter — it runs before any Redis or model call — and stops casual scripted abuse.
+ *
+ * Same-origin is the primary test, and it needs no configuration: the browser
+ * reports both where the page was loaded from (Origin) and the host it asked for
+ * (X-Forwarded-Host on Vercel, Host elsewhere). If those agree, the request came
+ * from this site, whatever domain that happens to be — custom domain, Vercel
+ * alias, preview deployment, or localhost.
+ *
+ * The static list below only exists to cover cross-domain cases, e.g. an apex
+ * domain fetching through a www canonical host. It deliberately does NOT rely on
+ * VERCEL_URL for the visitor-facing domain: that variable holds the immutable
+ * per-deployment hostname (portfolio-a1b2c3-xyz.vercel.app), never the alias a
+ * visitor actually browses, so matching against it fails on every real visit.
  */
 export function isAllowedOrigin(request: Request): boolean {
-    const allowed = new Set(
-        [
-            process.env.NEXT_PUBLIC_SITE_URL,
-            "https://daehanlim.com",
-            "https://www.daehanlim.com",
-            process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
-            process.env.NODE_ENV !== "production" ? "http://localhost:3000" : undefined,
-        ].filter(Boolean) as string[]
-    );
-
     const candidate = request.headers.get("origin") ?? request.headers.get("referer");
     if (!candidate) return false;
 
+    let origin: URL;
     try {
-        const url = new URL(candidate);
-        return [...allowed].some((entry) => new URL(entry).origin === url.origin);
+        origin = new URL(candidate);
     } catch {
         return false;
     }
+
+    const servedHost = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+    if (servedHost && origin.host === servedHost) return true;
+
+    const allowed = [
+        process.env.NEXT_PUBLIC_SITE_URL,
+        process.env.VERCEL_PROJECT_PRODUCTION_URL
+            ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+            : undefined,
+        process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
+        "https://daehanlim.com",
+        "https://www.daehanlim.com",
+        process.env.NODE_ENV !== "production" ? "http://localhost:3000" : undefined,
+    ].filter(Boolean) as string[];
+
+    return allowed.some((entry) => {
+        try {
+            return new URL(entry).origin === origin.origin;
+        } catch {
+            return false;
+        }
+    });
 }
 
 export function validateBody(body: unknown): ValidationFailure | ValidationSuccess {
