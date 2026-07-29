@@ -1,16 +1,6 @@
-import RecruiterChat from "@/components/RecruiterChat";
+import { redirect } from "next/navigation";
 
-export const metadata = {
-    title: "Ask About Daehan",
-    description:
-        "Ask Daehan Lim's AI assistant how his experience maps to the role you're hiring for. Answers are grounded in his resume and project work.",
-};
-
+/** The chat now lives at the root. Kept so existing links and shares survive. */
 export default function ChatPage() {
-    // Offset accounts for the sticky CategoryNav above it.
-    return (
-        <div className="h-[calc(100dvh-73px)] sm:h-[calc(100dvh-89px)]">
-            <RecruiterChat />
-        </div>
-    );
+    redirect("/");
 }

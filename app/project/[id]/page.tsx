@@ -192,7 +192,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                     )}
 
                     <Link
-                        href="/"
+                        href="/work"
                         className="text-xs uppercase tracking-wider opacity-50 hover:opacity-100 transition-opacity"
                     >
                         All Projects

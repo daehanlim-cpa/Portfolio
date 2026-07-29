@@ -5,8 +5,9 @@ import { projects, categories } from "@/data/projects";
 import ProjectCard from "@/components/ProjectCard";
 import ProjectModal from "@/components/ProjectModal";
 import { Project } from "@/data/projects";
+import BlogSection from "@/components/BlogSection";
 
-export default function ProfessionalPage() {
+export default function WorkPage() {
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const [activeSkill, setActiveSkill] = useState<string>("ALL");
 
@@ -35,16 +36,16 @@ export default function ProfessionalPage() {
 
     return (
         <>
-            <div className="min-h-screen px-6 py-20">
+            <div className="min-h-screen px-4 sm:px-8 py-16 sm:py-20">
                 <div className="max-w-7xl mx-auto">
                     {/* Skill Filter - Smaller, Left-aligned */}
                     <div className="mb-12 flex justify-start">
-                        <div className="flex gap-4">
+                        <div className="flex flex-wrap gap-3 sm:gap-4">
                             {skillCategories.map((skill) => (
                                 <button
                                     key={skill}
                                     onClick={() => setActiveSkill(skill)}
-                                    className={`text-[10px] uppercase tracking-wider transition-colors ${activeSkill === skill
+                                    className={`text-xs sm:text-[10px] uppercase tracking-wider transition-colors px-2 py-1 ${activeSkill === skill
                                         ? "text-black font-medium"
                                         : "text-gray-400 hover:text-black"
                                         }`}
@@ -55,24 +56,44 @@ export default function ProfessionalPage() {
                         </div>
                     </div>
 
-                    {/* Project Grid - All projects with visual emphasis */}
+                    {/* Project Grid - All projects shown */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
                         {filteredProjects.map((project) => (
-                            <div
+                            <ProjectCard
                                 key={project.id}
-                                className={`transition-opacity ${project.type === "professional" ? "opacity-100" : "opacity-30"
-                                    }`}
-                            >
-                                <ProjectCard
-                                    project={project}
-                                    onClick={() => setSelectedProject(project)}
-                                    isEmphasized={project.type === "professional"}
-                                />
-                            </div>
+                                project={project}
+                                onClick={() => setSelectedProject(project)}
+                            />
                         ))}
                     </div>
                 </div>
             </div>
+
+            {/* Blog Section */}
+            <BlogSection />
+
+            {/* Footer with Social Links */}
+            <footer className="w-full px-4 sm:px-8 py-12 border-t border-gray-200">
+                <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p className="text-xs text-gray-400">© 2026 Daehan Lim</p>
+                    <div className="flex gap-6">
+                        <a
+                            href="https://www.linkedin.com/in/daehan-lim-cpa/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs uppercase tracking-wider text-gray-400 hover:text-black transition-colors"
+                        >
+                            LinkedIn
+                        </a>
+                        <a
+                            href="/resume"
+                            className="text-xs uppercase tracking-wider text-gray-400 hover:text-black transition-colors"
+                        >
+                            Resume
+                        </a>
+                    </div>
+                </div>
+            </footer>
 
             {/* Project Modal */}
             <ProjectModal

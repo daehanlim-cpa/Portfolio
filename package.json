@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "build:embeddings": "tsx scripts/build-embeddings.ts"
+    "build:embeddings": "tsx scripts/build-embeddings.ts",
+    "calibrate:topic": "tsx --env-file=.env.local scripts/calibrate-topic.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",

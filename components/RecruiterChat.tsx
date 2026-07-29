@@ -17,11 +17,21 @@ interface Message {
     notice?: boolean;
 }
 
+export type ChatVariant = "page" | "compact" | "landing";
+
 const STARTER_PROMPTS = [
-    "I'm hiring for a Senior Data Engineer — is he a fit?",
-    "How does his Snowflake work map to a Solutions Architect role?",
-    "What's his experience leading client-facing delivery?",
-    "Where has he shipped AI or GenAI into production?",
+    "What kind of work is he strongest at?",
+    "Walk me through his most complex project",
+    "How does his AI work hold up in production?",
+    "I'm hiring a Senior Data Engineer — is he a fit?",
+];
+
+/** Shown under the composer once a conversation is going, to keep it moving. */
+const FOLLOW_UPS = [
+    "What would he be bad at?",
+    "How does he approach a messy data problem?",
+    "Where has he led rather than built?",
+    "What's the through-line in his career?",
 ];
 
 const EMAIL = "daehanlim1@gmail.com";
@@ -110,7 +120,7 @@ function TypingIndicator() {
     );
 }
 
-export default function RecruiterChat({ compact = false }: { compact?: boolean }) {
+export default function RecruiterChat({ variant = "page" }: { variant?: ChatVariant }) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
     const [isStreaming, setIsStreaming] = useState(false);
@@ -121,6 +131,9 @@ export default function RecruiterChat({ compact = false }: { compact?: boolean }
     const scrollRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const sessionRef = useRef<string>("");
+
+    const isLanding = variant === "landing";
+    const isCompact = variant === "compact";
 
     if (!sessionRef.current && typeof window !== "undefined") {
         const existing = window.sessionStorage.getItem("chat-session");
@@ -238,48 +251,83 @@ export default function RecruiterChat({ compact = false }: { compact?: boolean }
     };
 
     const exchanges = messages.filter((m) => m.role === "user").length;
-    const showEmailCta = exchanges >= 3 || closed;
+    const showEmailCta = exchanges >= 5 || closed;
     const isEmpty = messages.length === 0;
+    // Only surface the counter near the end — a running tally from message one
+    // makes an open conversation feel metered.
+    const showCounter = remaining !== null && remaining <= 5 && !closed;
+    const showFollowUps = !isEmpty && !isStreaming && !closed && exchanges < 5;
 
     return (
         <div className="flex h-full flex-col bg-white">
-            {/* Header */}
-            {/* compact = rendered in the sheet, which overlays a close button at top-right. */}
-            <header
-                className={`sticky top-0 z-10 border-b border-gray-200/80 bg-white/70 py-4 pl-6 backdrop-blur-xl backdrop-saturate-150 ${
-                    compact ? "pr-14" : "pr-6"
-                }`}
-            >
-                <div className="mx-auto flex max-w-2xl items-center justify-between gap-4">
-                    <div>
-                        <h2 className="text-[13px] font-medium tracking-tight">Ask about Daehan</h2>
-                        <p className="mt-0.5 text-[11px] text-gray-500">
-                            Tell me the role you&rsquo;re hiring for
-                        </p>
+            {/* The landing variant leans on the site nav for context, so it
+                omits this bar entirely and lets the empty state carry the page. */}
+            {!isLanding && (
+                <header
+                    className={`sticky top-0 z-10 border-b border-gray-200/80 bg-white/70 py-4 pl-6 backdrop-blur-xl backdrop-saturate-150 ${
+                        isCompact ? "pr-14" : "pr-6"
+                    }`}
+                >
+                    <div className="mx-auto flex max-w-2xl items-center justify-between gap-4">
+                        <div>
+                            <h2 className="text-[13px] font-medium tracking-tight">Ask about Daehan</h2>
+                            <p className="mt-0.5 text-[11px] text-gray-500">
+                                His work, his projects, how he thinks
+                            </p>
+                        </div>
+                        {showCounter && (
+                            <span className="shrink-0 text-[11px] tabular-nums text-gray-400">
+                                {remaining} left
+                            </span>
+                        )}
                     </div>
-                    {remaining !== null && !closed && (
-                        <span className="shrink-0 text-[11px] tabular-nums text-gray-400">
-                            {remaining} {remaining === 1 ? "question" : "questions"} left
-                        </span>
-                    )}
-                </div>
-            </header>
+                </header>
+            )}
 
             {/* Conversation */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto px-6">
-                <div className={`mx-auto max-w-2xl ${compact ? "py-6" : "py-10"}`}>
+            <div
+                ref={scrollRef}
+                className={`flex-1 overflow-y-auto ${isLanding ? "px-5 sm:px-6" : "px-6"}`}
+            >
+                <div
+                    className={`mx-auto ${isLanding ? "max-w-2xl" : "max-w-2xl"} ${
+                        isCompact ? "py-6" : isLanding ? "" : "py-10"
+                    } ${isLanding && isEmpty ? "flex min-h-full flex-col justify-center py-10" : ""} ${
+                        isLanding && !isEmpty ? "py-10" : ""
+                    }`}
+                >
                     {isEmpty && (
                         <motion.div
                             initial={reduce ? false : { opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                         >
-                            <p className="text-[15px] leading-relaxed text-gray-500">
-                                I&rsquo;m Daehan&rsquo;s AI assistant. Ask how his experience maps to
-                                the role you&rsquo;re hiring for — I&rsquo;ll answer from his resume
-                                and project work.
-                            </p>
-                            <div className="mt-7 space-y-2">
+                            {isLanding ? (
+                                <>
+                                    <h1 className="text-[26px] font-light leading-[1.25] tracking-[-0.02em] text-black sm:text-[34px]">
+                                        Ask me about Daehan.
+                                    </h1>
+                                    <p className="mt-3 max-w-md text-[15px] leading-relaxed text-gray-500 sm:text-[16px]">
+                                        I know his projects, his background, and how he works.
+                                        Ask anything — whether you&rsquo;re hiring, collaborating,
+                                        or just curious.
+                                    </p>
+                                </>
+                            ) : (
+                                <p className="text-[15px] leading-relaxed text-gray-500">
+                                    I&rsquo;m Daehan&rsquo;s AI assistant. Ask about his work, his
+                                    projects, or how his experience fits what you&rsquo;re looking
+                                    for.
+                                </p>
+                            )}
+
+                            <div
+                                className={
+                                    isLanding
+                                        ? "mt-9 grid gap-2.5 sm:grid-cols-2"
+                                        : "mt-7 space-y-2"
+                                }
+                            >
                                 {STARTER_PROMPTS.map((prompt, i) => (
                                     <motion.button
                                         key={prompt}
@@ -287,11 +335,11 @@ export default function RecruiterChat({ compact = false }: { compact?: boolean }
                                         initial={reduce ? false : { opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{
-                                            delay: reduce ? 0 : 0.08 + i * 0.05,
-                                            duration: 0.4,
+                                            delay: reduce ? 0 : 0.12 + i * 0.06,
+                                            duration: 0.45,
                                             ease: [0.16, 1, 0.3, 1],
                                         }}
-                                        className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-left text-[14px] text-gray-700 transition-colors duration-200 hover:border-gray-300 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 active:bg-gray-100"
+                                        className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-left text-[14px] leading-snug text-gray-700 transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 active:scale-[0.99] active:bg-gray-100"
                                     >
                                         {prompt}
                                     </motion.button>
@@ -350,6 +398,26 @@ export default function RecruiterChat({ compact = false }: { compact?: boolean }
                         </AnimatePresence>
                     </div>
 
+                    {/* Keeps the conversation moving without another model call. */}
+                    {showFollowUps && (
+                        <motion.div
+                            initial={reduce ? false : { opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.4, delay: 0.15 }}
+                            className="mt-5 flex flex-wrap gap-2"
+                        >
+                            {FOLLOW_UPS.slice(0, 3).map((prompt) => (
+                                <button
+                                    key={prompt}
+                                    onClick={() => send(prompt)}
+                                    className="rounded-full border border-gray-200 px-3.5 py-1.5 text-[12.5px] text-gray-600 transition-colors duration-200 hover:border-gray-300 hover:bg-gray-50 hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+                                >
+                                    {prompt}
+                                </button>
+                            ))}
+                        </motion.div>
+                    )}
+
                     {showEmailCta && (
                         <motion.div
                             initial={reduce ? false : { opacity: 0 }}
@@ -370,16 +438,28 @@ export default function RecruiterChat({ compact = false }: { compact?: boolean }
             </div>
 
             {/* Composer */}
-            <div className="border-t border-gray-200/80 bg-white/70 px-6 py-4 backdrop-blur-xl backdrop-saturate-150">
+            <div
+                className={`bg-white/70 backdrop-blur-xl backdrop-saturate-150 ${
+                    isLanding
+                        ? "px-5 pb-6 pt-2 sm:px-6"
+                        : "border-t border-gray-200/80 px-6 py-4"
+                }`}
+            >
                 <div className="mx-auto max-w-2xl">
-                    <div className="flex items-end gap-2 rounded-[24px] border border-gray-200 bg-white px-4 py-2.5 transition-colors duration-200 focus-within:border-gray-400">
+                    <div
+                        className={`flex items-end gap-2 border border-gray-200 bg-white transition-colors duration-200 focus-within:border-gray-400 ${
+                            isLanding
+                                ? "rounded-[26px] px-5 py-3 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.12)]"
+                                : "rounded-[24px] px-4 py-2.5"
+                        }`}
+                    >
                         <textarea
                             ref={textareaRef}
                             rows={1}
                             value={input}
                             disabled={closed}
                             onChange={(e) => {
-                                setInput(e.target.value.slice(0, 500));
+                                setInput(e.target.value.slice(0, 1000));
                                 autosize();
                             }}
                             onKeyDown={(e) => {
@@ -389,7 +469,11 @@ export default function RecruiterChat({ compact = false }: { compact?: boolean }
                                 }
                             }}
                             placeholder={
-                                closed ? "This conversation has ended" : "Ask about a role…"
+                                closed
+                                    ? "This conversation has ended"
+                                    : isLanding
+                                      ? "Ask anything about Daehan…"
+                                      : "Ask a question…"
                             }
                             aria-label="Ask a question about Daehan"
                             className="max-h-[132px] flex-1 resize-none bg-transparent text-[15px] leading-relaxed outline-none placeholder:text-gray-400 disabled:cursor-not-allowed"
@@ -413,10 +497,12 @@ export default function RecruiterChat({ compact = false }: { compact?: boolean }
                             </svg>
                         </button>
                     </div>
-                    <p className="mt-2.5 text-center text-[11px] leading-relaxed text-gray-400">
-                        Answers come from Daehan&rsquo;s resume and project work. Verify details
-                        before relying on them.
-                    </p>
+                    <div className="mt-2.5 flex items-center justify-center gap-3 text-[11px] leading-relaxed text-gray-400">
+                        <span>Answers come from Daehan&rsquo;s resume and project work.</span>
+                        {showCounter && isLanding && (
+                            <span className="tabular-nums">{remaining} left</span>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

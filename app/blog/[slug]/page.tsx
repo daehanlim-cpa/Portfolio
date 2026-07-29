@@ -76,7 +76,7 @@ export default function BlogPostPage() {
                 {/* Header with Back Button and Language Toggle */}
                 <div className="mb-12 flex items-center justify-between">
                     <Link
-                        href="/"
+                        href="/work"
                         className="text-xs uppercase tracking-wider text-gray-400 hover:text-black transition-colors"
                     >
                         ← Back

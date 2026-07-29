@@ -98,7 +98,7 @@ export function ChatSheet({ isOpen, onClose }: ChatSheetProps) {
                                 </svg>
                             </button>
                             <div className="min-h-0 flex-1">
-                                <RecruiterChat compact />
+                                <RecruiterChat variant="compact" />
                             </div>
                         </div>
                     </motion.div>

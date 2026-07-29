@@ -1,9 +1,9 @@
 import type { ScoredChunk } from "./embeddings";
 
-export const MAX_MESSAGE_CHARS = 500;
-export const MAX_HISTORY_MESSAGES = 12;
+export const MAX_MESSAGE_CHARS = 1000;
+export const MAX_HISTORY_MESSAGES = 40;
 /** How many prior turns get replayed to the model. Caps token growth per turn. */
-export const MAX_REPLAYED_TURNS = 6;
+export const MAX_REPLAYED_TURNS = 14;
 
 export interface ChatMessage {
     role: "user" | "assistant";
@@ -89,62 +89,93 @@ export function validateBody(body: unknown): ValidationFailure | ValidationSucce
     return { ok: true, messages: parsed, question };
 }
 
-const GREETING = /^(hi|hey|hello|yo|sup|good (morning|afternoon|evening)|howdy)[\s!.?]*$/i;
+const GREETING =
+    /^(hi|hey|hello|yo|sup|hiya|howdy|good (morning|afternoon|evening)|what'?s up)( there| again)?[\s!.?]*$/i;
 
 export function isGreeting(question: string): boolean {
     return GREETING.test(question.trim());
 }
 
 export const GREETING_REPLY =
-    "Hi — I'm Daehan's AI assistant. I can answer questions about his background, " +
-    "projects, and how his experience maps to a role you're hiring for.\n\n" +
-    "What role are you recruiting for?";
+    "Hey — I'm Daehan's AI assistant. I know his background, the projects he's " +
+    "shipped, and how he works, so ask me whatever's useful.\n\n" +
+    "If you're hiring, tell me the role and I'll give you a straight read on fit. " +
+    "If you're just curious about the work, that's good too.";
 
 /**
- * Also lands on genuine-but-unanswerable recruiter questions (comp, visa,
- * availability) that score near the threshold, so it points at a real next step
- * rather than just refusing.
+ * Only reached now by questions with essentially no relation to Daehan or his
+ * field. Deliberately soft — it invites rather than scolds.
  */
 export const OFF_TOPIC_REPLY =
-    "I can only answer questions about Daehan Lim's professional background — his " +
-    "experience, projects, skills, and how they fit a role you're hiring for.\n\n" +
-    "Try something like *\"How does his experience map to a Senior Data Engineer role?\"* — " +
-    "or for anything I can't cover, like compensation or availability, email him at " +
-    "daehanlim1@gmail.com.";
+    "That one's outside what I can speak to — I'm here for Daehan's work and " +
+    "background.\n\n" +
+    "Happy to get into his projects, how he approaches data and AI problems, or " +
+    "how his experience lines up with a role you have in mind. For things I don't " +
+    "hold, like compensation or availability, he's at daehanlim1@gmail.com.";
+
+export type TopicVerdict = "ok" | "thin" | "off_topic";
 
 /**
- * The primary off-topic stop, and the main reason this endpoint is cheap to run.
+ * Three-way relevance judgement from retrieval scores, which we already have.
  *
- * Relevance is judged from retrieval scores, which we already have — so an
- * off-topic question costs one embedding call and never reaches the chat model.
- * A prompt instruction alone can't make that guarantee.
+ * The previous single cutoff at 0.60 refused anything it didn't recognise,
+ * which made the assistant feel interrogative — a visitor asking a reasonable
+ * adjacent question ("how does dbt fit into that stack?") got stonewalled.
+ * Now only the genuinely unrelated is refused outright; the middle band is
+ * answered with the retrieved context plus a note that it may be loose, and
+ * the model decides how far it can honestly go.
  */
-export function isOnTopic(results: ScoredChunk[]): boolean {
-    if (results.length === 0) return false;
-    const threshold = Number.parseFloat(process.env.CHAT_TOPIC_THRESHOLD ?? "");
-    const cutoff = Number.isFinite(threshold) ? threshold : DEFAULT_TOPIC_THRESHOLD;
-    return results[0].score >= cutoff;
+export function topicVerdict(results: ScoredChunk[]): TopicVerdict {
+    if (results.length === 0) return "off_topic";
+    const top = results[0].score;
+    if (top >= confidentThreshold()) return "ok";
+    if (top >= floorThreshold()) return "thin";
+    return "off_topic";
 }
 
 /**
  * Calibrated against the real corpus with gemini-embedding-001 (768d,
- * RETRIEVAL_QUERY): 12 recruiter questions scored 0.634-0.727, while 10
- * off-topic and injection probes scored 0.503-0.590.
+ * RETRIEVAL_QUERY) — re-run `npx tsx --env-file=.env.local
+ * scripts/calibrate-topic.ts` if the corpus changes materially. Measured bands:
  *
- * 0.60 sits above every off-topic case with margin below the lowest genuine
- * one. The asymmetry is deliberate — a blocked real question is a worse
- * failure than a leaked off-topic one, because the system instruction is a
- * second line of defense against off-topic but nothing recovers a recruiter
- * who got stonewalled. Re-run the calibration if the corpus changes materially.
+ *   core questions       0.620 - 0.700
+ *   adjacent questions   0.572 - 0.688   ("what would he be bad at?" = 0.572)
+ *   unrelated + probes   0.509 - 0.593   ("capital of France?" = 0.527)
+ *
+ * The adjacent and unrelated bands overlap, so no single cutoff separates them
+ * cleanly — which is exactly why the middle band exists rather than a hard
+ * yes/no. The floor sits at the bottom of the adjacent band: everything below
+ * it is refused outright, everything above reaches the model with context.
+ *
+ * Note this means the old single 0.60 cutoff was refusing genuine questions —
+ * "what would he be bad at?" scored 0.572 and never reached the model at all.
+ *
+ * Injection attempts land near the floor (0.564 for a system-prompt probe) and
+ * some will pass it. The system instruction, not the score, is the real defense
+ * there; the gate exists to keep unrelated traffic off the generation budget.
  */
-const DEFAULT_TOPIC_THRESHOLD = 0.6;
+const DEFAULT_CONFIDENT_THRESHOLD = 0.62;
+const DEFAULT_FLOOR_THRESHOLD = 0.57;
+
+function envNumber(name: string, fallback: number): number {
+    const parsed = Number.parseFloat(process.env[name] ?? "");
+    return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function confidentThreshold(): number {
+    return envNumber("CHAT_TOPIC_THRESHOLD", DEFAULT_CONFIDENT_THRESHOLD);
+}
+
+function floorThreshold(): number {
+    return envNumber("CHAT_TOPIC_FLOOR", DEFAULT_FLOOR_THRESHOLD);
+}
 
 export function limitMessage(reason: string): string {
     switch (reason) {
         case "conversation":
             return (
-                "We've reached the end of this conversation. If you'd like to go deeper, " +
-                "reach Daehan directly at daehanlim1@gmail.com."
+                "That's as far as this conversation goes. If you want to keep going, " +
+                "Daehan himself is the better next step — daehanlim1@gmail.com."
             );
         case "global_daily":
             return (

@@ -14,8 +14,8 @@ import {
     clientIp,
     isAllowedOrigin,
     isGreeting,
-    isOnTopic,
     limitMessage,
+    topicVerdict,
     validateBody,
     type ChatMessage,
 } from "@/lib/guardrails";
@@ -145,9 +145,10 @@ export async function POST(request: Request) {
         } satisfies EmbedRequestWithDimensions as unknown as Parameters<
             typeof embeddingModel.embedContent
         >[0]);
-        const results = searchChunks(embedded.embedding.values, chunks, 6);
+        const results = searchChunks(embedded.embedding.values, chunks, 8);
+        const verdict = topicVerdict(results);
 
-        if (!isOnTopic(results)) {
+        if (verdict === "off_topic") {
             console.log(
                 `[chat] off-topic (top score ${results[0]?.score.toFixed(3) ?? "n/a"}) - no generation call`
             );
@@ -170,12 +171,22 @@ export async function POST(request: Request) {
                 ...buildHistory(messages),
                 {
                     role: "user",
-                    parts: [{ text: buildTurnPrompt(buildContextBlock(results), question) }],
+                    parts: [
+                        {
+                            text: buildTurnPrompt(
+                                buildContextBlock(results),
+                                question,
+                                verdict === "thin"
+                            ),
+                        },
+                    ],
                 },
             ],
             generationConfig: {
-                temperature: 0.2,
-                maxOutputTokens: 1024,
+                // Raised from 0.2: the assistant is meant to converse now, not
+                // just extract. Still low enough to keep it factual.
+                temperature: 0.45,
+                maxOutputTokens: 1536,
             },
         });
 

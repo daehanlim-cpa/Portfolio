@@ -11,9 +11,9 @@ export interface LimitResult {
     retryAfterSeconds?: number;
 }
 
-export const CONVERSATION_LIMIT = 10;
-const IP_HOURLY_LIMIT = 20;
-const IP_DAILY_LIMIT = 40;
+export const CONVERSATION_LIMIT = 30;
+const IP_HOURLY_LIMIT = 45;
+const IP_DAILY_LIMIT = 90;
 
 function globalDailyLimit(): number {
     const parsed = Number.parseInt(process.env.CHAT_DAILY_GLOBAL_LIMIT ?? "", 10);

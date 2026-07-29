@@ -12,15 +12,16 @@ export default function CategoryNav() {
     const [isResumeOpen, setIsResumeOpen] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(false);
 
-    // On /chat the full-page chat is already on screen; a sheet would duplicate it.
-    const showChatButton = pathname !== "/chat";
+    // On "/" the full-page chat is already on screen; a sheet would duplicate it.
+    const showChatButton = pathname !== "/";
 
     // Determine active type from URL
     const getActiveType = () => {
         if (pathname === "/projects") return "project";
         if (pathname === "/purpose") return "purpose";
         if (pathname === "/professional") return "professional";
-        if (pathname === "/") return "all";
+        if (pathname === "/work") return "all";
+        if (pathname === "/") return "ask";
         return "all";
     };
 
@@ -58,6 +59,15 @@ export default function CategoryNav() {
                                 <div className="flex gap-6 sm:gap-8 min-w-max">
                                     <Link
                                         href="/"
+                                        className={`text-[10px] sm:text-xs uppercase tracking-wider transition-colors hover:text-black ${activeType === "ask"
+                                            ? "text-black font-medium"
+                                            : "text-gray-400"
+                                            }`}
+                                    >
+                                        ASK
+                                    </Link>
+                                    <Link
+                                        href="/work"
                                         className={`text-[10px] sm:text-xs uppercase tracking-wider transition-colors hover:text-black ${activeType === "all"
                                             ? "text-black font-medium"
                                             : "text-gray-400"
