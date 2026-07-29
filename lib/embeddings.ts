@@ -17,6 +17,18 @@ export interface ScoredChunk {
 }
 
 /**
+ * @google/generative-ai 0.21 predates gemini-embedding-001 and omits
+ * `outputDimensionality` from EmbedContentRequest. The API accepts and honours
+ * it (verified: 768-dim vectors returned), so this widens the type rather than
+ * casting the whole request to any.
+ */
+export interface EmbedRequestWithDimensions {
+    content: { role: string; parts: { text: string }[] };
+    taskType: string;
+    outputDimensionality: number;
+}
+
+/**
  * Splits markdown into chunks that stay under roughly `maxTokens` words.
  * Pure — the build script owns reading the file off disk.
  */

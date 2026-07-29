@@ -219,7 +219,7 @@ Checks run cheapest-first, so abusive traffic is rejected before it can spend an
 | Per-conversation | 10 messages | Zero |
 | Per-IP | 20/hour, 40/day | Zero |
 | **Global daily** | **500/day** (`CHAT_DAILY_GLOBAL_LIMIT`) | Zero — shows an "at capacity" state |
-| Topic gate | Retrieval similarity below `CHAT_TOPIC_THRESHOLD` (0.55) | One embedding call — **never reaches the chat model** |
+| Topic gate | Retrieval similarity below `CHAT_TOPIC_THRESHOLD` (0.60) | One embedding call — **never reaches the chat model** |
 
 The topic gate is the main saver: off-topic questions are answered with a canned redirect
 and never trigger generation. Quota is consumed in order, so a user who trips the

@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { loadEmbeddings, searchChunks } from "@/lib/embeddings";
+import { GoogleGenerativeAI, TaskType } from "@google/generative-ai";
+import {
+    loadEmbeddings,
+    searchChunks,
+    type EmbedRequestWithDimensions,
+} from "@/lib/embeddings";
 import { SYSTEM_INSTRUCTION, buildContextBlock, buildTurnPrompt } from "@/lib/prompt";
 import { checkLimits, logTranscript, CONVERSATION_LIMIT } from "@/lib/ratelimit";
 import {
@@ -19,8 +23,19 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const CHAT_MODEL = process.env.RESUME_CHAT_MODEL || "gemini-2.5-flash";
-const EMBEDDING_MODEL = process.env.RESUME_EMBEDDING_MODEL || "text-embedding-004";
+/**
+ * Verified against the live API. Two traps informed this choice:
+ * - gemini-2.5-flash still appears in ListModels but is closed to new keys.
+ * - The full 3.x Flash models think by default and thought tokens count against
+ *   maxOutputTokens; gemini-3.6-flash burned ~380 of a 400 budget on thinking
+ *   and truncated every answer mid-sentence. Thinking cannot be disabled there.
+ * This model emits zero thought tokens, which suits grounded extractive answers
+ * and keeps cost low. Raise maxOutputTokens if you switch to a thinking model.
+ */
+const CHAT_MODEL = process.env.RESUME_CHAT_MODEL || "gemini-3.5-flash-lite";
+const EMBEDDING_MODEL = process.env.RESUME_EMBEDDING_MODEL || "gemini-embedding-001";
+/** Must match EMBEDDING_DIMENSIONS in scripts/build-embeddings.ts. */
+const EMBEDDING_DIMENSIONS = 768;
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "");
 
@@ -105,19 +120,31 @@ export async function POST(request: Request) {
 
     if (!process.env.GOOGLE_API_KEY) {
         console.error("[chat] GOOGLE_API_KEY is not configured");
-        return refuse(503, "The assistant isn't available right now.");
+        return refuse(
+            503,
+            "The assistant isn't available right now. You can reach Daehan directly at daehanlim1@gmail.com."
+        );
     }
 
     const chunks = loadEmbeddings();
     if (chunks.length === 0) {
         console.error("[chat] embeddings.json is empty - run `npm run build:embeddings`");
-        return refuse(503, "The assistant isn't available right now.");
+        return refuse(
+            503,
+            "The assistant isn't available right now. You can reach Daehan directly at daehanlim1@gmail.com."
+        );
     }
 
     try {
         // 5. One embedding call. This is all an off-topic question ever costs.
         const embeddingModel = genAI.getGenerativeModel({ model: EMBEDDING_MODEL });
-        const embedded = await embeddingModel.embedContent(question);
+        const embedded = await embeddingModel.embedContent({
+            content: { role: "user", parts: [{ text: question }] },
+            taskType: TaskType.RETRIEVAL_QUERY,
+            outputDimensionality: EMBEDDING_DIMENSIONS,
+        } satisfies EmbedRequestWithDimensions as unknown as Parameters<
+            typeof embeddingModel.embedContent
+        >[0]);
         const results = searchChunks(embedded.embedding.values, chunks, 6);
 
         if (!isOnTopic(results)) {
@@ -148,7 +175,7 @@ export async function POST(request: Request) {
             ],
             generationConfig: {
                 temperature: 0.2,
-                maxOutputTokens: 400,
+                maxOutputTokens: 1024,
             },
         });
 

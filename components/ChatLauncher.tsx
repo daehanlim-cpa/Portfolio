@@ -13,7 +13,7 @@ export function ChatButton({ onClick }: { onClick: () => void }) {
     return (
         <button
             onClick={onClick}
-            className="p-2 opacity-50 transition-opacity hover:opacity-100"
+            className="rounded-full p-2 opacity-50 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-1"
             aria-label="Ask about Daehan"
         >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -78,20 +78,15 @@ export function ChatSheet({ isOpen, onClose }: ChatSheetProps) {
                         className="fixed inset-x-0 bottom-0 z-[70] h-[88dvh] overflow-hidden rounded-t-[20px] border-t border-gray-200 bg-white shadow-2xl sm:inset-x-auto sm:right-6 sm:bottom-6 sm:h-[min(680px,82dvh)] sm:w-[420px] sm:rounded-[20px] sm:border"
                     >
                         <div className="flex h-full flex-col">
-                            <div className="flex items-center justify-between px-4 pt-2.5 sm:hidden">
-                                <span className="w-10" />
+                            {/* Grabber only — the sheet is drag-to-dismiss, so a
+                                Close button alongside it would be redundant. */}
+                            <div className="flex justify-center px-4 pt-2.5 sm:hidden">
                                 <div className="h-1 w-9 rounded-full bg-gray-300" aria-hidden />
-                                <button
-                                    onClick={onClose}
-                                    className="w-10 text-right text-[11px] font-medium uppercase tracking-widest text-gray-400"
-                                >
-                                    Close
-                                </button>
                             </div>
                             <button
                                 onClick={onClose}
                                 aria-label="Close"
-                                className="absolute right-3 top-3 z-20 hidden h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-black sm:flex"
+                                className="absolute right-3 top-3 z-20 flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black"
                             >
                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden>
                                     <path

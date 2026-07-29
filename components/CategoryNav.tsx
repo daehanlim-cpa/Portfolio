@@ -28,7 +28,7 @@ export default function CategoryNav() {
 
     return (
         <>
-            <nav className="sticky top-0 z-50 bg-white border-b border-gray-200">
+            <nav className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl backdrop-saturate-150 border-b border-gray-200/80">
                 <div className="px-6 sm:px-8 py-4 sm:py-6">
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0">
                         {/* Top Row on Mobile: Name & Resume Icon */}
@@ -42,7 +42,7 @@ export default function CategoryNav() {
                                 {showChatButton && <ChatButton onClick={() => setIsChatOpen(true)} />}
                                 <button
                                     onClick={() => setIsResumeOpen(true)}
-                                    className="p-2 opacity-50 hover:opacity-100 transition-opacity"
+                                    className="rounded-full p-2 opacity-50 hover:opacity-100 transition-opacity focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-1"
                                     aria-label="Open Resume"
                                 >
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -101,7 +101,7 @@ export default function CategoryNav() {
                             {showChatButton && <ChatButton onClick={() => setIsChatOpen(true)} />}
                             <button
                                 onClick={() => setIsResumeOpen(true)}
-                                className="p-2 opacity-50 hover:opacity-100 transition-opacity"
+                                className="rounded-full p-2 opacity-50 hover:opacity-100 transition-opacity focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-1"
                                 aria-label="Open Resume"
                             >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

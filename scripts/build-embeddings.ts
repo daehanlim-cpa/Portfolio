@@ -1,15 +1,26 @@
 import fs from "fs";
 import path from "path";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { chunkText, type ResumeChunk } from "../lib/embeddings";
+import { GoogleGenerativeAI, TaskType } from "@google/generative-ai";
+import {
+    chunkText,
+    type ResumeChunk,
+    type EmbedRequestWithDimensions,
+} from "../lib/embeddings";
 import { projects } from "../data/projects";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "");
 
-const EMBEDDING_MODEL = process.env.RESUME_EMBEDDING_MODEL || "text-embedding-004";
+const EMBEDDING_MODEL = process.env.RESUME_EMBEDDING_MODEL || "gemini-embedding-001";
 
 /** Keeps the committed JSON to a sane size without hurting cosine similarity. */
 const FLOAT_PRECISION = 6;
+
+/**
+ * gemini-embedding-001 defaults to 3072 dimensions, which bloats the committed
+ * JSON roughly fourfold for no retrieval benefit at this corpus size. Must match
+ * EMBEDDING_DIMENSIONS in app/api/chat/route.ts.
+ */
+const EMBEDDING_DIMENSIONS = 768;
 
 interface PendingChunk {
     text: string;
@@ -105,7 +116,15 @@ async function generateEmbeddings() {
         const chunk = pending[i];
         process.stdout.write(`Embedding ${i + 1}/${pending.length} (${chunk.section})\r`);
 
-        const result = await model.embedContent(chunk.text);
+        // RETRIEVAL_DOCUMENT pairs with RETRIEVAL_QUERY at query time; the
+        // asymmetry measurably improves ranking, which the topic gate depends on.
+        const result = await model.embedContent({
+            content: { role: "user", parts: [{ text: chunk.text }] },
+            taskType: TaskType.RETRIEVAL_DOCUMENT,
+            outputDimensionality: EMBEDDING_DIMENSIONS,
+        } satisfies EmbedRequestWithDimensions as unknown as Parameters<
+            typeof model.embedContent
+        >[0]);
 
         out.push({
             ...chunk,

@@ -244,7 +244,12 @@ export default function RecruiterChat({ compact = false }: { compact?: boolean }
     return (
         <div className="flex h-full flex-col bg-white">
             {/* Header */}
-            <header className="sticky top-0 z-10 border-b border-gray-200/80 bg-white/70 px-6 py-4 backdrop-blur-xl backdrop-saturate-150">
+            {/* compact = rendered in the sheet, which overlays a close button at top-right. */}
+            <header
+                className={`sticky top-0 z-10 border-b border-gray-200/80 bg-white/70 py-4 pl-6 backdrop-blur-xl backdrop-saturate-150 ${
+                    compact ? "pr-14" : "pr-6"
+                }`}
+            >
                 <div className="mx-auto flex max-w-2xl items-center justify-between gap-4">
                     <div>
                         <h2 className="text-[13px] font-medium tracking-tight">Ask about Daehan</h2>
@@ -286,7 +291,7 @@ export default function RecruiterChat({ compact = false }: { compact?: boolean }
                                             duration: 0.4,
                                             ease: [0.16, 1, 0.3, 1],
                                         }}
-                                        className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-left text-[14px] text-gray-700 transition-colors duration-200 hover:border-gray-300 hover:bg-gray-50 active:bg-gray-100"
+                                        className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-left text-[14px] text-gray-700 transition-colors duration-200 hover:border-gray-300 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 active:bg-gray-100"
                                     >
                                         {prompt}
                                     </motion.button>
@@ -389,11 +394,13 @@ export default function RecruiterChat({ compact = false }: { compact?: boolean }
                             aria-label="Ask a question about Daehan"
                             className="max-h-[132px] flex-1 resize-none bg-transparent text-[15px] leading-relaxed outline-none placeholder:text-gray-400 disabled:cursor-not-allowed"
                         />
+                        {/* transition-colors rather than transition-all, so the focus
+                            ring appears instantly instead of fading in over 200ms. */}
                         <button
                             onClick={() => send(input)}
                             disabled={isStreaming || closed || !input.trim()}
                             aria-label="Send message"
-                            className="mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black text-white transition-all duration-200 hover:bg-gray-800 disabled:opacity-20"
+                            className="mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black text-white transition-colors duration-200 hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:opacity-20"
                         >
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
                                 <path

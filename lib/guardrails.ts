@@ -100,10 +100,17 @@ export const GREETING_REPLY =
     "projects, and how his experience maps to a role you're hiring for.\n\n" +
     "What role are you recruiting for?";
 
+/**
+ * Also lands on genuine-but-unanswerable recruiter questions (comp, visa,
+ * availability) that score near the threshold, so it points at a real next step
+ * rather than just refusing.
+ */
 export const OFF_TOPIC_REPLY =
     "I can only answer questions about Daehan Lim's professional background — his " +
     "experience, projects, skills, and how they fit a role you're hiring for.\n\n" +
-    "Try asking something like *\"How does his experience map to a Senior Data Engineer role?\"*";
+    "Try something like *\"How does his experience map to a Senior Data Engineer role?\"* — " +
+    "or for anything I can't cover, like compensation or availability, email him at " +
+    "daehanlim1@gmail.com.";
 
 /**
  * The primary off-topic stop, and the main reason this endpoint is cheap to run.
@@ -115,9 +122,22 @@ export const OFF_TOPIC_REPLY =
 export function isOnTopic(results: ScoredChunk[]): boolean {
     if (results.length === 0) return false;
     const threshold = Number.parseFloat(process.env.CHAT_TOPIC_THRESHOLD ?? "");
-    const cutoff = Number.isFinite(threshold) ? threshold : 0.55;
+    const cutoff = Number.isFinite(threshold) ? threshold : DEFAULT_TOPIC_THRESHOLD;
     return results[0].score >= cutoff;
 }
+
+/**
+ * Calibrated against the real corpus with gemini-embedding-001 (768d,
+ * RETRIEVAL_QUERY): 12 recruiter questions scored 0.634-0.727, while 10
+ * off-topic and injection probes scored 0.503-0.590.
+ *
+ * 0.60 sits above every off-topic case with margin below the lowest genuine
+ * one. The asymmetry is deliberate — a blocked real question is a worse
+ * failure than a leaked off-topic one, because the system instruction is a
+ * second line of defense against off-topic but nothing recovers a recruiter
+ * who got stonewalled. Re-run the calibration if the corpus changes materially.
+ */
+const DEFAULT_TOPIC_THRESHOLD = 0.6;
 
 export function limitMessage(reason: string): string {
     switch (reason) {
