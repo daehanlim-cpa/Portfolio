@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useEffect } from "react";
 import Link from "next/link";
 
@@ -9,205 +9,191 @@ interface ResumeDrawerProps {
     onClose: () => void;
 }
 
+/**
+ * Roles and degrees as data, so the markup stays one shape per row rather than
+ * a hand-repeated block per entry.
+ */
+const ROLES: Array<{ org: string; entries: Array<[title: string, dates: string]> }> = [
+    {
+        org: "Deloitte",
+        entries: [["Senior Forward Deployed Engineer", "Jul 2026 — Present"]],
+    },
+    {
+        org: "Ernst & Young",
+        entries: [
+            ["AI & Data Manager", "Jul 2024 — Jul 2026"],
+            ["AI & Data Senior", "Jul 2021 — Jul 2024"],
+            ["Enterprise Risk Staff", "Sep 2019 — Jul 2021"],
+        ],
+    },
+];
+
+const EDUCATION: Array<{ org: string; entries: Array<[title: string, dates: string]> }> = [
+    {
+        org: "University of the Cumberlands",
+        entries: [
+            ["PhD, Information Technology in AI", "Est. 2027"],
+            ["MS, Global Business with Blockchain", "Aug 2024"],
+        ],
+    },
+    {
+        org: "University of Arizona",
+        entries: [["BS, Accounting & Management Information Systems", "May 2019"]],
+    },
+];
+
+function Group({ label, groups }: { label: string; groups: typeof ROLES }) {
+    return (
+        <section>
+            <h3 className="mb-6 border-b border-line-soft pb-2.5 text-label uppercase text-ink-tertiary">
+                {label}
+            </h3>
+            <div className="space-y-7">
+                {groups.map(({ org, entries }) => (
+                    <div key={org}>
+                        <p className="text-caption font-medium text-ink">{org}</p>
+                        <ul className="mt-2.5 space-y-2.5">
+                            {entries.map(([title, dates]) => (
+                                <li key={title} className="flex items-baseline justify-between gap-5">
+                                    <span className="text-caption text-ink-secondary">{title}</span>
+                                    <span className="shrink-0 text-label tabular-nums text-ink-quaternary">
+                                        {dates}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ))}
+            </div>
+        </section>
+    );
+}
+
 export default function ResumeDrawer({ isOpen, onClose }: ResumeDrawerProps) {
-    // Prevent scrolling when drawer is open
+    const reduce = useReducedMotion();
+
     useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = "hidden";
-        } else {
-            document.body.style.overflow = "unset";
-        }
+        if (!isOpen) return;
+        const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+        window.addEventListener("keydown", onKey);
+        const previous = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
         return () => {
-            document.body.style.overflow = "unset";
+            window.removeEventListener("keydown", onKey);
+            document.body.style.overflow = previous;
         };
-    }, [isOpen]);
+    }, [isOpen, onClose]);
 
     return (
         <AnimatePresence>
             {isOpen && (
                 <>
-                    {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.5 }}
+                        animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
+                        transition={{ duration: reduce ? 0 : 0.25 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black z-[60] cursor-crosshair"
+                        aria-hidden
+                        className="fixed inset-0 z-[60] bg-ink/20 backdrop-blur-[2px]"
                     />
 
-                    {/* Drawer */}
                     <motion.div
-                        initial={{ x: "100%" }}
-                        animate={{ x: 0 }}
-                        exit={{ x: "100%" }}
-                        transition={{ type: "tween", duration: 0.4, ease: [0.32, 0, 0.67, 0] }}
-                        className="fixed top-0 right-0 h-full w-full md:w-[600px] bg-white z-[70] border-l border-gray-200 overflow-y-auto"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Résumé summary"
+                        initial={reduce ? { opacity: 0 } : { x: "100%" }}
+                        animate={reduce ? { opacity: 1 } : { x: 0 }}
+                        exit={reduce ? { opacity: 0 } : { x: "100%" }}
+                        transition={
+                            reduce
+                                ? { duration: 0 }
+                                : { type: "spring", stiffness: 340, damping: 36, mass: 0.9 }
+                        }
+                        className="fixed right-0 top-0 z-[70] h-full w-full overflow-y-auto border-l border-line-soft bg-surface shadow-floating sm:w-[480px]"
                     >
-                        <div className="p-6 md:p-10 min-h-full flex flex-col">
-                            {/* Header */}
-                            <div className="flex justify-between items-start mb-12">
-                                <h2 className="text-sm font-bold tracking-widest uppercase">
-                                    BIO
-                                </h2>
+                        <div className="sticky top-0 z-10 border-b border-line-soft bg-surface">
+                            <div className="flex h-[calc(var(--nav-h)-1px)] items-center justify-between px-6">
+                                <h2 className="text-caption font-medium text-ink">Overview</h2>
                                 <button
                                     onClick={onClose}
-                                    className="text-sm font-bold tracking-widest uppercase hover:text-gray-500 transition-colors"
+                                    aria-label="Close"
+                                    className="-mr-2 rounded-full p-2 text-ink-tertiary transition-colors hover:bg-surface-muted hover:text-ink"
                                 >
-                                    CLOSE
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                                        <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                                    </svg>
                                 </button>
                             </div>
+                        </div>
 
-                            {/* Content */}
-                            <div className="space-y-12 flex-1">
-                                {/* Contact Info Group */}
-                                <div className="space-y-4">
-                                    <h3 className="text-xs font-bold tracking-widest uppercase mb-6">
-                                        CONTACT INFORMATION
+                        <div className="px-6 pb-10 pt-9">
+                            <header className="mb-11">
+                                <p className="text-title-sm font-light text-ink">Daehan Lim, CPA</p>
+                                <p className="mt-2 text-caption leading-relaxed text-ink-tertiary">
+                                    Senior Forward Deployed Engineer at Deloitte. Seven years
+                                    building data and AI systems in regulated financial
+                                    environments.
+                                </p>
+                                <div className="mt-5 flex flex-wrap gap-2">
+                                    <a
+                                        href="mailto:daehanlim1@gmail.com"
+                                        className="rounded-full border border-line px-3.5 py-1.5 text-label text-ink-secondary transition-colors hover:bg-surface-muted hover:text-ink"
+                                    >
+                                        Email
+                                    </a>
+                                    <a
+                                        href="https://www.linkedin.com/in/daehan-lim-cpa/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="rounded-full border border-line px-3.5 py-1.5 text-label text-ink-secondary transition-colors hover:bg-surface-muted hover:text-ink"
+                                    >
+                                        LinkedIn
+                                    </a>
+                                    <a
+                                        href="https://github.com/daehanlim-cpa"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="rounded-full border border-line px-3.5 py-1.5 text-label text-ink-secondary transition-colors hover:bg-surface-muted hover:text-ink"
+                                    >
+                                        GitHub
+                                    </a>
+                                </div>
+                            </header>
+
+                            <div className="space-y-11">
+                                <Group label="Experience" groups={ROLES} />
+                                <Group label="Education" groups={EDUCATION} />
+
+                                <section>
+                                    <h3 className="mb-6 border-b border-line-soft pb-2.5 text-label uppercase text-ink-tertiary">
+                                        Certifications
                                     </h3>
+                                    <ul className="flex flex-wrap gap-2">
+                                        {[
+                                            "CPA",
+                                            "SnowPro Advanced: Data Engineer",
+                                            "SnowPro Advanced: Data Architect",
+                                            "SnowPro Core",
+                                            "Databricks Data Engineer Associate",
+                                        ].map((cert) => (
+                                            <li
+                                                key={cert}
+                                                className="rounded-full bg-surface-muted px-3 py-1.5 text-label text-ink-secondary"
+                                            >
+                                                {cert}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </section>
 
-                                    <div className="border border-black p-4 uppercase text-xs tracking-wide space-y-4">
-                                        <div className="flex justify-between border-b border-gray-100 pb-2">
-                                            <span className="text-gray-500">NAME</span>
-                                            <span>DAEHAN LIM</span>
-                                        </div>
-                                        <div className="flex justify-between border-b border-gray-100 pb-2">
-                                            <span className="text-gray-500">EMAIL</span>
-                                            <span>DAEHANLIM1@GMAIL.COM</span>
-                                        </div>
-                                        <div className="flex justify-between pt-2">
-                                            <span className="text-gray-500">LINKS</span>
-                                            <div className="flex gap-4">
-                                                <a href="https://linkedin.com/in/daehan-lim-cpa" target="_blank" className="hover:underline">LINKEDIN</a>
-                                                <a href="https://github.com/daehanlim-cpa" target="_blank" className="hover:underline">GITHUB</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Professional Experience */}
-                                <div className="space-y-6">
-                                    <h3 className="text-xs font-bold tracking-widest uppercase border-b border-black pb-2 mb-6 flex justify-between">
-                                        <span>PROFESSIONAL EXPERIENCE</span>
-                                        <span>QTY: 4</span>
-                                    </h3>
-
-                                    {/* Company Header */}
-                                    <div className="text-xs font-bold tracking-wide mb-4">
-                                        DELOITTE
-                                    </div>
-
-                                    <div className="space-y-6 pl-4">
-                                        {/* Current Role */}
-                                        <div className="flex justify-between text-xs tracking-wide">
-                                            <div className="space-y-1">
-                                                <p className="font-bold">SENIOR FORWARD DEPLOYED ENGINEER</p>
-                                            </div>
-                                            <div className="text-right font-mono text-[10px] text-gray-400 whitespace-nowrap ml-4">
-                                                JUL 2026 - PRESENT
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Company Header */}
-                                    <div className="text-xs font-bold tracking-wide mb-4 pt-2">
-                                        ERNST & YOUNG
-                                    </div>
-
-                                    <div className="space-y-6 pl-4">
-                                        {/* Role 1 */}
-                                        <div className="flex justify-between text-xs tracking-wide">
-                                            <div className="space-y-1">
-                                                <p className="font-bold">AI & DATA MANAGER</p>
-                                            </div>
-                                            <div className="text-right font-mono text-[10px] text-gray-400 whitespace-nowrap ml-4">
-                                                JUL 2024 - JUL 2026
-                                            </div>
-                                        </div>
-
-                                        {/* Role 2 */}
-                                        <div className="flex justify-between text-xs tracking-wide">
-                                            <div className="space-y-1">
-                                                <p className="font-bold">AI & DATA SENIOR</p>
-                                            </div>
-                                            <div className="text-right font-mono text-[10px] text-gray-400">
-                                                JUL 2021 - JUL 2024
-                                            </div>
-                                        </div>
-
-                                        {/* Role 3 */}
-                                        <div className="flex justify-between text-xs tracking-wide">
-                                            <div className="space-y-1">
-                                                <p className="font-bold">ENTERPRISE RISK STAFF</p>
-                                            </div>
-                                            <div className="text-right font-mono text-[10px] text-gray-400">
-                                                SEP 2019 - JUL 2021
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Education */}
-                                <div className="space-y-6">
-                                    <h3 className="text-xs font-bold tracking-widest uppercase border-b border-black pb-2 mb-6 flex justify-between">
-                                        <span>EDUCATION</span>
-                                        <span>QTY: 2 + 1 IN FLIGHT</span>
-                                    </h3>
-
-                                    <div className="space-y-8">
-                                        {/* University 1 */}
-                                        <div>
-                                            <div className="text-xs font-bold tracking-wide mb-3">
-                                                UNIVERSITY OF THE CUMBERLANDS
-                                            </div>
-                                            <div className="space-y-4 pl-4">
-                                                <div className="flex justify-between text-xs tracking-wide">
-                                                    <p className="font-medium">PHD IN INFORMATION TECHNOLOGY IN AI</p>
-                                                    <div className="text-right font-mono text-[10px] text-gray-400 whitespace-nowrap ml-4">
-                                                        EST. 2027
-                                                    </div>
-                                                </div>
-                                                <div className="flex justify-between text-xs tracking-wide">
-                                                    <p className="font-medium">MS IN GLOBAL BUSINESS IN BLOCKCHAIN TECHNOLOGY</p>
-                                                    <div className="text-right font-mono text-[10px] text-gray-400 whitespace-nowrap ml-4">
-                                                        AUG 2024
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* University 2 */}
-                                        <div>
-                                            <div className="text-xs font-bold tracking-wide mb-3">
-                                                UNIVERSITY OF ARIZONA
-                                            </div>
-                                            <div className="pl-4">
-                                                <div className="flex justify-between text-xs tracking-wide">
-                                                    <p className="font-medium">BS IN ACCOUNTING AND MANAGEMENT INFORMATION SYSTEMS</p>
-                                                    <div className="text-right font-mono text-[10px] text-gray-400 whitespace-nowrap ml-4">
-                                                        MAY 2019
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Footer / Total */}
-                                <div className="border-t border-black pt-6 mt-auto">
-                                    <div className="flex justify-between text-sm font-bold tracking-widest uppercase">
-                                        <span>TOTAL EXPERIENCE</span>
-                                        <span>7 YEARS</span>
-                                    </div>
-                                    <div className="mt-8">
-                                        <Link
-                                            href="/resume"
-                                            onClick={onClose}
-                                            className="block w-full bg-black text-white text-center py-4 text-xs font-bold tracking-widest hover:bg-gray-800 transition-colors uppercase"
-                                        >
-                                            VIEW FULL RESUME
-                                        </Link>
-                                    </div>
-                                </div>
+                                <Link
+                                    href="/resume"
+                                    onClick={onClose}
+                                    className="block rounded-full bg-ink py-3.5 text-center text-caption font-medium text-white transition-opacity hover:opacity-85"
+                                >
+                                    Full résumé
+                                </Link>
                             </div>
                         </div>
                     </motion.div>

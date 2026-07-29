@@ -7,9 +7,9 @@ export const metadata = {
 
 export default function ResumePage() {
     return (
-        <div className="min-h-screen px-6 py-20">
-            <div className="max-w-4xl mx-auto">
-                <h1 className="text-3xl md:text-4xl font-light mb-12">Resume</h1>
+        <div className="min-h-screen px-6 pb-24 pt-16 sm:px-8 sm:pt-24">
+            <div className="mx-auto max-w-3xl">
+                <h1 className="mb-14 text-display-sm font-light text-ink sm:text-display">Resume</h1>
 
                 {/* Full Resume Content Only */}
                 <ResumeContent />

@@ -2,31 +2,135 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Design tokens.
+ *
+ * The governing idea is deference: the interface should recede so the work is
+ * what you notice. That means one near-black ink instead of pure #000 (which
+ * vibrates against white), a narrow set of grays that step evenly, a single
+ * accent used sparingly enough that it still means something, and shadows built
+ * from two soft layers rather than one hard drop.
+ */
+:root {
+    /* Ink — never pure black. Pure black on white is optically harsh. */
+    --ink: #1d1d1f;
+    --ink-secondary: #4a4a4f;
+    --ink-tertiary: #6e6e73;
+    --ink-quaternary: #9a9aa0;
+
+    /* Surfaces */
+    --surface: #ffffff;
+    --surface-raised: #ffffff;
+    --surface-sunken: #fafafa;
+    --surface-muted: #f5f5f7;
+
+    /* Hairlines. Two weights: structural and incidental. */
+    --line: rgba(0, 0, 0, 0.1);
+    --line-soft: rgba(0, 0, 0, 0.06);
+
+    /* One accent. Used for focus and the rare deliberate emphasis. */
+    --accent: #0066cc;
+
+    /* Radii — a consistent scale, so nothing looks arbitrary. */
+    --r-sm: 10px;
+    --r-md: 14px;
+    --r-lg: 20px;
+    --r-xl: 28px;
+
+    /* Motion. Decelerating curves feel physical; linear feels mechanical. */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+    /*
+     * Total sticky-nav height, hairline included. Single source of truth: the
+     * nav sizes its bar from it and the full-height chat view subtracts it. When
+     * these were independent numbers they drifted, and the chat composer ended
+     * up clipped off the bottom of the screen on mobile.
+     */
+    --nav-h: 57px;
+}
+
+@media (min-width: 640px) {
+    :root {
+        --nav-h: 65px;
+    }
+}
+
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 html {
-  scroll-behavior: smooth;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: #ffffff;
-  color: #000000;
+    font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: var(--surface);
+    color: var(--ink);
+    /* Optical sizing and contextual alternates, so Inter sets properly. */
+    font-feature-settings: "cv11", "ss01";
+    font-variant-ligatures: contextual;
+    text-rendering: optimizeLegibility;
+}
+
+/* Large type needs negative tracking; Inter is drawn loose for small sizes. */
+h1,
+h2,
+h3 {
+    letter-spacing: -0.021em;
+    text-wrap: balance;
+}
+
+/* Keep paragraphs from ending in a single orphaned word. */
+p {
+    text-wrap: pretty;
+}
+
+::selection {
+    background: rgba(0, 102, 204, 0.14);
+}
+
+/* A single consistent focus treatment, visible only for keyboard users. */
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
 @layer utilities {
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
 
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    /*
+     * Where a surface sits over its own scrolling content and translucency would
+     * buy nothing — the project sheet, the résumé drawer — use a solid bar
+     * instead. Frosting is reserved for the site nav, which floats over page
+     * content, and is applied there with Tailwind's backdrop utilities.
+     */
 }

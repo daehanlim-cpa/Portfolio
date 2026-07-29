@@ -25,70 +25,61 @@ export default function ProjectCard({ project, onClick, isEmphasized = true }: P
                 interactive ? "cursor-pointer" : "cursor-default"
             }`}
         >
-            {/* Tile — the affordance lives here. Previously the icon floated on
-                bare background, which read as decoration rather than a control. */}
+            {/* The tile carries the affordance. Resting state is nearly flat —
+                the lift on hover is what says "this responds to you". */}
             <div
-                className={`relative aspect-square overflow-hidden rounded-[20px] border bg-gradient-to-b from-gray-50 to-white transition-all duration-300 ease-out ${
-                    isEmphasized ? "border-gray-200/90" : "border-gray-100 opacity-60"
+                className={`relative aspect-square overflow-hidden rounded-xl border bg-surface-sunken transition-[transform,box-shadow,border-color,background-color] duration-[450ms] ease-out ${
+                    isEmphasized ? "border-line-soft" : "border-line-soft opacity-50"
                 } ${
                     interactive
-                        ? "group-hover:-translate-y-1 group-hover:border-gray-300 group-hover:shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_28px_-14px_rgba(0,0,0,0.28)] group-focus-visible:-translate-y-1 group-focus-visible:ring-2 group-focus-visible:ring-black group-focus-visible:ring-offset-2 group-active:translate-y-0 group-active:scale-[0.985] group-active:duration-100"
+                        ? "group-hover:-translate-y-[3px] group-hover:border-line group-hover:bg-surface group-hover:shadow-lifted group-focus-visible:-translate-y-[3px] group-focus-visible:shadow-lifted group-focus-visible:ring-2 group-focus-visible:ring-accent group-focus-visible:ring-offset-2 group-active:translate-y-0 group-active:scale-[0.99] group-active:duration-100"
                         : ""
                 }`}
             >
-                {/* Wash that warms the tile on hover, behind the icon. */}
-                <div
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white to-gray-100/70 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                />
-
-                <div className="relative flex h-full w-full items-center justify-center">
+                <div className="flex h-full w-full items-center justify-center">
                     <div
-                        className={`h-[42%] w-[42%] transition-all duration-300 ease-out ${
+                        className={`h-[38%] w-[38%] transition-[transform,color] duration-[450ms] ease-out ${
                             isEmphasized
-                                ? "text-gray-700 group-hover:scale-[1.08] group-hover:text-black"
-                                : "text-gray-400"
+                                ? "text-ink-secondary group-hover:scale-[1.06] group-hover:text-ink"
+                                : "text-ink-quaternary"
                         }`}
                     >
                         {IconComponent && <IconComponent />}
                     </div>
                 </div>
 
-                {/* Corner cue: appears only on hover, so the resting state stays quiet. */}
+                {/* Corner cue, revealed on hover so the resting grid stays quiet. */}
                 {interactive && (
-                    <div
+                    <span
                         aria-hidden
-                        className="pointer-events-none absolute right-2.5 top-2.5 translate-y-1 text-gray-400 opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100"
+                        className="pointer-events-none absolute right-3 top-3 translate-y-1 text-ink-quaternary opacity-0 transition-all duration-[450ms] ease-out group-hover:translate-y-0 group-hover:opacity-100"
                     >
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
                             <path
                                 d="M7 17 17 7M17 7H9M17 7v8"
                                 stroke="currentColor"
-                                strokeWidth="1.8"
+                                strokeWidth="2"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                             />
                         </svg>
-                    </div>
+                    </span>
                 )}
             </div>
 
-            {/* Label */}
-            <div className="mt-3 px-0.5 text-center">
+            <div className="mt-3.5">
                 <p
-                    className={`mb-0.5 text-[10px] uppercase tracking-[0.14em] transition-colors duration-200 ${
-                        isEmphasized
-                            ? "font-medium text-gray-500 group-hover:text-black"
-                            : "text-gray-400"
+                    className={`text-label uppercase tabular-nums transition-colors duration-300 ${
+                        isEmphasized ? "text-ink-quaternary" : "text-ink-quaternary/70"
                     }`}
                 >
                     {project.code}
                 </p>
                 <p
-                    className={`text-[11px] leading-snug transition-colors duration-200 sm:text-[11.5px] ${
+                    className={`mt-1 text-caption leading-snug transition-colors duration-300 ${
                         isEmphasized
-                            ? "text-gray-400 group-hover:text-gray-700"
-                            : "text-gray-300"
+                            ? "text-ink-secondary group-hover:text-ink"
+                            : "text-ink-quaternary"
                     }`}
                 >
                     {project.title}

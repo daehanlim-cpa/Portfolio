@@ -3,7 +3,15 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import CategoryNav from "@/components/CategoryNav";
 
-const inter = Inter({ subsets: ["latin"], weight: ["300", "400", "500"] });
+// Exposed as a CSS variable so globals.css and the Tailwind font stack can both
+// reference it. Weights 200-600: the display sizes need the lighter cuts, and
+// 600 exists only for the rare emphasis that 500 can't carry.
+const inter = Inter({
+    subsets: ["latin"],
+    weight: ["200", "300", "400", "500", "600"],
+    variable: "--font-inter",
+    display: "swap",
+});
 
 export const metadata: Metadata = {
     metadataBase: new URL("https://daehanlim.com"),
@@ -53,8 +61,8 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
-            <body className={inter.className}>
+        <html lang="en" className={inter.variable}>
+            <body className="font-sans antialiased">
                 <CategoryNav />
                 {children}
             </body>

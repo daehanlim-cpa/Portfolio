@@ -13,7 +13,7 @@ export function ChatButton({ onClick }: { onClick: () => void }) {
     return (
         <button
             onClick={onClick}
-            className="rounded-full p-2 opacity-50 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-1"
+            className="rounded-full p-2 opacity-50 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
             aria-label="Ask about Daehan"
         >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -54,7 +54,7 @@ export function ChatSheet({ isOpen, onClose }: ChatSheetProps) {
                         exit={{ opacity: 0 }}
                         transition={{ duration: reduce ? 0 : 0.25 }}
                         onClick={onClose}
-                        className="fixed inset-0 z-[60] bg-black/20 backdrop-blur-[2px]"
+                        className="fixed inset-0 z-[60] bg-ink/20 backdrop-blur-[2px]"
                         aria-hidden
                     />
                     <motion.div
@@ -75,18 +75,18 @@ export function ChatSheet({ isOpen, onClose }: ChatSheetProps) {
                         onDragEnd={(_, info) => {
                             if (info.offset.y > 120 || info.velocity.y > 600) onClose();
                         }}
-                        className="fixed inset-x-0 bottom-0 z-[70] h-[88dvh] overflow-hidden rounded-t-[20px] border-t border-gray-200 bg-white shadow-2xl sm:inset-x-auto sm:right-6 sm:bottom-6 sm:h-[min(680px,82dvh)] sm:w-[420px] sm:rounded-[20px] sm:border"
+                        className="fixed inset-x-0 bottom-0 z-[70] h-[88dvh] overflow-hidden rounded-t-[20px] border-t border-line-soft bg-surface shadow-2xl sm:inset-x-auto sm:right-6 sm:bottom-6 sm:h-[min(680px,82dvh)] sm:w-[420px] sm:rounded-[20px] sm:border"
                     >
                         <div className="flex h-full flex-col">
                             {/* Grabber only — the sheet is drag-to-dismiss, so a
                                 Close button alongside it would be redundant. */}
                             <div className="flex justify-center px-4 pt-2.5 sm:hidden">
-                                <div className="h-1 w-9 rounded-full bg-gray-300" aria-hidden />
+                                <div className="h-1 w-9 rounded-full bg-ink-quaternary" aria-hidden />
                             </div>
                             <button
                                 onClick={onClose}
                                 aria-label="Close"
-                                className="absolute right-3 top-3 z-20 flex h-7 w-7 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black"
+                                className="absolute right-3 top-3 z-20 flex h-7 w-7 items-center justify-center rounded-full text-ink-quaternary transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                             >
                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden>
                                     <path

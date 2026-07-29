@@ -10,83 +10,61 @@ export default function BlogSection() {
     const [language, setLanguage] = useState<Language>("en");
 
     return (
-        <div className="w-full px-6 sm:px-8 py-20">
-            <div className="max-w-7xl mx-auto">
-                {/* Section Header with Language Toggle */}
-                <div className="mb-12 flex items-center justify-between">
-                    <h2 className="text-xs uppercase tracking-wider text-gray-400">
-                        SS Archive
-                    </h2>
+        <section className="border-t border-line-soft px-6 py-20 sm:px-10 sm:py-24">
+            <div className="mx-auto max-w-content">
+                <div className="mb-10 flex items-baseline justify-between gap-6">
+                    <h2 className="text-title-sm font-light text-ink">Writing</h2>
 
-                    {/* Language Toggle */}
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setLanguage("en")}
-                            className={`text-[10px] uppercase tracking-wider transition-colors px-2 py-1 ${language === "en"
-                                ? "text-black font-medium"
-                                : "text-gray-400 hover:text-black"
+                    {/* Two-state toggle. Sized to the text, not padded to a button. */}
+                    <div className="flex items-center gap-1 rounded-lg border border-line-soft bg-surface-muted p-0.5">
+                        {(["en", "ko"] as const).map((code) => (
+                            <button
+                                key={code}
+                                onClick={() => setLanguage(code)}
+                                aria-pressed={language === code}
+                                className={`rounded-[7px] px-2.5 py-1 text-label uppercase transition-colors duration-200 ${
+                                    language === code
+                                        ? "bg-surface font-medium text-ink shadow-subtle"
+                                        : "text-ink-tertiary hover:text-ink"
                                 }`}
-                        >
-                            EN
-                        </button>
-                        <span className="text-gray-300">/</span>
-                        <button
-                            onClick={() => setLanguage("ko")}
-                            className={`text-[10px] uppercase tracking-wider transition-colors px-2 py-1 ${language === "ko"
-                                ? "text-black font-medium"
-                                : "text-gray-400 hover:text-black"
-                                }`}
-                        >
-                            KO
-                        </button>
+                            >
+                                {code}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
-                {/* Blog List - Minimal Typography */}
-                <div className="space-y-0">
-                    {blogPosts.map((post, index) => (
-                        <Link
-                            key={post.id}
-                            href={`/blog/${post.slug}`}
-                            className="group block py-6 border-t border-gray-200 first:border-t-0 hover:bg-gray-50 transition-colors -mx-6 sm:-mx-8 px-6 sm:px-8"
-                        >
-                            <div className="flex items-start justify-between gap-8">
-                                {/* Left: Title and Description */}
-                                <div className="flex-1 min-w-0">
-                                    <h3 className="text-sm font-light text-gray-900 mb-1 group-hover:text-black transition-colors">
+                <ul className="-mx-4">
+                    {blogPosts.map((post) => (
+                        <li key={post.id}>
+                            <Link
+                                href={`/blog/${post.slug}`}
+                                className="group flex items-baseline justify-between gap-8 rounded-md px-4 py-5 transition-colors duration-200 hover:bg-surface-sunken"
+                            >
+                                <div className="min-w-0 flex-1">
+                                    <h3 className="truncate text-body text-ink-secondary transition-colors group-hover:text-ink">
                                         {post.title[language]}
                                     </h3>
-                                    <p className="text-xs text-gray-400 line-clamp-1">
+                                    <p className="mt-1 truncate text-caption text-ink-quaternary">
                                         {post.description[language]}
                                     </p>
                                 </div>
 
-                                {/* Right: Date and Tags */}
-                                <div className="flex items-center gap-6 flex-shrink-0">
-                                    {/* Tags */}
+                                <div className="flex shrink-0 items-baseline gap-6">
                                     {post.tags && post.tags.length > 0 && (
-                                        <div className="hidden sm:flex gap-2">
-                                            {post.tags.slice(0, 2).map((tag) => (
-                                                <span
-                                                    key={tag}
-                                                    className="text-[10px] uppercase tracking-wider text-gray-400"
-                                                >
-                                                    {tag}
-                                                </span>
-                                            ))}
-                                        </div>
+                                        <span className="hidden text-label uppercase text-ink-quaternary sm:inline">
+                                            {post.tags[0]}
+                                        </span>
                                     )}
-
-                                    {/* Date */}
-                                    <span className="text-xs text-gray-400 tabular-nums">
+                                    <time className="text-caption tabular-nums text-ink-quaternary">
                                         {post.date}
-                                    </span>
+                                    </time>
                                 </div>
-                            </div>
-                        </Link>
+                            </Link>
+                        </li>
                     ))}
-                </div>
+                </ul>
             </div>
-        </div>
+        </section>
     );
 }

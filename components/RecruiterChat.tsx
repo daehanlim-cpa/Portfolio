@@ -107,7 +107,7 @@ function TypingIndicator() {
             {[0, 1, 2].map((i) => (
                 <motion.span
                     key={i}
-                    className="h-[6px] w-[6px] rounded-full bg-black/25"
+                    className="h-[6px] w-[6px] rounded-full bg-ink/25"
                     animate={reduce ? undefined : { opacity: [0.2, 0.9, 0.2] }}
                     transition={
                         reduce
@@ -259,24 +259,24 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
     const showFollowUps = !isEmpty && !isStreaming && !closed && exchanges < 5;
 
     return (
-        <div className="flex h-full flex-col bg-white">
+        <div className="flex h-full flex-col bg-surface">
             {/* The landing variant leans on the site nav for context, so it
                 omits this bar entirely and lets the empty state carry the page. */}
             {!isLanding && (
                 <header
-                    className={`sticky top-0 z-10 border-b border-gray-200/80 bg-white/70 py-4 pl-6 backdrop-blur-xl backdrop-saturate-150 ${
+                    className={`sticky top-0 z-10 border-b border-line-soft bg-white/80 py-4 pl-6 backdrop-blur-xl backdrop-saturate-150 ${
                         isCompact ? "pr-14" : "pr-6"
                     }`}
                 >
                     <div className="mx-auto flex max-w-2xl items-center justify-between gap-4">
                         <div>
                             <h2 className="text-[13px] font-medium tracking-tight">Ask about Daehan</h2>
-                            <p className="mt-0.5 text-[11px] text-gray-500">
+                            <p className="mt-0.5 text-[11px] text-ink-tertiary">
                                 His work, his projects, how he thinks
                             </p>
                         </div>
                         {showCounter && (
-                            <span className="shrink-0 text-[11px] tabular-nums text-gray-400">
+                            <span className="shrink-0 text-[11px] tabular-nums text-ink-quaternary">
                                 {remaining} left
                             </span>
                         )}
@@ -304,17 +304,17 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                         >
                             {isLanding ? (
                                 <>
-                                    <h1 className="text-[26px] font-light leading-[1.25] tracking-[-0.02em] text-black sm:text-[34px]">
+                                    <h1 className="text-title font-light text-ink sm:text-display-sm">
                                         Ask me about Daehan.
                                     </h1>
-                                    <p className="mt-3 max-w-md text-[15px] leading-relaxed text-gray-500 sm:text-[16px]">
+                                    <p className="mt-4 max-w-md text-body font-light leading-relaxed text-ink-tertiary sm:text-body-lg">
                                         I know his projects, his background, and how he works.
                                         Ask anything — whether you&rsquo;re hiring, collaborating,
                                         or just curious.
                                     </p>
                                 </>
                             ) : (
-                                <p className="text-[15px] leading-relaxed text-gray-500">
+                                <p className="text-[15px] leading-relaxed text-ink-tertiary">
                                     I&rsquo;m Daehan&rsquo;s AI assistant. Ask about his work, his
                                     projects, or how his experience fits what you&rsquo;re looking
                                     for.
@@ -339,7 +339,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                                             duration: 0.45,
                                             ease: [0.16, 1, 0.3, 1],
                                         }}
-                                        className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-left text-[14px] leading-snug text-gray-700 transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 active:scale-[0.99] active:bg-gray-100"
+                                        className="w-full rounded-2xl border border-line-soft bg-surface px-4 py-3 text-left text-[14px] leading-snug text-ink-secondary transition-all duration-200 hover:border-line hover:bg-surface-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 active:scale-[0.99] active:bg-surface-muted"
                                     >
                                         {prompt}
                                     </motion.button>
@@ -367,10 +367,10 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                                     <div
                                         className={`max-w-[86%] text-[15px] leading-relaxed ${
                                             message.role === "user"
-                                                ? "rounded-[22px] bg-black px-4 py-2.5 text-white"
+                                                ? "rounded-[22px] bg-ink px-4 py-2.5 text-white"
                                                 : message.notice
-                                                  ? "rounded-[22px] border border-gray-200 bg-white px-4 py-3 text-gray-500"
-                                                  : "rounded-[22px] bg-gray-100 px-4 py-3 text-gray-900"
+                                                  ? "rounded-[22px] border border-line-soft bg-surface px-4 py-3 text-ink-tertiary"
+                                                  : "rounded-[22px] bg-surface-muted px-4 py-3 text-ink"
                                         }`}
                                     >
                                         {message.content ? (
@@ -380,12 +380,12 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                                         )}
 
                                         {message.sources && message.sources.length > 0 && (
-                                            <div className="mt-3 flex flex-wrap gap-1.5 border-t border-black/5 pt-3">
+                                            <div className="mt-3 flex flex-wrap gap-1.5 border-t border-line-soft pt-3">
                                                 {message.sources.map((source) => (
                                                     <Link
                                                         key={source.href}
                                                         href={source.href}
-                                                        className="rounded-full bg-white px-2.5 py-1 text-[11px] text-gray-600 transition-colors hover:text-black"
+                                                        className="rounded-full bg-surface px-2.5 py-1 text-[11px] text-ink-secondary transition-colors hover:text-ink"
                                                     >
                                                         {source.title}
                                                     </Link>
@@ -410,7 +410,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                                 <button
                                     key={prompt}
                                     onClick={() => send(prompt)}
-                                    className="rounded-full border border-gray-200 px-3.5 py-1.5 text-[12.5px] text-gray-600 transition-colors duration-200 hover:border-gray-300 hover:bg-gray-50 hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+                                    className="rounded-full border border-line-soft px-3.5 py-1.5 text-[12.5px] text-ink-secondary transition-colors duration-200 hover:border-line hover:bg-surface-sunken hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
                                 >
                                     {prompt}
                                 </button>
@@ -423,12 +423,12 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                             initial={reduce ? false : { opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.5 }}
-                            className="mt-8 text-center text-[13px] text-gray-500"
+                            className="mt-8 text-center text-[13px] text-ink-tertiary"
                         >
                             Want to talk to Daehan directly?{" "}
                             <a
                                 href={`mailto:${EMAIL}`}
-                                className="text-black underline underline-offset-4 transition-opacity hover:opacity-60"
+                                className="text-ink underline underline-offset-4 transition-opacity hover:opacity-60"
                             >
                                 {EMAIL}
                             </a>
@@ -439,15 +439,15 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
 
             {/* Composer */}
             <div
-                className={`bg-white/70 backdrop-blur-xl backdrop-saturate-150 ${
+                className={`bg-white/80 backdrop-blur-xl backdrop-saturate-150 ${
                     isLanding
                         ? "px-5 pb-6 pt-2 sm:px-6"
-                        : "border-t border-gray-200/80 px-6 py-4"
+                        : "border-t border-line-soft px-6 py-4"
                 }`}
             >
                 <div className="mx-auto max-w-2xl">
                     <div
-                        className={`flex items-end gap-2 border border-gray-200 bg-white transition-colors duration-200 focus-within:border-gray-400 ${
+                        className={`flex items-end gap-2 border border-line-soft bg-surface transition-colors duration-200 focus-within:border-ink-quaternary ${
                             isLanding
                                 ? "rounded-[26px] px-5 py-3 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.12)]"
                                 : "rounded-[24px] px-4 py-2.5"
@@ -476,7 +476,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                                       : "Ask a question…"
                             }
                             aria-label="Ask a question about Daehan"
-                            className="max-h-[132px] flex-1 resize-none bg-transparent text-[15px] leading-relaxed outline-none placeholder:text-gray-400 disabled:cursor-not-allowed"
+                            className="max-h-[132px] flex-1 resize-none bg-transparent text-[15px] leading-relaxed outline-none placeholder:text-ink-quaternary disabled:cursor-not-allowed"
                         />
                         {/* transition-colors rather than transition-all, so the focus
                             ring appears instantly instead of fading in over 200ms. */}
@@ -484,7 +484,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                             onClick={() => send(input)}
                             disabled={isStreaming || closed || !input.trim()}
                             aria-label="Send message"
-                            className="mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black text-white transition-colors duration-200 hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 disabled:opacity-20"
+                            className="mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-white transition-colors duration-200 hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-20"
                         >
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
                                 <path
@@ -497,7 +497,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                             </svg>
                         </button>
                     </div>
-                    <div className="mt-2.5 flex items-center justify-center gap-3 text-[11px] leading-relaxed text-gray-400">
+                    <div className="mt-2.5 flex items-center justify-center gap-3 text-[11px] leading-relaxed text-ink-quaternary">
                         <span>Answers come from Daehan&rsquo;s resume and project work.</span>
                         {showCounter && isLanding && (
                             <span className="tabular-nums">{remaining} left</span>

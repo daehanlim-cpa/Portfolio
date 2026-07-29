@@ -1,156 +1,130 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { projects } from "@/data/projects";
+import { Icons } from "@/components/ProjectIcons";
 
 export async function generateStaticParams() {
-    return projects.map((project) => ({
-        id: project.id,
-    }));
+    return projects.map((project) => ({ id: project.id }));
 }
 
-export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
-    const resolvedParams = React.use(params);
-    const project = projects.find((p) => p.id === resolvedParams.id);
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const project = projects.find((p) => p.id === id);
+    if (!project) return {};
+    return { title: project.title, description: project.shortDescription };
+}
 
-    if (!project) {
-        notFound();
-    }
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+    return (
+        <section>
+            <h2 className="mb-5 border-b border-line-soft pb-2.5 text-label uppercase text-ink-tertiary">
+                {title}
+            </h2>
+            {children}
+        </section>
+    );
+}
 
-    const currentIndex = projects.findIndex(p => p.id === project.id);
-    const prevProject = currentIndex > 0 ? projects[currentIndex - 1] : null;
-    const nextProject = currentIndex < projects.length - 1 ? projects[currentIndex + 1] : null;
+function Dashed({ items }: { items: string[] }) {
+    return (
+        <ul className="space-y-3.5">
+            {items.map((item, i) => (
+                <li key={i} className="flex gap-3 text-body leading-[1.7] text-ink-secondary">
+                    <span aria-hidden className="mt-[0.6em] h-[3px] w-[3px] shrink-0 rounded-full bg-ink-quaternary" />
+                    <span>{item}</span>
+                </li>
+            ))}
+        </ul>
+    );
+}
+
+export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const project = projects.find((p) => p.id === id);
+
+    if (!project) notFound();
+
+    const index = projects.findIndex((p) => p.id === project.id);
+    const previous = index > 0 ? projects[index - 1] : null;
+    const next = index < projects.length - 1 ? projects[index + 1] : null;
+    const IconComponent = Icons[project.iconKey as keyof typeof Icons];
 
     return (
-        <main className="min-h-screen bg-white">
-            <div className="max-w-7xl mx-auto px-8 md:px-16 py-16">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-                    {/* Left - Image Gallery */}
-                    <div className="space-y-4">
-                        <div className="relative aspect-square">
-                            <Image
-                                src={project.heroImage}
-                                alt={project.code}
-                                fill
-                                className="object-contain"
-                                priority
-                            />
-                        </div>
-                        {project.galleryImages && project.galleryImages.length > 1 && (
-                            <div className="grid grid-cols-3 gap-4">
-                                {project.galleryImages.slice(1).map((img, idx) => (
-                                    <div key={idx} className="relative aspect-square">
-                                        <Image
-                                            src={img}
-                                            alt={`${project.code} - ${idx + 1}`}
-                                            fill
-                                            className="object-contain"
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+        <main className="min-h-screen bg-surface px-6 pb-28 pt-14 sm:px-8 sm:pt-20">
+            <article className="mx-auto max-w-3xl">
+                {/*
+                 * The icon, not a photograph. This route used to render
+                 * project.heroImage, but only project1-6.png exist — the five
+                 * projects pointing at project7-10.png and purpose1.png showed
+                 * broken images. The icon set covers every project by design.
+                 */}
+                <header className="mb-16 sm:mb-20">
+                    <div className="mb-8 h-12 w-12 text-ink-secondary sm:h-14 sm:w-14">
+                        {IconComponent && <IconComponent />}
                     </div>
+                    <p className="text-label uppercase tabular-nums text-ink-quaternary">{project.code}</p>
+                    <h1 className="mt-3 text-display-sm font-light text-ink sm:text-display">
+                        {project.title}
+                    </h1>
+                    <p className="mt-5 max-w-prose text-body-lg font-light leading-relaxed text-ink-tertiary">
+                        {project.shortDescription}
+                    </p>
+                </header>
 
-                    {/* Right - Details */}
-                    <div className="space-y-8">
-                        {/* Header */}
-                        <div>
-                            <p className="text-xs uppercase tracking-widest text-gray-500 mb-2">
-                                {project.code}
-                            </p>
-                            <h1 className="text-2xl font-light mb-4">{project.title}</h1>
-                            <p className="text-sm text-gray-600 leading-relaxed">
-                                {project.shortDescription}
-                            </p>
-                        </div>
+                <div className="space-y-16 sm:space-y-20">
+                    {project.overview && (
+                        <Section title="Overview">
+                            <p className="text-body leading-[1.75] text-ink-secondary">{project.overview}</p>
+                        </Section>
+                    )}
 
-                        {/* Categories */}
-                        <div className="flex flex-wrap gap-2">
-                            {project.categories.map((cat) => (
-                                <Link
-                                    key={cat}
-                                    href={`/skill/${encodeURIComponent(cat)}`}
-                                    className="text-xs px-3 py-1 border border-gray-300 hover:bg-gray-50 transition-colors"
-                                >
-                                    {cat}
-                                </Link>
-                            ))}
-                        </div>
+                    <Section title="Problem">
+                        <Dashed items={project.problem} />
+                    </Section>
 
-                        {/* Problem */}
-                        <div>
-                            <h2 className="text-xs uppercase tracking-wider text-gray-900 mb-3">
-                                Problem
-                            </h2>
-                            <ul className="space-y-2">
-                                {project.problem.map((item, idx) => (
-                                    <li key={idx} className="text-sm text-gray-600 flex gap-2">
-                                        <span className="text-gray-400">—</span>
-                                        <span>{item}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
+                    <Section title="Approach">
+                        {project.solution && (
+                            <p className="mb-6 text-body leading-[1.75] text-ink-secondary">{project.solution}</p>
+                        )}
+                        <Dashed items={project.approach} />
+                    </Section>
 
-                        {/* Approach */}
-                        <div>
-                            <h2 className="text-xs uppercase tracking-wider text-gray-900 mb-3">
-                                Approach
-                            </h2>
-                            <ul className="space-y-2">
-                                {project.approach.map((item, idx) => (
-                                    <li key={idx} className="text-sm text-gray-600 flex gap-2">
-                                        <span className="text-gray-400">—</span>
-                                        <span>{item}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        {/* Impact */}
-                        <div>
-                            <h2 className="text-xs uppercase tracking-wider text-gray-900 mb-3">
-                                Impact
-                            </h2>
-                            <ul className="space-y-2">
-                                {project.impact.map((item, idx) => (
-                                    <li key={idx} className="text-sm text-gray-600 flex gap-2">
-                                        <span className="text-gray-400">—</span>
-                                        <span>{item}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        {/* Tech Stack */}
-                        <div>
-                            <h2 className="text-xs uppercase tracking-wider text-gray-900 mb-3">
-                                Tech Stack
-                            </h2>
-                            <div className="flex flex-wrap gap-2">
-                                {project.techStack.map((tech) => (
-                                    <span
-                                        key={tech}
-                                        className="text-xs px-3 py-1 bg-gray-100 text-gray-700"
-                                    >
-                                        {tech}
+                    <Section title="Impact">
+                        <ul className="grid gap-px overflow-hidden rounded-lg bg-line-soft">
+                            {project.impact.map((item, i) => (
+                                <li key={i} className="bg-surface-sunken px-5 py-5">
+                                    <span className="text-label uppercase tabular-nums text-ink-quaternary">
+                                        {String(i + 1).padStart(2, "0")}
                                     </span>
-                                ))}
-                            </div>
-                        </div>
+                                    <p className="mt-2 text-body leading-[1.7] text-ink">{item}</p>
+                                </li>
+                            ))}
+                        </ul>
+                    </Section>
 
-                        {/* Links */}
+                    <div className="border-t border-line-soft pt-10">
+                        <p className="mb-4 text-label uppercase text-ink-quaternary">Stack</p>
+                        <ul className="flex flex-wrap gap-2">
+                            {project.techStack.map((tech) => (
+                                <li
+                                    key={tech}
+                                    className="rounded-full bg-surface-muted px-3 py-1.5 text-caption text-ink-secondary"
+                                >
+                                    {tech}
+                                </li>
+                            ))}
+                        </ul>
+
                         {(project.links.demo || project.links.repo || project.links.pdf) && (
-                            <div className="flex gap-4 pt-4">
+                            <div className="mt-9 flex flex-wrap gap-3">
                                 {project.links.demo && (
                                     <a
                                         href={project.links.demo}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="px-6 py-3 border border-black bg-black text-white text-xs uppercase tracking-wider hover:bg-white hover:text-black transition-colors"
+                                        className="rounded-full bg-ink px-5 py-2.5 text-caption font-medium text-white transition-opacity hover:opacity-85"
                                     >
-                                        View Demo
+                                        Live demo
                                     </a>
                                 )}
                                 {project.links.repo && (
@@ -158,9 +132,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                                         href={project.links.repo}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="px-6 py-3 border border-black text-xs uppercase tracking-wider hover:bg-black hover:text-white transition-colors"
+                                        className="rounded-full border border-line px-5 py-2.5 text-caption text-ink transition-colors hover:bg-surface-muted"
                                     >
-                                        View Repo
+                                        View code
                                     </a>
                                 )}
                                 {project.links.pdf && (
@@ -168,50 +142,54 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                                         href={project.links.pdf}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="px-6 py-3 border border-black text-xs uppercase tracking-wider hover:bg-black hover:text-white transition-colors"
+                                        className="rounded-full border border-line px-5 py-2.5 text-caption text-ink transition-colors hover:bg-surface-muted"
                                     >
-                                        Case Study
+                                        Case study
                                     </a>
                                 )}
                             </div>
                         )}
                     </div>
-                </div>
 
-                {/* Next/Previous Navigation */}
-                <div className="flex justify-between items-center mt-24 pt-8 border-t border-gray-200">
-                    {prevProject ? (
+                    {/* Sibling navigation. Titles rather than bare arrows, so you
+                        know what you're moving to. */}
+                    <nav className="grid gap-px overflow-hidden rounded-lg bg-line-soft sm:grid-cols-2">
+                        {previous ? (
+                            <Link
+                                href={`/project/${previous.id}`}
+                                className="group bg-surface-sunken px-5 py-5 transition-colors hover:bg-surface-muted"
+                            >
+                                <span className="text-label uppercase text-ink-quaternary">Previous</span>
+                                <p className="mt-1.5 text-caption text-ink-secondary group-hover:text-ink">
+                                    {previous.title}
+                                </p>
+                            </Link>
+                        ) : (
+                            <span className="hidden bg-surface-sunken sm:block" />
+                        )}
+                        {next && (
+                            <Link
+                                href={`/project/${next.id}`}
+                                className="group bg-surface-sunken px-5 py-5 transition-colors hover:bg-surface-muted sm:text-right"
+                            >
+                                <span className="text-label uppercase text-ink-quaternary">Next</span>
+                                <p className="mt-1.5 text-caption text-ink-secondary group-hover:text-ink">
+                                    {next.title}
+                                </p>
+                            </Link>
+                        )}
+                    </nav>
+
+                    <div className="flex justify-center">
                         <Link
-                            href={`/project/${prevProject.id}`}
-                            className="text-xs uppercase tracking-wider opacity-50 hover:opacity-100 transition-opacity"
+                            href="/experience"
+                            className="text-caption text-ink-tertiary transition-colors hover:text-ink"
                         >
-                            ← {prevProject.code}
+                            All experience
                         </Link>
-                    ) : (
-                        <div />
-                    )}
-
-                    <Link
-                        href="/work"
-                        className="text-xs uppercase tracking-wider opacity-50 hover:opacity-100 transition-opacity"
-                    >
-                        All Projects
-                    </Link>
-
-                    {nextProject ? (
-                        <Link
-                            href={`/project/${nextProject.id}`}
-                            className="text-xs uppercase tracking-wider opacity-50 hover:opacity-100 transition-opacity"
-                        >
-                            {nextProject.code} →
-                        </Link>
-                    ) : (
-                        <div />
-                    )}
+                    </div>
                 </div>
-            </div>
+            </article>
         </main>
     );
 }
-
-import React from "react";

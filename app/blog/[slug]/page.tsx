@@ -27,10 +27,10 @@ export default function BlogPostPage() {
             .map((line, index) => {
                 // Headers
                 if (line.startsWith('### ')) {
-                    return `<h3 key="${index}" class="text-base font-light text-gray-900 mt-8 mb-3">${line.slice(4)}</h3>`;
+                    return `<h3 key="${index}" class="text-base font-light text-ink mt-8 mb-3">${line.slice(4)}</h3>`;
                 }
                 if (line.startsWith('## ')) {
-                    return `<h2 key="${index}" class="text-lg font-light text-gray-900 mt-12 mb-4">${line.slice(3)}</h2>`;
+                    return `<h2 key="${index}" class="text-lg font-light text-ink mt-12 mb-4">${line.slice(3)}</h2>`;
                 }
                 if (line.startsWith('# ')) {
                     // Skip the first H1 header (it's already shown as the page title)
@@ -38,7 +38,7 @@ export default function BlogPostPage() {
                         firstH1Skipped = true;
                         return '';
                     }
-                    return `<h1 key="${index}" class="text-2xl font-light text-gray-900 mb-8">${line.slice(2)}</h1>`;
+                    return `<h1 key="${index}" class="text-2xl font-light text-ink mb-8">${line.slice(2)}</h1>`;
                 }
 
                 // Bold text
@@ -46,12 +46,12 @@ export default function BlogPostPage() {
 
                 // List items
                 if (line.trim().startsWith('- ')) {
-                    return `<li key="${index}" class="text-sm text-gray-700 leading-relaxed ml-4">${line.slice(2)}</li>`;
+                    return `<li key="${index}" class="text-sm text-ink-secondary leading-relaxed ml-4">${line.slice(2)}</li>`;
                 }
 
                 // Numbered lists
                 if (line.match(/^\d+\.\s/)) {
-                    return `<li key="${index}" class="text-sm text-gray-700 leading-relaxed ml-4">${line.replace(/^\d+\.\s/, '')}</li>`;
+                    return `<li key="${index}" class="text-sm text-ink-secondary leading-relaxed ml-4">${line.replace(/^\d+\.\s/, '')}</li>`;
                 }
 
                 // Empty lines
@@ -61,11 +61,11 @@ export default function BlogPostPage() {
 
                 // Horizontal rule
                 if (line.trim() === '---') {
-                    return `<hr key="${index}" class="my-12 border-gray-200" />`;
+                    return `<hr key="${index}" class="my-12 border-line-soft" />`;
                 }
 
                 // Regular paragraphs
-                return `<p key="${index}" class="text-sm text-gray-700 leading-relaxed">${line}</p>`;
+                return `<p key="${index}" class="text-sm text-ink-secondary leading-relaxed">${line}</p>`;
             })
             .join('');
     };
@@ -76,42 +76,37 @@ export default function BlogPostPage() {
                 {/* Header with Back Button and Language Toggle */}
                 <div className="mb-12 flex items-center justify-between">
                     <Link
-                        href="/work"
-                        className="text-xs uppercase tracking-wider text-gray-400 hover:text-black transition-colors"
+                        href="/experience"
+                        className="text-caption text-ink-tertiary transition-colors hover:text-ink"
                     >
                         ← Back
                     </Link>
 
                     {/* Language Toggle */}
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setLanguage("en")}
-                            className={`text-[10px] uppercase tracking-wider transition-colors px-2 py-1 ${language === "en"
-                                ? "text-black font-medium"
-                                : "text-gray-400 hover:text-black"
+                    <div className="flex items-center gap-1 rounded-lg border border-line-soft bg-surface-muted p-0.5">
+                        {(["en", "ko"] as const).map((code) => (
+                            <button
+                                key={code}
+                                onClick={() => setLanguage(code)}
+                                aria-pressed={language === code}
+                                className={`rounded-[7px] px-2.5 py-1 text-label uppercase transition-colors duration-200 ${
+                                    language === code
+                                        ? "bg-surface font-medium text-ink shadow-subtle"
+                                        : "text-ink-tertiary hover:text-ink"
                                 }`}
-                        >
-                            EN
-                        </button>
-                        <span className="text-gray-300">/</span>
-                        <button
-                            onClick={() => setLanguage("ko")}
-                            className={`text-[10px] uppercase tracking-wider transition-colors px-2 py-1 ${language === "ko"
-                                ? "text-black font-medium"
-                                : "text-gray-400 hover:text-black"
-                                }`}
-                        >
-                            KO
-                        </button>
+                            >
+                                {code}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
                 {/* Post Metadata */}
-                <div className="mb-8 pb-8 border-b border-gray-200">
-                    <h1 className="text-2xl font-light text-gray-900 mb-3">
+                <div className="mb-8 pb-8 border-b border-line-soft">
+                    <h1 className="text-2xl font-light text-ink mb-3">
                         {post.title[language]}
                     </h1>
-                    <div className="flex items-center gap-4 text-xs text-gray-400">
+                    <div className="flex items-center gap-4 text-xs text-ink-quaternary">
                         <span className="tabular-nums">{post.date}</span>
                         {post.tags && post.tags.length > 0 && (
                             <div className="flex gap-2">
@@ -135,9 +130,9 @@ export default function BlogPostPage() {
                 />
 
                 {/* LinkedIn Contact Section */}
-                <div className="mt-16 pt-8 border-t border-gray-200">
+                <div className="mt-16 pt-8 border-t border-line-soft">
                     <div className="text-center">
-                        <p className="text-sm text-gray-600 mb-4">
+                        <p className="text-sm text-ink-secondary mb-4">
                             {language === "ko"
                                 ? "궁금한 점이 있으시거나 더 이야기하고 싶으시다면"
                                 : "Have questions or want to connect?"}
@@ -146,7 +141,7 @@ export default function BlogPostPage() {
                             href="https://www.linkedin.com/in/daehan-lim-cpa/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-block text-xs uppercase tracking-wider text-gray-900 hover:text-gray-600 transition-colors border-b border-gray-900 hover:border-gray-600 pb-0.5"
+                            className="inline-block rounded-full border border-line px-5 py-2.5 text-caption text-ink transition-colors hover:bg-surface-muted"
                         >
                             {language === "ko" ? "링크드인에서 메시지 보내기" : "Message me on LinkedIn"}
                         </a>

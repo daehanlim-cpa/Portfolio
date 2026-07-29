@@ -7,11 +7,10 @@ export const metadata = {
 };
 
 export default function HomePage() {
-    // Offset matches the sticky CategoryNav, measured: 104px on mobile where it
-    // wraps to two rows, 85px from the sm breakpoint up. Keep in sync if the
-    // nav's padding changes, or the composer clips off the bottom of the screen.
+    // --nav-h is defined once in globals.css and consumed by both the nav and
+    // this view, so the two cannot drift out of sync.
     return (
-        <div className="h-[calc(100dvh-104px)] sm:h-[calc(100dvh-85px)]">
+        <div className="h-[calc(100dvh-var(--nav-h))]">
             <RecruiterChat variant="landing" />
         </div>
     );
