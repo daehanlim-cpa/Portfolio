@@ -1,6 +1,6 @@
-# Daehan Lim - Yeezy-Inspired Minimal Portfolio
+# Daehan Lim - Minimal Portfolio
 
-A minimalist portfolio website inspired by premium e-commerce storefronts (Yeezy, Supreme). Features a clean product-grid layout with skillset filtering.
+A minimalist portfolio website inspired by premium e-commerce storefronts. Features a clean product-grid layout with skillset filtering.
 
 ## Design Philosophy
 
