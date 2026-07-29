@@ -1,19 +1,26 @@
-import fs from "fs";
-import path from "path";
+import embeddingsData from "@/data/embeddings.json";
 
 export interface ResumeChunk {
     text: string;
     embedding: number[];
     section: string;
+    /** Where this chunk came from, so answers can cite and deep-link. */
+    sourceType: "resume" | "project";
+    /** Project id, used to build a /project/[id] link. Absent for resume chunks. */
+    sourceId?: string;
+    sourceTitle?: string;
 }
 
-export function loadResumeContent(): string {
-    const resumePath = path.join(process.cwd(), "content", "resume.md");
-    return fs.readFileSync(resumePath, "utf-8");
+export interface ScoredChunk {
+    chunk: ResumeChunk;
+    score: number;
 }
 
+/**
+ * Splits markdown into chunks that stay under roughly `maxTokens` words.
+ * Pure — the build script owns reading the file off disk.
+ */
 export function chunkText(text: string, maxTokens: number = 500): string[] {
-    // Simple chunking by paragraphs and sections
     const sections = text.split(/\n#{1,3}\s+/);
     const chunks: string[] = [];
 
@@ -56,14 +63,21 @@ export function cosineSimilarity(a: number[], b: number[]): number {
     magnitudeA = Math.sqrt(magnitudeA);
     magnitudeB = Math.sqrt(magnitudeB);
 
+    if (magnitudeA === 0 || magnitudeB === 0) return 0;
+
     return dotProduct / (magnitudeA * magnitudeB);
 }
 
+/**
+ * Returns the top matches with their similarity scores. The scores matter as
+ * much as the chunks — the topic gate uses the best score to decide whether a
+ * question is about Daehan at all, before we spend anything on generation.
+ */
 export function searchChunks(
     query: number[],
     chunks: ResumeChunk[],
-    topK: number = 5
-): ResumeChunk[] {
+    topK: number = 6
+): ScoredChunk[] {
     const scored = chunks.map((chunk) => ({
         chunk,
         score: cosineSimilarity(query, chunk.embedding),
@@ -71,16 +85,16 @@ export function searchChunks(
 
     scored.sort((a, b) => b.score - a.score);
 
-    return scored.slice(0, topK).map((item) => item.chunk);
+    return scored.slice(0, topK);
 }
 
+/**
+ * Statically imported so the bundler always traces it into the serverless
+ * function. `data/embeddings.json` is committed, so production builds never
+ * need an API key.
+ */
 export function loadEmbeddings(): ResumeChunk[] {
-    try {
-        const embeddingsPath = path.join(process.cwd(), "data", "embeddings.json");
-        const data = fs.readFileSync(embeddingsPath, "utf-8");
-        return JSON.parse(data);
-    } catch (error) {
-        console.error("Failed to load embeddings:", error);
-        return [];
-    }
+    // Cast through unknown: TS widens the JSON module's literal types (e.g.
+    // sourceType to string), which wouldn't otherwise overlap with ResumeChunk.
+    return embeddingsData as unknown as ResumeChunk[];
 }

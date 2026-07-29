@@ -31,7 +31,7 @@ export default function ResumeContent() {
             <div>
                 <h3 className="text-lg font-normal mb-3">Summary</h3>
                 <p className="text-sm text-gray-700 leading-relaxed">
-                    Forward deployed data and analytics professional with 6+ years of experience owning enterprise customer engagements from discovery through deployment. Leads executive conversations, shapes ambiguous business problems into practical solutions, and personally builds production workflows to deliver measurable results in regulated environments. Brings a CPA background with strong hands-on execution across data modernization and reporting platforms.
+                    Senior Forward Deployed Engineer with 7 years of experience owning enterprise customer engagements from discovery through production deployment. Leads executive and stakeholder conversations, shapes ambiguous business problems into practical solutions, and personally builds production GenAI platforms, agentic workflows, and scalable data architectures in regulated environments. Brings a CPA background with strong hands-on execution across AI, data modernization, and reporting platforms.
                 </p>
             </div>
 
@@ -39,6 +39,24 @@ export default function ResumeContent() {
             <div>
                 <h3 className="text-lg font-normal mb-4">Professional Experience</h3>
                 <div className="space-y-8">
+                    {/* Deloitte - Current Role */}
+                    <div>
+                        <div className="flex justify-between items-start mb-2">
+                            <div>
+                                <p className="font-medium text-sm">
+                                    Senior Forward Deployed Engineer
+                                </p>
+                                <p className="text-sm text-gray-600">Deloitte | Costa Mesa, California</p>
+                            </div>
+                            <p className="text-sm text-gray-500 whitespace-nowrap">Jul 2026 – Present</p>
+                        </div>
+                        <ul className="list-disc list-outside ml-4 space-y-2 text-sm text-gray-700">
+                            <li>
+                                Forward-deployed technical owner across enterprise customers, leading stakeholder discovery and solution design, then building and deploying production GenAI platforms, agentic workflows, and scalable architectures directly with client teams.
+                            </li>
+                        </ul>
+                    </div>
+
                     {/* Manager Role */}
                     <div>
                         <div className="flex justify-between items-start mb-2">
@@ -48,14 +66,14 @@ export default function ResumeContent() {
                                 </p>
                                 <p className="text-sm text-gray-600">Ernst & Young | Los Angeles, California</p>
                             </div>
-                            <p className="text-sm text-gray-500 whitespace-nowrap">2019 – Present</p>
+                            <p className="text-sm text-gray-500 whitespace-nowrap">Jul 2024 – Jul 2026</p>
                         </div>
                         <ul className="list-disc list-outside ml-4 space-y-2 text-sm text-gray-700">
                             <li>
-                                Serve as forward-deployed technical owner across multiple enterprise customers, leading executive discovery, business walkthroughs, and solution design, then building and deploying production data platforms directly with client teams.
+                                Served as forward-deployed technical owner across multiple enterprise customers, leading executive discovery, business walkthroughs, and solution design, then building and deploying production data platforms directly with client teams.
                             </li>
                             <li>
-                                Design end-to-end modernization architectures spanning data ingestion, governance, analytics, and BI, translating business workflows into operational systems covering metadata, lineage, data quality, and reporting layers.
+                                Designed end-to-end modernization architectures spanning data ingestion, governance, analytics, and BI, translating business workflows into operational systems covering metadata, lineage, data quality, and reporting layers.
                             </li>
                             <li>
                                 Hands-on delivery with data operations (analytics engineering and governance) and development operations (CI/CD, environment management) validating solutions and conducting demonstration with users.
@@ -78,6 +96,7 @@ export default function ResumeContent() {
                                 </p>
                                 <p className="text-sm text-gray-600">Ernst & Young | Los Angeles, California</p>
                             </div>
+                            <p className="text-sm text-gray-500 whitespace-nowrap">Jul 2021 – Jul 2024</p>
                         </div>
                         <ul className="list-disc list-outside ml-4 space-y-2 text-sm text-gray-700">
                             <li>
@@ -107,6 +126,7 @@ export default function ResumeContent() {
                                 </p>
                                 <p className="text-sm text-gray-600">Ernst & Young | Los Angeles, California</p>
                             </div>
+                            <p className="text-sm text-gray-500 whitespace-nowrap">Sep 2019 – Jul 2021</p>
                         </div>
                         <ul className="list-disc list-outside ml-4 space-y-2 text-sm text-gray-700">
                             <li>

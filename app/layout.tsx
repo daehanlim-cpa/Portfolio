@@ -11,8 +11,8 @@ export const metadata: Metadata = {
         default: "Daehan Lim | Data & AI Engineering",
         template: "%s | Daehan Lim"
     },
-    description: "Senior Manager at Ernst & Young specializing in Data Architecture, Cloud Engineering, and AI Solutions. Building enterprise-scale data platforms for Fortune 500 clients.",
-    keywords: ["Data Engineering", "AI", "Snowflake", "dbt", "Azure", "Cloud Architecture", "Enterprise Analytics"],
+    description: "Senior Forward Deployed Engineer at Deloitte specializing in GenAI platforms, agentic workflows, and enterprise data architecture. Building production AI and data systems for Fortune 500 clients.",
+    keywords: ["Forward Deployed Engineer", "GenAI", "Agentic AI", "Data Engineering", "AI", "Snowflake", "dbt", "Databricks", "Azure", "Cloud Architecture", "Enterprise Analytics"],
     authors: [{ name: "Daehan Lim" }],
     creator: "Daehan Lim",
     openGraph: {
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
         url: "https://daehanlim.com",
         siteName: "Daehan Lim Portfolio",
         title: "Daehan Lim | Data & AI Engineering",
-        description: "Senior Manager at Ernst & Young specializing in Data Architecture, Cloud Engineering, and AI Solutions.",
+        description: "Senior Forward Deployed Engineer at Deloitte specializing in GenAI platforms, agentic workflows, and enterprise data architecture.",
         images: [
             {
                 url: "/images/og-image.png",
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     twitter: {
         card: "summary_large_image",
         title: "Daehan Lim | Data & AI Engineering",
-        description: "Senior Manager at Ernst & Young specializing in Data Architecture, Cloud Engineering, and AI Solutions.",
+        description: "Senior Forward Deployed Engineer at Deloitte specializing in GenAI platforms, agentic workflows, and enterprise data architecture.",
         images: ["/images/og-image.png"]
     },
     robots: {

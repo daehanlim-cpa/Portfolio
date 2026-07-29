@@ -88,11 +88,28 @@ export default function ResumeDrawer({ isOpen, onClose }: ResumeDrawerProps) {
                                 <div className="space-y-6">
                                     <h3 className="text-xs font-bold tracking-widest uppercase border-b border-black pb-2 mb-6 flex justify-between">
                                         <span>PROFESSIONAL EXPERIENCE</span>
-                                        <span>QTY: 3</span>
+                                        <span>QTY: 4</span>
                                     </h3>
 
                                     {/* Company Header */}
                                     <div className="text-xs font-bold tracking-wide mb-4">
+                                        DELOITTE
+                                    </div>
+
+                                    <div className="space-y-6 pl-4">
+                                        {/* Current Role */}
+                                        <div className="flex justify-between text-xs tracking-wide">
+                                            <div className="space-y-1">
+                                                <p className="font-bold">SENIOR FORWARD DEPLOYED ENGINEER</p>
+                                            </div>
+                                            <div className="text-right font-mono text-[10px] text-gray-400 whitespace-nowrap ml-4">
+                                                JUL 2026 - PRESENT
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Company Header */}
+                                    <div className="text-xs font-bold tracking-wide mb-4 pt-2">
                                         ERNST & YOUNG
                                     </div>
 
@@ -102,8 +119,8 @@ export default function ResumeDrawer({ isOpen, onClose }: ResumeDrawerProps) {
                                             <div className="space-y-1">
                                                 <p className="font-bold">AI & DATA MANAGER</p>
                                             </div>
-                                            <div className="text-right font-mono text-[10px] text-gray-400">
-                                                JUL 2024 - PRESENT
+                                            <div className="text-right font-mono text-[10px] text-gray-400 whitespace-nowrap ml-4">
+                                                JUL 2024 - JUL 2026
                                             </div>
                                         </div>
 

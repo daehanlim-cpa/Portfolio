@@ -27,9 +27,10 @@ A minimalist portfolio website inspired by premium e-commerce storefronts (Yeezy
 - Tech stack tags and action buttons
 - Next/Previous project navigation
 
-✅ **AI-Powered Resume Chat**
-- Grounded responses using Google Gemini RAG
-- Located at `/resume`
+✅ **AI Recruiter Chat**
+- Grounded responses using Google Gemini RAG over the resume and project case studies
+- Located at `/chat`, plus a launcher in the nav
+- Streaming replies, topic guardrails, and durable rate limiting
 
 ## Tech Stack
 
@@ -169,17 +170,63 @@ className="... group-hover:scale-105"
 className="... group-hover:scale-102"
 ```
 
-## Resume Chat Setup
+## Recruiter Chat Setup
 
-1. Get Google API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Create `.env.local`:
+An AI assistant at `/chat` (also reachable from the chat icon in the nav) that answers
+recruiter questions about Daehan's background and how it maps to a role they're hiring for.
+Answers are grounded in `content/resume.md` and `data/projects.ts`.
+
+### 1. Google API key
+
+Get one from [Google AI Studio](https://makersuite.google.com/app/apikey), then create `.env.local`:
+
 ```bash
 GOOGLE_API_KEY=your_key_here
 ```
-3. Generate embeddings:
+
+### 2. Generate embeddings
+
 ```bash
 npm run build:embeddings
 ```
+
+This indexes the resume **and** every project case study, writing `data/embeddings.json`.
+That file is committed, so production builds don't need an API key.
+
+> **Re-run this whenever you edit `content/resume.md` or `data/projects.ts`** — otherwise
+> the chat answers from stale content.
+
+### 3. Rate limiting (required for production)
+
+Create a free Redis database at [console.upstash.com](https://console.upstash.com) and add:
+
+```bash
+UPSTASH_REDIS_REST_URL=...
+UPSTASH_REDIS_REST_TOKEN=...
+```
+
+Without these the app falls back to in-memory counters that reset on every cold start —
+fine locally, but **they will not protect your API budget in production**.
+
+### How the cost and abuse controls work
+
+Checks run cheapest-first, so abusive traffic is rejected before it can spend anything:
+
+| Layer | Limit | Cost when it trips |
+|---|---|---|
+| Origin check | Requests must come from the site | Zero |
+| Input caps | 500 chars/message, 12 messages/conversation | Zero |
+| Per-conversation | 10 messages | Zero |
+| Per-IP | 20/hour, 40/day | Zero |
+| **Global daily** | **500/day** (`CHAT_DAILY_GLOBAL_LIMIT`) | Zero — shows an "at capacity" state |
+| Topic gate | Retrieval similarity below `CHAT_TOPIC_THRESHOLD` (0.55) | One embedding call — **never reaches the chat model** |
+
+The topic gate is the main saver: off-topic questions are answered with a canned redirect
+and never trigger generation. Quota is consumed in order, so a user who trips the
+per-conversation cap never draws down the global daily budget.
+
+Transcripts are stored in Redis for 30 days (`chat:log:<sessionId>`, plus a `chat:recent`
+list) so you can see what recruiters actually ask. Read them from the Upstash console.
 
 ## Deployment
 
@@ -187,7 +234,7 @@ npm run build:embeddings
 
 1. Push code to GitHub
 2. Import repository in Vercel
-3. Add environment variable: `GOOGLE_API_KEY`
+3. Add environment variables: `GOOGLE_API_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
 4. Deploy!
 
 ### Other Platforms

@@ -4,11 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useState } from "react";
 import ResumeDrawer from "./ResumeDrawer";
+import { ChatButton, ChatSheet } from "./ChatLauncher";
 import Logo from "./Logo";
 
 export default function CategoryNav() {
     const pathname = usePathname();
     const [isResumeOpen, setIsResumeOpen] = useState(false);
+    const [isChatOpen, setIsChatOpen] = useState(false);
+
+    // On /chat the full-page chat is already on screen; a sheet would duplicate it.
+    const showChatButton = pathname !== "/chat";
 
     // Determine active type from URL
     const getActiveType = () => {
@@ -32,16 +37,19 @@ export default function CategoryNav() {
                                 <Logo />
                             </Link>
 
-                            {/* Resume Bag Icon - Visible here on mobile, moves to right on desktop */}
-                            <button
-                                onClick={() => setIsResumeOpen(true)}
-                                className="sm:hidden p-2 -mr-2 opacity-50 hover:opacity-100 transition-opacity"
-                                aria-label="Open Resume"
-                            >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M6 6V4C6 2.89543 6.89543 2 8 2H16C17.1046 2 18 2.89543 18 4V6H22V20C22 21.1046 21.1046 22 20 22H4C2.89543 22 2 21.1046 2 20V6H6ZM8 6H16V4H8V6Z" stroke="currentColor" strokeWidth="1.5" />
-                                </svg>
-                            </button>
+                            {/* Chat + Resume Icons - Visible here on mobile, move to right on desktop */}
+                            <div className="sm:hidden flex items-center -mr-2">
+                                {showChatButton && <ChatButton onClick={() => setIsChatOpen(true)} />}
+                                <button
+                                    onClick={() => setIsResumeOpen(true)}
+                                    className="p-2 opacity-50 hover:opacity-100 transition-opacity"
+                                    aria-label="Open Resume"
+                                >
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M6 6V4C6 2.89543 6.89543 2 8 2H16C17.1046 2 18 2.89543 18 4V6H22V20C22 21.1046 21.1046 22 20 22H4C2.89543 22 2 21.1046 2 20V6H6ZM8 6H16V4H8V6Z" stroke="currentColor" strokeWidth="1.5" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
                         {/* Center - Type Categories - Scrollable on mobile - Hidden on /resume */}
@@ -88,21 +96,25 @@ export default function CategoryNav() {
                             </div>
                         )}
 
-                        {/* Right - Resume Bag Icon - Hidden on mobile, valid on desktop */}
-                        <button
-                            onClick={() => setIsResumeOpen(true)}
-                            className="hidden sm:block p-2 -mr-2 opacity-50 hover:opacity-100 transition-opacity"
-                            aria-label="Open Resume"
-                        >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M6 6V4C6 2.89543 6.89543 2 8 2H16C17.1046 2 18 2.89543 18 4V6H22V20C22 21.1046 21.1046 22 20 22H4C2.89543 22 2 21.1046 2 20V6H6ZM8 6H16V4H8V6Z" stroke="currentColor" strokeWidth="1.5" />
-                            </svg>
-                        </button>
+                        {/* Right - Chat + Resume Icons - Hidden on mobile, visible on desktop */}
+                        <div className="hidden sm:flex items-center -mr-2">
+                            {showChatButton && <ChatButton onClick={() => setIsChatOpen(true)} />}
+                            <button
+                                onClick={() => setIsResumeOpen(true)}
+                                className="p-2 opacity-50 hover:opacity-100 transition-opacity"
+                                aria-label="Open Resume"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 6V4C6 2.89543 6.89543 2 8 2H16C17.1046 2 18 2.89543 18 4V6H22V20C22 21.1046 21.1046 22 20 22H4C2.89543 22 2 21.1046 2 20V6H6ZM8 6H16V4H8V6Z" stroke="currentColor" strokeWidth="1.5" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </nav>
 
             <ResumeDrawer isOpen={isResumeOpen} onClose={() => setIsResumeOpen(false)} />
+            <ChatSheet isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
         </>
     );
 }
