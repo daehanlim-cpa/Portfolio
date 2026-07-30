@@ -50,16 +50,11 @@ export default function BlogSection() {
                                     </p>
                                 </div>
 
-                                <div className="flex shrink-0 items-baseline gap-6">
-                                    {post.tags && post.tags.length > 0 && (
-                                        <span className="hidden text-label uppercase text-ink-quaternary sm:inline">
-                                            {post.tags[0]}
-                                        </span>
-                                    )}
-                                    <time className="text-caption tabular-nums text-ink-quaternary">
-                                        {post.date}
-                                    </time>
-                                </div>
+                                {post.tags && post.tags.length > 0 && (
+                                    <span className="hidden shrink-0 text-label uppercase text-ink-quaternary sm:inline">
+                                        {post.tags[0]}
+                                    </span>
+                                )}
                             </Link>
                         </li>
                     ))}

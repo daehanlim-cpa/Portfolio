@@ -102,25 +102,22 @@ export default function BlogPostPage() {
                 </div>
 
                 {/* Post Metadata */}
-                <div className="mb-8 pb-8 border-b border-line-soft">
-                    <h1 className="text-2xl font-light text-ink mb-3">
+                <div className="mb-10 border-b border-line-soft pb-8">
+                    <h1 className="text-title font-light text-ink sm:text-display-sm">
                         {post.title[language]}
                     </h1>
-                    <div className="flex items-center gap-4 text-xs text-ink-quaternary">
-                        <span className="tabular-nums">{post.date}</span>
-                        {post.tags && post.tags.length > 0 && (
-                            <div className="flex gap-2">
-                                {post.tags.map((tag) => (
-                                    <span
-                                        key={tag}
-                                        className="text-[10px] uppercase tracking-wider"
-                                    >
-                                        {tag}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    {post.tags && post.tags.length > 0 && (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                            {post.tags.map((tag) => (
+                                <span
+                                    key={tag}
+                                    className="rounded-full bg-surface-muted px-3 py-1 text-label uppercase text-ink-secondary"
+                                >
+                                    {tag}
+                                </span>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* Post Content */}
