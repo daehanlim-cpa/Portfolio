@@ -166,6 +166,29 @@ function SuggestionChip({ label, onClick }: { label: string; onClick: () => void
     );
 }
 
+/**
+ * The way back to the empty state. On the landing chat this is the only one:
+ * the nav's "Ask" link points at the route the chat already occupies, so
+ * clicking it never remounts the component.
+ */
+function NewChatButton({ onClick, iconOnly = false }: { onClick: () => void; iconOnly?: boolean }) {
+    return (
+        <button
+            onClick={onClick}
+            aria-label="New chat"
+            title="New chat"
+            className={`flex shrink-0 items-center justify-center rounded-full border border-line-soft text-ink-tertiary transition-colors duration-200 hover:border-line hover:bg-surface-sunken hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
+                iconOnly ? "h-7 w-7" : "gap-1.5 px-3 py-1.5 text-[12px]"
+            }`}
+        >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+            </svg>
+            {!iconOnly && "New chat"}
+        </button>
+    );
+}
+
 function SendButton({
     onClick,
     disabled,
@@ -308,6 +331,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const sessionRef = useRef<string>("");
     const followUpAbort = useRef<AbortController | null>(null);
+    const chatAbort = useRef<AbortController | null>(null);
 
     const isLanding = variant === "landing";
     const isCompact = variant === "compact";
@@ -326,9 +350,32 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
         });
     }, [messages, isStreaming, followUps, reduce]);
 
-    // A request in flight when the component unmounts has nothing left to
+    // Requests in flight when the component unmounts have nothing left to
     // update, and on the compact sheet that happens on every close.
-    useEffect(() => () => followUpAbort.current?.abort(), []);
+    useEffect(
+        () => () => {
+            followUpAbort.current?.abort();
+            chatAbort.current?.abort();
+        },
+        []
+    );
+
+    /**
+     * Clears the transcript but deliberately keeps the session id: the
+     * per-conversation quota is keyed on it, so minting a fresh one here would
+     * turn this button into an unlimited-questions exploit. `remaining` and
+     * `closed` survive for the same reason — they describe server state that a
+     * local reset can't undo.
+     */
+    const startNewChat = () => {
+        chatAbort.current?.abort();
+        followUpAbort.current?.abort();
+        setMessages([]);
+        setInput("");
+        setFollowUps(null);
+        setIsStreaming(false);
+        requestAnimationFrame(autosize);
+    };
 
     const autosize = () => {
         const el = textareaRef.current;
@@ -389,6 +436,9 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
         const fallback = staticFollowUps(outbound);
 
         followUpAbort.current?.abort();
+        const controller = new AbortController();
+        chatAbort.current = controller;
+
         setFollowUps(null);
         setMessages(history);
         setInput("");
@@ -403,6 +453,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                     "x-chat-session": sessionRef.current,
                 },
                 body: JSON.stringify({ messages: outbound }),
+                signal: controller.signal,
             });
 
             const headerRemaining = response.headers.get("X-Conversation-Remaining");
@@ -449,6 +500,9 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                     const text = decoder.decode(value, { stream: true });
                     answer += text;
                     setMessages((prev) => {
+                        // "New chat" can land between two chunks, emptying the
+                        // list this updater is appending to.
+                        if (!prev.length) return prev;
                         const next = [...prev];
                         next[next.length - 1] = {
                             ...next[next.length - 1],
@@ -461,11 +515,14 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
 
             if (sources.length) {
                 setMessages((prev) => {
+                    if (!prev.length) return prev;
                     const next = [...prev];
                     next[next.length - 1] = { ...next[next.length - 1], sources };
                     return next;
                 });
             }
+
+            if (controller.signal.aborted) return;
 
             // Canned replies (greetings, off-topic) aren't grounded in anything
             // worth suggesting from, so they get the static list.
@@ -475,6 +532,9 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                 void loadFollowUps([...outbound, { role: "assistant", content: answer }], fallback);
             }
         } catch {
+            // Abort means the visitor cleared the conversation on purpose;
+            // startNewChat already reset the state an error notice would land in.
+            if (controller.signal.aborted) return;
             setMessages((prev) => [
                 ...prev,
                 {
@@ -485,7 +545,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
             ]);
             setFollowUps(fallback);
         } finally {
-            setIsStreaming(false);
+            if (!controller.signal.aborted) setIsStreaming(false);
         }
     };
 
@@ -505,6 +565,9 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
     // The landing screen opens on this instead of a conversation: everything
     // centred on the composer, with the thread view taking over on first send.
     const showHero = isLanding && isEmpty;
+    // Hidden once the server has closed the session: clearing the screen can't
+    // give quota back, so the email CTA is the honest next step there.
+    const showNewChat = !isEmpty && !closed;
 
     const composer = (
         <Composer
@@ -592,13 +655,30 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                                 His work, his projects, how he thinks
                             </p>
                         </div>
-                        {showCounter && (
-                            <span className="shrink-0 text-[11px] tabular-nums text-ink-quaternary">
-                                {remaining} left
-                            </span>
-                        )}
+                        <div className="flex shrink-0 items-center gap-2.5">
+                            {showCounter && (
+                                <span className="text-[11px] tabular-nums text-ink-quaternary">
+                                    {remaining} left
+                                </span>
+                            )}
+                            {/* The sheet is 420px wide; a labelled button here
+                                pushes the subtitle onto a second line. */}
+                            {showNewChat && (
+                                <NewChatButton onClick={startNewChat} iconOnly={isCompact} />
+                            )}
+                        </div>
                     </div>
                 </header>
+            )}
+
+            {/* Landing has no header, so the reset gets its own row above the
+                thread — outside the scroll area, so it stays reachable. */}
+            {isLanding && showNewChat && (
+                <div className="px-5 pt-3 sm:px-6">
+                    <div className="mx-auto flex max-w-2xl justify-end">
+                        <NewChatButton onClick={startNewChat} />
+                    </div>
+                </div>
             )}
 
             {/* Conversation */}
