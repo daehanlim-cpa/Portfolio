@@ -14,6 +14,11 @@ export interface LimitResult {
 export const CONVERSATION_LIMIT = 30;
 const IP_HOURLY_LIMIT = 45;
 const IP_DAILY_LIMIT = 90;
+/**
+ * Follow-up suggestions fire roughly once per answered turn, so this only needs
+ * to sit above the chat's own hourly ceiling to never be the binding constraint.
+ */
+const FOLLOWUP_IP_HOURLY_LIMIT = 60;
 
 function globalDailyLimit(): number {
     const parsed = Number.parseInt(process.env.CHAT_DAILY_GLOBAL_LIMIT ?? "", 10);
@@ -62,6 +67,7 @@ const WINDOWS = {
     conversation: { limit: CONVERSATION_LIMIT, ms: 24 * 60 * 60 * 1000, window: "1 d" },
     ip_hourly: { limit: IP_HOURLY_LIMIT, ms: 60 * 60 * 1000, window: "1 h" },
     ip_daily: { limit: IP_DAILY_LIMIT, ms: 24 * 60 * 60 * 1000, window: "1 d" },
+    followup_ip_hourly: { limit: FOLLOWUP_IP_HOURLY_LIMIT, ms: 60 * 60 * 1000, window: "1 h" },
 } as const;
 
 function makeLimiter(name: keyof typeof WINDOWS) {
@@ -79,6 +85,7 @@ const limiters = {
     conversation: makeLimiter("conversation"),
     ip_hourly: makeLimiter("ip_hourly"),
     ip_daily: makeLimiter("ip_daily"),
+    followup_ip_hourly: makeLimiter("followup_ip_hourly"),
 };
 
 const globalLimiter = redis
@@ -86,6 +93,20 @@ const globalLimiter = redis
           redis,
           limiter: Ratelimit.fixedWindow(globalDailyLimit(), "1 d"),
           prefix: "chat:global_daily",
+          analytics: false,
+      })
+    : null;
+
+/**
+ * Deliberately a separate budget from the chat's. Suggestions are decorative;
+ * they must never be able to eat the day's answer capacity, so they get their
+ * own bucket of the same size rather than drawing from the shared one.
+ */
+const followupGlobalLimiter = redis
+    ? new Ratelimit({
+          redis,
+          limiter: Ratelimit.fixedWindow(globalDailyLimit(), "1 d"),
+          prefix: "chat:followup_global_daily",
           analytics: false,
       })
     : null;
@@ -100,6 +121,24 @@ async function consume(name: keyof typeof WINDOWS, identifier: string) {
 async function consumeGlobal() {
     if (globalLimiter) return globalLimiter.limit("all");
     return memoryLimit("global_daily", globalDailyLimit(), 24 * 60 * 60 * 1000);
+}
+
+async function consumeFollowupGlobal() {
+    if (followupGlobalLimiter) return followupGlobalLimiter.limit("all");
+    return memoryLimit("followup_global_daily", globalDailyLimit(), 24 * 60 * 60 * 1000);
+}
+
+/**
+ * Quota for follow-up suggestions. Intentionally does NOT touch the
+ * per-conversation counter: a visitor should never lose a question they could
+ * have asked because the UI generated chips on their behalf.
+ */
+export async function checkFollowupLimits(ip: string): Promise<boolean> {
+    const perIp = await consume("followup_ip_hourly", ip);
+    if (!perIp.success) return false;
+
+    const global = await consumeFollowupGlobal();
+    return global.success;
 }
 
 /**

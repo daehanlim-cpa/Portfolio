@@ -17,23 +17,57 @@ interface Message {
     notice?: boolean;
 }
 
+/** What actually goes over the wire — the UI-only fields are stripped. */
+interface WireMessage {
+    role: "user" | "assistant";
+    content: string;
+}
+
 export type ChatVariant = "page" | "compact" | "landing";
 
-const STARTER_PROMPTS = [
-    "What kind of work is he strongest at?",
-    "Walk me through his most complex project",
-    "How does his AI work hold up in production?",
-    "I'm hiring a Senior Data Engineer — is he a fit?",
+/**
+ * Starter chips carry a short label but send a fuller question: the label has
+ * to read at a glance inside a pill, while retrieval needs enough words to
+ * match against.
+ */
+const STARTER_PROMPTS: Array<{ label: string; prompt: string }> = [
+    { label: "What's he strongest at?", prompt: "What kind of work is he strongest at?" },
+    { label: "His most complex project", prompt: "Walk me through his most complex project" },
+    { label: "AI in production", prompt: "How does his AI work hold up in production?" },
+    {
+        label: "Hiring a data engineer",
+        prompt: "I'm hiring a Senior Data Engineer — is he a fit?",
+    },
 ];
 
-/** Shown under the composer once a conversation is going, to keep it moving. */
-const FOLLOW_UPS = [
+/**
+ * Shown when /api/followups is unreachable or returns nothing, and on the
+ * compact sheet, which doesn't spend a call on suggestions.
+ */
+const FALLBACK_FOLLOW_UPS = [
     "What would he be bad at?",
     "How does he approach a messy data problem?",
     "Where has he led rather than built?",
-    "What's the through-line in his career?",
 ];
 
+/** Past this, the conversation is better continued by email than by chip. */
+const FOLLOW_UP_EXCHANGE_LIMIT = 5;
+
+/**
+ * The generated set is filtered against prior questions server-side. The static
+ * set needs the same treatment or a visitor who clicked "What would he be bad
+ * at?" can be offered it again on the next turn.
+ */
+function staticFollowUps(history: WireMessage[]): string[] {
+    const asked = new Set(
+        history
+            .filter((message) => message.role === "user")
+            .map((message) => message.content.trim().toLowerCase())
+    );
+    return FALLBACK_FOLLOW_UPS.filter((prompt) => !asked.has(prompt.toLowerCase()));
+}
+
+const MAX_INPUT_CHARS = 1000;
 const EMAIL = "daehanlim1@gmail.com";
 
 /** Minimal, injection-safe inline formatter: **bold** and *italic* only. */
@@ -120,17 +154,160 @@ function TypingIndicator() {
     );
 }
 
+/** Shared shape for starter chips and follow-up chips alike. */
+function SuggestionChip({ label, onClick }: { label: string; onClick: () => void }) {
+    return (
+        <button
+            onClick={onClick}
+            className="rounded-full border border-line-soft px-3.5 py-1.5 text-[12.5px] text-ink-secondary transition-colors duration-200 hover:border-line hover:bg-surface-sunken hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+        >
+            {label}
+        </button>
+    );
+}
+
+function SendButton({
+    onClick,
+    disabled,
+    className = "",
+}: {
+    onClick: () => void;
+    disabled: boolean;
+    className?: string;
+}) {
+    return (
+        // transition-colors rather than transition-all, so the focus ring appears
+        // instantly instead of fading in over 200ms.
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            aria-label="Send message"
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-white transition-colors duration-200 hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-20 ${className}`}
+        >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path
+                    d="M12 19V5M12 5L5 12M12 5L19 12"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                />
+            </svg>
+        </button>
+    );
+}
+
+interface ComposerProps {
+    value: string;
+    onValueChange: (value: string) => void;
+    onSubmit: () => void;
+    closed: boolean;
+    isStreaming: boolean;
+    placeholder: string;
+    textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+    autosize: () => void;
+    /**
+     * `hero` is the tall standalone box that carries the empty landing screen —
+     * text top-left, send button bottom-right. `bar` is the compact single-row
+     * form the conversation view docks at the bottom.
+     */
+    tone: "hero" | "bar";
+}
+
+function Composer({
+    value,
+    onValueChange,
+    onSubmit,
+    closed,
+    isStreaming,
+    placeholder,
+    textareaRef,
+    autosize,
+    tone,
+}: ComposerProps) {
+    const hero = tone === "hero";
+    const sendDisabled = isStreaming || closed || !value.trim();
+
+    const textarea = (
+        <textarea
+            ref={textareaRef}
+            rows={1}
+            value={value}
+            disabled={closed}
+            onChange={(e) => {
+                onValueChange(e.target.value.slice(0, MAX_INPUT_CHARS));
+                autosize();
+            }}
+            onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    onSubmit();
+                }
+            }}
+            placeholder={placeholder}
+            aria-label="Ask a question about Daehan"
+            /* focus-visible:outline-none, not just outline-none: the global rule
+               in globals.css is a bare `:focus-visible` and wins on source order
+               against a plain utility, which drew a blue box inside the box. The
+               wrapper carries the ring instead — see below. */
+            className={`max-h-[132px] resize-none bg-transparent text-[15px] leading-relaxed outline-none placeholder:text-ink-quaternary focus-visible:outline-none disabled:cursor-not-allowed ${
+                hero ? "min-h-[46px] w-full" : "flex-1"
+            }`}
+        />
+    );
+
+    /*
+     * focus-within, not has-[:focus-visible]: a focused text field always matches
+     * :focus-visible per spec, so the two are equivalent here and this is plainer.
+     *
+     * The halo replaces the global 2px accent outline, which drew a hard blue box
+     * *inside* the composer. Same accent, same wash as ::selection, hugging the
+     * radius — visible enough to serve as the focus indicator without shouting.
+     */
+    const focusRing =
+        "focus-within:border-ink-quaternary focus-within:ring-4 focus-within:ring-[rgba(0,102,204,0.11)]";
+
+    if (hero) {
+        return (
+            <div
+                className={`rounded-[26px] border border-line-soft bg-surface px-5 pb-2.5 pt-4 shadow-raised transition-colors duration-200 ${focusRing}`}
+            >
+                {textarea}
+                <div className="flex justify-end">
+                    <SendButton onClick={onSubmit} disabled={sendDisabled} />
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div
+            className={`flex items-end gap-2 rounded-[24px] border border-line-soft bg-surface px-4 py-2.5 transition-colors duration-200 ${focusRing}`}
+        >
+            {textarea}
+            <SendButton onClick={onSubmit} disabled={sendDisabled} className="mb-0.5" />
+        </div>
+    );
+}
+
 export default function RecruiterChat({ variant = "page" }: { variant?: ChatVariant }) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
     const [isStreaming, setIsStreaming] = useState(false);
     const [remaining, setRemaining] = useState<number | null>(null);
     const [closed, setClosed] = useState(false);
+    /**
+     * `null` means "not resolved yet" — no chips render, so they appear once
+     * rather than flashing the static list and then swapping to the generated
+     * one a beat later.
+     */
+    const [followUps, setFollowUps] = useState<string[] | null>(null);
 
     const reduce = useReducedMotion();
     const scrollRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const sessionRef = useRef<string>("");
+    const followUpAbort = useRef<AbortController | null>(null);
 
     const isLanding = variant === "landing";
     const isCompact = variant === "compact";
@@ -147,7 +324,11 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
             top: scrollRef.current.scrollHeight,
             behavior: reduce ? "auto" : "smooth",
         });
-    }, [messages, isStreaming, reduce]);
+    }, [messages, isStreaming, followUps, reduce]);
+
+    // A request in flight when the component unmounts has nothing left to
+    // update, and on the compact sheet that happens on every close.
+    useEffect(() => () => followUpAbort.current?.abort(), []);
 
     const autosize = () => {
         const el = textareaRef.current;
@@ -156,11 +337,59 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
         el.style.height = `${Math.min(el.scrollHeight, 132)}px`;
     };
 
+    /**
+     * Suggestions are a nicety, so this never surfaces a failure — every path
+     * that doesn't produce generated questions lands on the static list.
+     */
+    const loadFollowUps = async (history: WireMessage[], fallback: string[]) => {
+        if (!isLanding) {
+            setFollowUps(fallback);
+            return;
+        }
+
+        const controller = new AbortController();
+        followUpAbort.current = controller;
+
+        try {
+            const response = await fetch("/api/followups", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-chat-session": sessionRef.current,
+                },
+                body: JSON.stringify({ messages: history }),
+                signal: controller.signal,
+            });
+
+            const data = response.ok ? await response.json() : null;
+            const generated: string[] = Array.isArray(data?.followUps)
+                ? data.followUps.filter(
+                      (entry: unknown): entry is string =>
+                          typeof entry === "string" && entry.trim().length > 0
+                  )
+                : [];
+
+            setFollowUps(generated.length ? generated : fallback);
+        } catch {
+            // An abort means a newer question is already streaming; leaving
+            // followUps as-is keeps stale chips from reappearing under it.
+            if (controller.signal.aborted) return;
+            setFollowUps(fallback);
+        }
+    };
+
     const send = async (text: string) => {
         const question = text.trim();
         if (!question || isStreaming || closed) return;
 
         const history = [...messages, { role: "user" as const, content: question }];
+        const outbound: WireMessage[] = history
+            .filter((m) => !m.notice)
+            .map(({ role, content }) => ({ role, content }));
+        const fallback = staticFollowUps(outbound);
+
+        followUpAbort.current?.abort();
+        setFollowUps(null);
         setMessages(history);
         setInput("");
         setIsStreaming(true);
@@ -173,11 +402,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                     "Content-Type": "application/json",
                     "x-chat-session": sessionRef.current,
                 },
-                body: JSON.stringify({
-                    messages: history
-                        .filter((m) => !m.notice)
-                        .map(({ role, content }) => ({ role, content })),
-                }),
+                body: JSON.stringify({ messages: outbound }),
             });
 
             const headerRemaining = response.headers.get("X-Conversation-Remaining");
@@ -193,6 +418,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                     ...prev,
                     { role: "assistant", content: data.message, notice: true },
                 ]);
+                setFollowUps(fallback);
                 return;
             }
 
@@ -212,12 +438,16 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
 
             const reader = response.body?.getReader();
             const decoder = new TextDecoder();
+            // Mirrored locally so the follow-up request doesn't have to read the
+            // answer back out of state.
+            let answer = "";
 
             if (reader) {
                 for (;;) {
                     const { done, value } = await reader.read();
                     if (done) break;
                     const text = decoder.decode(value, { stream: true });
+                    answer += text;
                     setMessages((prev) => {
                         const next = [...prev];
                         next[next.length - 1] = {
@@ -236,6 +466,14 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                     return next;
                 });
             }
+
+            // Canned replies (greetings, off-topic) aren't grounded in anything
+            // worth suggesting from, so they get the static list.
+            if (notice || !answer.trim()) {
+                setFollowUps(fallback);
+            } else {
+                void loadFollowUps([...outbound, { role: "assistant", content: answer }], fallback);
+            }
         } catch {
             setMessages((prev) => [
                 ...prev,
@@ -245,6 +483,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                     notice: true,
                 },
             ]);
+            setFollowUps(fallback);
         } finally {
             setIsStreaming(false);
         }
@@ -256,12 +495,90 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
     // Only surface the counter near the end — a running tally from message one
     // makes an open conversation feel metered.
     const showCounter = remaining !== null && remaining <= 5 && !closed;
-    const showFollowUps = !isEmpty && !isStreaming && !closed && exchanges < 5;
+    // `followUps` is still null while generation is in flight, which is what
+    // keeps the chips from rendering twice with different contents.
+    const visibleFollowUps =
+        !isEmpty && !isStreaming && !closed && exchanges < FOLLOW_UP_EXCHANGE_LIMIT
+            ? (followUps ?? [])
+            : [];
+
+    // The landing screen opens on this instead of a conversation: everything
+    // centred on the composer, with the thread view taking over on first send.
+    const showHero = isLanding && isEmpty;
+
+    const composer = (
+        <Composer
+            value={input}
+            onValueChange={setInput}
+            onSubmit={() => send(input)}
+            closed={closed}
+            isStreaming={isStreaming}
+            placeholder={
+                closed
+                    ? "This conversation has ended"
+                    : isLanding
+                      ? "Ask anything about Daehan…"
+                      : "Ask a question…"
+            }
+            textareaRef={textareaRef}
+            autosize={autosize}
+            tone={showHero ? "hero" : "bar"}
+        />
+    );
+
+    const disclaimer = "Answers come from Daehan's resume and project work.";
+
+    if (showHero) {
+        return (
+            <div className="flex h-full flex-col bg-surface">
+                <div className="flex-1 overflow-y-auto px-5 sm:px-6">
+                    <motion.div
+                        initial={reduce ? false : { opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                        className="mx-auto flex min-h-full w-full max-w-2xl flex-col justify-center py-10"
+                    >
+                        <h1 className="text-center text-title font-light text-ink sm:text-display-sm">
+                            Ask me about Daehan.
+                        </h1>
+                        {/* text-balance so the second line never orphans a word;
+                            globals.css only balances headings. */}
+                        <p className="mx-auto mt-3 max-w-md text-balance text-center text-body font-light leading-relaxed text-ink-tertiary">
+                            I know his projects, his background, and how he works.
+                        </p>
+
+                        <div className="mt-8">{composer}</div>
+
+                        <div className="mt-4 flex flex-wrap justify-center gap-2">
+                            {STARTER_PROMPTS.map(({ label, prompt }, i) => (
+                                <motion.div
+                                    key={prompt}
+                                    initial={reduce ? false : { opacity: 0, y: 8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{
+                                        delay: reduce ? 0 : 0.18 + i * 0.05,
+                                        duration: 0.45,
+                                        ease: [0.16, 1, 0.3, 1],
+                                    }}
+                                >
+                                    <SuggestionChip label={label} onClick={() => send(prompt)} />
+                                </motion.div>
+                            ))}
+                        </div>
+
+                        <p className="mt-7 text-center text-[11px] leading-relaxed text-ink-quaternary">
+                            {disclaimer}
+                        </p>
+                    </motion.div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex h-full flex-col bg-surface">
             {/* The landing variant leans on the site nav for context, so it
-                omits this bar entirely and lets the empty state carry the page. */}
+                omits this bar entirely. */}
             {!isLanding && (
                 <header
                     className={`sticky top-0 z-10 border-b border-line-soft bg-white/80 py-4 pl-6 backdrop-blur-xl backdrop-saturate-150 ${
@@ -289,46 +606,20 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                 ref={scrollRef}
                 className={`flex-1 overflow-y-auto ${isLanding ? "px-5 sm:px-6" : "px-6"}`}
             >
-                <div
-                    className={`mx-auto ${isLanding ? "max-w-2xl" : "max-w-2xl"} ${
-                        isCompact ? "py-6" : isLanding ? "" : "py-10"
-                    } ${isLanding && isEmpty ? "flex min-h-full flex-col justify-center py-10" : ""} ${
-                        isLanding && !isEmpty ? "py-10" : ""
-                    }`}
-                >
+                <div className={`mx-auto max-w-2xl ${isCompact ? "py-6" : "py-10"}`}>
                     {isEmpty && (
                         <motion.div
                             initial={reduce ? false : { opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                         >
-                            {isLanding ? (
-                                <>
-                                    <h1 className="text-title font-light text-ink sm:text-display-sm">
-                                        Ask me about Daehan.
-                                    </h1>
-                                    <p className="mt-4 max-w-md text-body font-light leading-relaxed text-ink-tertiary sm:text-body-lg">
-                                        I know his projects, his background, and how he works.
-                                        Ask anything — whether you&rsquo;re hiring, collaborating,
-                                        or just curious.
-                                    </p>
-                                </>
-                            ) : (
-                                <p className="text-[15px] leading-relaxed text-ink-tertiary">
-                                    I&rsquo;m Daehan&rsquo;s AI assistant. Ask about his work, his
-                                    projects, or how his experience fits what you&rsquo;re looking
-                                    for.
-                                </p>
-                            )}
+                            <p className="text-[15px] leading-relaxed text-ink-tertiary">
+                                I&rsquo;m Daehan&rsquo;s AI assistant. Ask about his work, his
+                                projects, or how his experience fits what you&rsquo;re looking for.
+                            </p>
 
-                            <div
-                                className={
-                                    isLanding
-                                        ? "mt-9 grid gap-2.5 sm:grid-cols-2"
-                                        : "mt-7 space-y-2"
-                                }
-                            >
-                                {STARTER_PROMPTS.map((prompt, i) => (
+                            <div className="mt-7 space-y-2">
+                                {STARTER_PROMPTS.map(({ prompt }, i) => (
                                     <motion.button
                                         key={prompt}
                                         onClick={() => send(prompt)}
@@ -398,22 +689,22 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                         </AnimatePresence>
                     </div>
 
-                    {/* Keeps the conversation moving without another model call. */}
-                    {showFollowUps && (
+                    {/* Generated per answer on the landing chat; the static list
+                        elsewhere and whenever generation didn't produce any. */}
+                    {visibleFollowUps.length > 0 && (
                         <motion.div
-                            initial={reduce ? false : { opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.4, delay: 0.15 }}
+                            key={visibleFollowUps.join("|")}
+                            initial={reduce ? false : { opacity: 0, y: 4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
                             className="mt-5 flex flex-wrap gap-2"
                         >
-                            {FOLLOW_UPS.slice(0, 3).map((prompt) => (
-                                <button
+                            {visibleFollowUps.map((prompt) => (
+                                <SuggestionChip
                                     key={prompt}
+                                    label={prompt}
                                     onClick={() => send(prompt)}
-                                    className="rounded-full border border-line-soft px-3.5 py-1.5 text-[12.5px] text-ink-secondary transition-colors duration-200 hover:border-line hover:bg-surface-sunken hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-                                >
-                                    {prompt}
-                                </button>
+                                />
                             ))}
                         </motion.div>
                     )}
@@ -440,65 +731,13 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
             {/* Composer */}
             <div
                 className={`bg-white/80 backdrop-blur-xl backdrop-saturate-150 ${
-                    isLanding
-                        ? "px-5 pb-6 pt-2 sm:px-6"
-                        : "border-t border-line-soft px-6 py-4"
+                    isLanding ? "px-5 pb-6 pt-2 sm:px-6" : "border-t border-line-soft px-6 py-4"
                 }`}
             >
                 <div className="mx-auto max-w-2xl">
-                    <div
-                        className={`flex items-end gap-2 border border-line-soft bg-surface transition-colors duration-200 focus-within:border-ink-quaternary ${
-                            isLanding
-                                ? "rounded-[26px] px-5 py-3 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.12)]"
-                                : "rounded-[24px] px-4 py-2.5"
-                        }`}
-                    >
-                        <textarea
-                            ref={textareaRef}
-                            rows={1}
-                            value={input}
-                            disabled={closed}
-                            onChange={(e) => {
-                                setInput(e.target.value.slice(0, 1000));
-                                autosize();
-                            }}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter" && !e.shiftKey) {
-                                    e.preventDefault();
-                                    send(input);
-                                }
-                            }}
-                            placeholder={
-                                closed
-                                    ? "This conversation has ended"
-                                    : isLanding
-                                      ? "Ask anything about Daehan…"
-                                      : "Ask a question…"
-                            }
-                            aria-label="Ask a question about Daehan"
-                            className="max-h-[132px] flex-1 resize-none bg-transparent text-[15px] leading-relaxed outline-none placeholder:text-ink-quaternary disabled:cursor-not-allowed"
-                        />
-                        {/* transition-colors rather than transition-all, so the focus
-                            ring appears instantly instead of fading in over 200ms. */}
-                        <button
-                            onClick={() => send(input)}
-                            disabled={isStreaming || closed || !input.trim()}
-                            aria-label="Send message"
-                            className="mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-white transition-colors duration-200 hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-20"
-                        >
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
-                                <path
-                                    d="M12 19V5M12 5L5 12M12 5L19 12"
-                                    stroke="currentColor"
-                                    strokeWidth="2.2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                />
-                            </svg>
-                        </button>
-                    </div>
+                    {composer}
                     <div className="mt-2.5 flex items-center justify-center gap-3 text-[11px] leading-relaxed text-ink-quaternary">
-                        <span>Answers come from Daehan&rsquo;s resume and project work.</span>
+                        <span>{disclaimer}</span>
                         {showCounter && isLanding && (
                             <span className="tabular-nums">{remaining} left</span>
                         )}

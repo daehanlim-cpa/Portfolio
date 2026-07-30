@@ -215,15 +215,33 @@ Checks run cheapest-first, so abusive traffic is rejected before it can spend an
 | Layer | Limit | Cost when it trips |
 |---|---|---|
 | Origin check | Requests must come from the site | Zero |
-| Input caps | 500 chars/message, 12 messages/conversation | Zero |
-| Per-conversation | 10 messages | Zero |
-| Per-IP | 20/hour, 40/day | Zero |
+| Input caps | 1000 chars/message, 40 messages/conversation | Zero |
+| Per-conversation | 30 messages | Zero |
+| Per-IP | 45/hour, 90/day | Zero |
 | **Global daily** | **500/day** (`CHAT_DAILY_GLOBAL_LIMIT`) | Zero — shows an "at capacity" state |
-| Topic gate | Retrieval similarity below `CHAT_TOPIC_THRESHOLD` (0.60) | One embedding call — **never reaches the chat model** |
+| Topic gate | Retrieval similarity below `CHAT_TOPIC_FLOOR` (0.57) | One embedding call — **never reaches the chat model** |
 
 The topic gate is the main saver: off-topic questions are answered with a canned redirect
 and never trigger generation. Quota is consumed in order, so a user who trips the
 per-conversation cap never draws down the global daily budget.
+
+### Follow-up suggestions
+
+`/api/followups` generates the three suggestion chips shown under each answer on the
+landing chat. It runs after the answer has finished streaming, taking the exchange plus an
+inventory of what the corpus covers, and returns a short JSON array.
+
+It is deliberately fenced off from the chat itself:
+
+- **Its own budget.** A separate per-IP hourly window (60) and a separate global daily
+  bucket of the same size as the chat's. Suggestions can never eat the day's answer
+  capacity, and they never touch the per-conversation counter — a visitor shouldn't lose a
+  question they could have asked because the UI generated chips on their behalf.
+- **Failure is silent.** Every error path returns an empty array, and the client falls back
+  to a static list. No API key, no Redis, a malformed model response, or a network drop all
+  degrade to the same working UI.
+
+The compact chat sheet doesn't call it at all; it uses the static list.
 
 Transcripts are stored in Redis for 30 days (`chat:log:<sessionId>`, plus a `chat:recent`
 list) so you can see what recruiters actually ask. Read them from the Upstash console.
