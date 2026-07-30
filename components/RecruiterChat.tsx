@@ -54,6 +54,15 @@ const FALLBACK_FOLLOW_UPS = [
 const FOLLOW_UP_EXCHANGE_LIMIT = 5;
 
 /**
+ * Swaps the pending assistant turn for the real one. Returns the list untouched
+ * when it's empty, which is what "New chat" mid-flight leaves behind.
+ */
+function resolvePending(messages: Message[], resolved: Message): Message[] {
+    if (!messages.length) return messages;
+    return [...messages.slice(0, -1), resolved];
+}
+
+/**
  * The generated set is filtered against prior questions server-side. The static
  * set needs the same treatment or a visitor who clicked "What would he be bad
  * at?" can be offered it again on the next turn.
@@ -134,22 +143,49 @@ function FormattedText({ text }: { text: string }) {
     );
 }
 
-function TypingIndicator() {
+/**
+ * Escalating copy, because a label that never changes reads as frozen too. The
+ * wait before the first token covers a rate-limit check, an embedding call and
+ * the model's time-to-first-token, so it can run to a few seconds on a cold
+ * function — and under prefers-reduced-motion the dots hold still, leaving the
+ * wording as the only sign of life.
+ */
+const THINKING_STAGES = [
+    { afterMs: 0, label: "Thinking" },
+    { afterMs: 6000, label: "Still thinking" },
+    { afterMs: 15000, label: "Still working on it" },
+] as const;
+
+function ThinkingIndicator() {
     const reduce = useReducedMotion();
+    const [stage, setStage] = useState(0);
+
+    useEffect(() => {
+        const timers = THINKING_STAGES.slice(1).map((next, i) =>
+            setTimeout(() => setStage(i + 1), next.afterMs)
+        );
+        return () => timers.forEach(clearTimeout);
+    }, []);
+
     return (
-        <div className="flex items-center gap-1.5 px-1 py-1" aria-label="Assistant is typing">
-            {[0, 1, 2].map((i) => (
-                <motion.span
-                    key={i}
-                    className="h-[6px] w-[6px] rounded-full bg-ink/25"
-                    animate={reduce ? undefined : { opacity: [0.2, 0.9, 0.2] }}
-                    transition={
-                        reduce
-                            ? undefined
-                            : { duration: 1.1, repeat: Infinity, delay: i * 0.16, ease: "easeInOut" }
-                    }
-                />
-            ))}
+        // role=status so the label, and each escalation, is announced rather
+        // than leaving screen-reader users with silence.
+        <div role="status" aria-live="polite" className="flex items-center gap-2 text-ink-tertiary">
+            <span>{THINKING_STAGES[stage].label}</span>
+            <span className="flex items-center gap-1" aria-hidden>
+                {[0, 1, 2].map((i) => (
+                    <motion.span
+                        key={i}
+                        className="h-[4px] w-[4px] rounded-full bg-current"
+                        animate={reduce ? undefined : { opacity: [0.2, 0.9, 0.2] }}
+                        transition={
+                            reduce
+                                ? undefined
+                                : { duration: 1.1, repeat: Infinity, delay: i * 0.16, ease: "easeInOut" }
+                        }
+                    />
+                ))}
+            </span>
         </div>
     );
 }
@@ -440,7 +476,11 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
         chatAbort.current = controller;
 
         setFollowUps(null);
-        setMessages(history);
+        // The assistant's turn is created now rather than when the response
+        // lands, so the thinking indicator covers the whole round trip. Pushing
+        // it on arrival meant the visitor watched an unchanged screen through
+        // the rate-limit check, the embedding call and the model's TTFT.
+        setMessages([...history, { role: "assistant", content: "" }]);
         setInput("");
         setIsStreaming(true);
         requestAnimationFrame(autosize);
@@ -465,10 +505,13 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                 }));
                 // 409 = conversation exhausted, 429 = rate limited: both end the session.
                 if (response.status === 409 || response.status === 429) setClosed(true);
-                setMessages((prev) => [
-                    ...prev,
-                    { role: "assistant", content: data.message, notice: true },
-                ]);
+                setMessages((prev) =>
+                    resolvePending(prev, {
+                        role: "assistant",
+                        content: data.message,
+                        notice: true,
+                    })
+                );
                 setFollowUps(fallback);
                 return;
             }
@@ -485,7 +528,13 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
 
             const notice = response.headers.get("X-Chat-Status") === "off_topic";
 
-            setMessages((prev) => [...prev, { role: "assistant", content: "", notice }]);
+            // The pending turn already exists; this only tags it as a notice so
+            // canned replies render in the quieter style.
+            if (notice) {
+                setMessages((prev) =>
+                    resolvePending(prev, { role: "assistant", content: "", notice: true })
+                );
+            }
 
             const reader = response.body?.getReader();
             const decoder = new TextDecoder();
@@ -535,14 +584,13 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
             // Abort means the visitor cleared the conversation on purpose;
             // startNewChat already reset the state an error notice would land in.
             if (controller.signal.aborted) return;
-            setMessages((prev) => [
-                ...prev,
-                {
+            setMessages((prev) =>
+                resolvePending(prev, {
                     role: "assistant",
                     content: "I couldn't reach the server. Please try again.",
                     notice: true,
-                },
-            ]);
+                })
+            );
             setFollowUps(fallback);
         } finally {
             if (!controller.signal.aborted) setIsStreaming(false);
@@ -747,7 +795,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                                         {message.content ? (
                                             <FormattedText text={message.content} />
                                         ) : (
-                                            <TypingIndicator />
+                                            <ThinkingIndicator />
                                         )}
 
                                         {message.sources && message.sources.length > 0 && (
