@@ -19,6 +19,13 @@ const IP_DAILY_LIMIT = 90;
  * to sit above the chat's own hourly ceiling to never be the binding constraint.
  */
 const FOLLOWUP_IP_HOURLY_LIMIT = 60;
+/**
+ * A demo run costs two generation calls, so it is the most expensive thing a
+ * visitor can trigger. Twenty an hour is far more than anyone evaluating the
+ * work needs — there are only eight cases across both apps — and low enough that
+ * a scripted caller cannot drain the day's budget before the cap bites.
+ */
+const DEMO_IP_HOURLY_LIMIT = 20;
 
 function globalDailyLimit(): number {
     const parsed = Number.parseInt(process.env.CHAT_DAILY_GLOBAL_LIMIT ?? "", 10);
@@ -68,6 +75,7 @@ const WINDOWS = {
     ip_hourly: { limit: IP_HOURLY_LIMIT, ms: 60 * 60 * 1000, window: "1 h" },
     ip_daily: { limit: IP_DAILY_LIMIT, ms: 24 * 60 * 60 * 1000, window: "1 d" },
     followup_ip_hourly: { limit: FOLLOWUP_IP_HOURLY_LIMIT, ms: 60 * 60 * 1000, window: "1 h" },
+    demo_ip_hourly: { limit: DEMO_IP_HOURLY_LIMIT, ms: 60 * 60 * 1000, window: "1 h" },
 } as const;
 
 function makeLimiter(name: keyof typeof WINDOWS) {
@@ -86,6 +94,7 @@ const limiters = {
     ip_hourly: makeLimiter("ip_hourly"),
     ip_daily: makeLimiter("ip_daily"),
     followup_ip_hourly: makeLimiter("followup_ip_hourly"),
+    demo_ip_hourly: makeLimiter("demo_ip_hourly"),
 };
 
 const globalLimiter = redis
@@ -107,6 +116,20 @@ const followupGlobalLimiter = redis
           redis,
           limiter: Ratelimit.fixedWindow(globalDailyLimit(), "1 d"),
           prefix: "chat:followup_global_daily",
+          analytics: false,
+      })
+    : null;
+
+/**
+ * Third separate budget, for the same reason the follow-up budget exists: the
+ * PoC demos and the résumé chat must not be able to starve each other. A visitor
+ * who has spent the demo budget can still ask the assistant a question.
+ */
+const demoGlobalLimiter = redis
+    ? new Ratelimit({
+          redis,
+          limiter: Ratelimit.fixedWindow(globalDailyLimit(), "1 d"),
+          prefix: "chat:demo_global_daily",
           analytics: false,
       })
     : null;
@@ -133,6 +156,35 @@ async function consumeFollowupGlobal() {
  * per-conversation counter: a visitor should never lose a question they could
  * have asked because the UI generated chips on their behalf.
  */
+export interface DemoLimitResult {
+    ok: boolean;
+    retryAfterSeconds?: number;
+}
+
+/** Quota for a PoC demo run. Independent of both the chat and follow-up budgets. */
+export async function checkDemoLimits(ip: string): Promise<DemoLimitResult> {
+    const perIp = await consume("demo_ip_hourly", ip);
+    if (!perIp.success) {
+        return {
+            ok: false,
+            retryAfterSeconds: Math.max(1, Math.ceil((perIp.reset - Date.now()) / 1000)),
+        };
+    }
+
+    const global = demoGlobalLimiter
+        ? await demoGlobalLimiter.limit("all")
+        : memoryLimit("demo_global_daily", globalDailyLimit(), 24 * 60 * 60 * 1000);
+
+    if (!global.success) {
+        return {
+            ok: false,
+            retryAfterSeconds: Math.max(1, Math.ceil((global.reset - Date.now()) / 1000)),
+        };
+    }
+
+    return { ok: true };
+}
+
 export async function checkFollowupLimits(ip: string): Promise<boolean> {
     const perIp = await consume("followup_ip_hourly", ip);
     if (!perIp.success) return false;

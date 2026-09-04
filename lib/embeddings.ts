@@ -5,8 +5,11 @@ export interface ResumeChunk {
     embedding: number[];
     section: string;
     /** Where this chunk came from, so answers can cite and deep-link. */
-    sourceType: "resume" | "project";
-    /** Project id, used to build a /project/[id] link. Absent for resume chunks. */
+    sourceType: "resume" | "project" | "ai-app";
+    /**
+     * Project id or AI-app slug, used to build the citation link — /project/[id]
+     * or /ai/[slug] depending on sourceType. Absent for resume chunks.
+     */
     sourceId?: string;
     sourceTitle?: string;
 }

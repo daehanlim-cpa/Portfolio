@@ -9,14 +9,25 @@ import { ChatButton, ChatSheet } from "./ChatLauncher";
 import Logo from "./Logo";
 
 /**
- * Two destinations. The previous nav offered ALL / PROFESSIONAL / PROJECTS /
+ * Three destinations. The previous nav offered ALL / PROFESSIONAL / PROJECTS /
  * PURPOSE, which were four routes rendering the same grid through different
- * filters — navigation standing in for what a filter does better.
+ * filters — navigation standing in for what a filter does better. "AI apps"
+ * earns its place because it is a different kind of thing, not a filtered view:
+ * software that runs here, rather than work described.
  */
 const LINKS = [
     { href: "/", label: "Ask" },
     { href: "/experience", label: "Experience" },
+    { href: "/ai", label: "AI apps" },
 ] as const;
+
+/**
+ * Exact match for the root, prefix match elsewhere — otherwise the underline
+ * disappears on /ai/[slug], which reads as having navigated off the section.
+ */
+function isActive(pathname: string, href: string): boolean {
+    return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export default function CategoryNav() {
     const pathname = usePathname();
@@ -47,7 +58,7 @@ export default function CategoryNav() {
                         slides between items instead of cross-fading. */}
                     <div className="flex flex-1 items-center justify-center gap-1">
                         {LINKS.map(({ href, label }) => {
-                            const active = pathname === href;
+                            const active = isActive(pathname, href);
                             return (
                                 <Link
                                     key={href}

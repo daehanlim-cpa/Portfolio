@@ -7,6 +7,7 @@ import {
     type EmbedRequestWithDimensions,
 } from "../lib/embeddings";
 import { projects } from "../data/projects";
+import { aiApps } from "../data/ai-apps";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "");
 
@@ -25,7 +26,7 @@ const EMBEDDING_DIMENSIONS = 768;
 interface PendingChunk {
     text: string;
     section: string;
-    sourceType: "resume" | "project";
+    sourceType: "resume" | "project" | "ai-app";
     sourceId?: string;
     sourceTitle?: string;
 }
@@ -69,6 +70,27 @@ function projectToText(project: (typeof projects)[number]): string {
     return parts.filter(Boolean).join("\n\n");
 }
 
+/**
+ * Flattens a proof-of-concept app. Without this the assistant cannot answer
+ * "has he built anything with AI?" about the two things on this site that
+ * actually run — the most common question the chat gets, and the one it was
+ * worst at.
+ */
+function aiAppToText(app: (typeof aiApps)[number]): string {
+    const parts: string[] = [
+        `AI application: ${app.name} — ${app.tagline}`,
+        `Domain: ${app.domain}`,
+        `Technologies: ${app.techStack.join(", ")}`,
+        app.summary,
+        `Problem:\n- ${app.problem.join("\n- ")}`,
+        `Approach:\n- ${app.approach.join("\n- ")}`,
+        `Infrastructure:\n- ${app.infrastructure.join("\n- ")}`,
+        `Design decisions:\n- ${app.keyDecisions.join("\n- ")}`,
+    ];
+
+    return parts.filter(Boolean).join("\n\n");
+}
+
 function collectChunks(): PendingChunk[] {
     const pending: PendingChunk[] = [];
 
@@ -90,6 +112,16 @@ function collectChunks(): PendingChunk[] {
         });
     }
 
+    for (const app of aiApps) {
+        pending.push({
+            text: aiAppToText(app),
+            section: app.name,
+            sourceType: "ai-app",
+            sourceId: app.slug,
+            sourceTitle: `${app.name} — ${app.tagline}`,
+        });
+    }
+
     return pending;
 }
 
@@ -107,7 +139,10 @@ async function generateEmbeddings() {
     const pending = collectChunks();
     const resumeCount = pending.filter((c) => c.sourceType === "resume").length;
     const projectCount = pending.filter((c) => c.sourceType === "project").length;
-    console.log(`Collected ${pending.length} chunks (${resumeCount} resume, ${projectCount} project)`);
+    const appCount = pending.filter((c) => c.sourceType === "ai-app").length;
+    console.log(
+        `Collected ${pending.length} chunks (${resumeCount} resume, ${projectCount} project, ${appCount} ai-app)`
+    );
 
     const model = genAI.getGenerativeModel({ model: EMBEDDING_MODEL });
     const out: ResumeChunk[] = [];
