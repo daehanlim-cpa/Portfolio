@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { projects } from "@/data/projects";
 import { Icons } from "@/components/ProjectIcons";
+import Section, { Dashed } from "@/components/Section";
+import { PillList } from "@/components/Pill";
 
 export async function generateStaticParams() {
     return projects.map((project) => ({ id: project.id }));
@@ -12,30 +14,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     const project = projects.find((p) => p.id === id);
     if (!project) return {};
     return { title: project.title, description: project.shortDescription };
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-    return (
-        <section>
-            <h2 className="mb-5 border-b border-line-soft pb-2.5 text-label uppercase text-ink-tertiary">
-                {title}
-            </h2>
-            {children}
-        </section>
-    );
-}
-
-function Dashed({ items }: { items: string[] }) {
-    return (
-        <ul className="space-y-3.5">
-            {items.map((item, i) => (
-                <li key={i} className="flex gap-3 text-body leading-[1.7] text-ink-secondary">
-                    <span aria-hidden className="mt-[0.6em] h-[3px] w-[3px] shrink-0 rounded-full bg-ink-quaternary" />
-                    <span>{item}</span>
-                </li>
-            ))}
-        </ul>
-    );
 }
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -104,16 +82,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
                     <div className="border-t border-line-soft pt-10">
                         <p className="mb-4 text-label uppercase text-ink-quaternary">Stack</p>
-                        <ul className="flex flex-wrap gap-2">
-                            {project.techStack.map((tech) => (
-                                <li
-                                    key={tech}
-                                    className="rounded-full bg-surface-muted px-3 py-1.5 text-caption text-ink-secondary"
-                                >
-                                    {tech}
-                                </li>
-                            ))}
-                        </ul>
+                        <PillList items={project.techStack} />
 
                         {(project.links.demo || project.links.repo || project.links.pdf) && (
                             <div className="mt-9 flex flex-wrap gap-3">

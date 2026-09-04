@@ -178,11 +178,17 @@ export async function POST(request: Request) {
         });
 
         const sources = results
-            .filter(({ chunk }) => chunk.sourceType === "project" && chunk.sourceId)
+            .filter(
+                ({ chunk }) =>
+                    (chunk.sourceType === "project" || chunk.sourceType === "ai-app") && chunk.sourceId
+            )
             .slice(0, 3)
             .map(({ chunk }) => ({
                 title: chunk.sourceTitle ?? chunk.section,
-                href: `/project/${chunk.sourceId}`,
+                href:
+                    chunk.sourceType === "ai-app"
+                        ? `/ai/${chunk.sourceId}`
+                        : `/project/${chunk.sourceId}`,
             }));
 
         const encoder = new TextEncoder();

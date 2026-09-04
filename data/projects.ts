@@ -1,3 +1,5 @@
+import type { FlowNode } from "@/components/ArchitectureFlow";
+
 export interface Project {
     id: string;
     code: string;
@@ -15,6 +17,12 @@ export interface Project {
     solution?: string;
     keyCapabilities?: string[];
     architectureDiagram?: string;
+    /**
+     * The rendered flow diagram, as data. These were JSX literals hardcoded
+     * behind `project.id` checks inside ProjectModal; a project with nodes gets
+     * the diagram, one without falls back to the mermaid string below it.
+     */
+    architectureNodes?: FlowNode[];
     architectureComponents?: string[];
     governance?: string[];
     approach: string[];
@@ -31,6 +39,12 @@ export const projects: Project[] = [
     // PROFESSIONAL WORK (First 6)
     {
         id: "liquidity-platform",
+        architectureNodes: [
+            { label: "Sources", value: "8", unit: "systems" },
+            { label: "Ingest", value: "Prefect", emphasis: true },
+            { label: "Transform", value: "dbt", emphasis: true },
+            { label: "Consume", value: "16", unit: "dashboards" },
+        ],
         code: "DL-01",
         title: "Enterprise Liquidity Reporting",
         type: "professional",
@@ -121,6 +135,13 @@ export const projects: Project[] = [
     },
     {
         id: "cloud-modernization",
+        architectureNodes: [
+            { label: "Intake", value: "435", unit: "tickets" },
+            { label: "Build", value: "338", unit: "views", emphasis: true },
+            { label: "Release", value: "CI/CD", emphasis: true },
+            { label: "Production", value: "265", unit: "tier-1", emphasis: true },
+            { label: "Consume", value: "Analytics" },
+        ],
         code: "DL-02",
         title: "Enterprise Analytics Factory",
         type: "professional",
@@ -214,6 +235,11 @@ export const projects: Project[] = [
     },
     {
         id: "certification-center",
+        architectureNodes: [
+            { label: "Partners", value: "5+", unit: "alliances" },
+            { label: "Platform", value: "Center", unit: "community", emphasis: true },
+            { label: "Talent", value: "600+", unit: "certified" },
+        ],
         code: "DL-03",
         title: "EY Certification Center",
         type: "professional",

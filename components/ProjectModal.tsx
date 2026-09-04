@@ -4,6 +4,9 @@ import React, { useEffect } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Project } from "@/data/projects";
 import { Icons } from "./ProjectIcons";
+import ArchitectureFlow from "./ArchitectureFlow";
+import Section from "./Section";
+import { PillList } from "./Pill";
 
 interface ProjectModalProps {
     project: Project | null;
@@ -11,69 +14,6 @@ interface ProjectModalProps {
     onClose: () => void;
     onNext: () => void;
     onPrevious: () => void;
-}
-
-/** Section label + hairline. One treatment, used everywhere, so nothing shouts. */
-function Section({ title, aside, children }: { title: string; aside?: string; children: React.ReactNode }) {
-    return (
-        <section>
-            <div className="mb-5 flex items-baseline justify-between gap-4 border-b border-line-soft pb-2.5">
-                <h3 className="text-label uppercase text-ink-tertiary">{title}</h3>
-                {aside && <span className="text-label text-ink-quaternary">{aside}</span>}
-            </div>
-            {children}
-        </section>
-    );
-}
-
-/** A labelled node in the flow diagrams. */
-function Node({ label, value, unit, emphasis = false }: { label: string; value: string; unit?: string; emphasis?: boolean }) {
-    return (
-        <div className="flex shrink-0 flex-col items-center">
-            <div
-                className={`flex h-[86px] w-[86px] flex-col items-center justify-center rounded-full border transition-colors ${
-                    emphasis
-                        ? "border-transparent bg-ink text-white shadow-raised"
-                        : "border-line-soft bg-surface text-ink"
-                }`}
-            >
-                <span
-                    className={`text-[9px] uppercase tracking-[0.08em] ${
-                        emphasis ? "text-white/55" : "text-ink-quaternary"
-                    }`}
-                >
-                    {label}
-                </span>
-                <span className="mt-0.5 text-body font-light tabular-nums">{value}</span>
-                {unit && (
-                    <span
-                        className={`text-[9px] uppercase tracking-[0.08em] ${
-                            emphasis ? "text-white/55" : "text-ink-quaternary"
-                        }`}
-                    >
-                        {unit}
-                    </span>
-                )}
-            </div>
-        </div>
-    );
-}
-
-function Flow({ children }: { children: React.ReactNode }) {
-    return (
-        <div className="-mx-1 overflow-x-auto py-8 scrollbar-hide">
-            {/* The hairline is inset by half a node (43px of the 86px circle) at
-                each end, so it connects the outer nodes' centres instead of
-                running past them to the container edge. */}
-            <div className="relative flex min-w-max items-start gap-10 px-1 sm:gap-14">
-                <div
-                    aria-hidden
-                    className="absolute left-[43px] right-[43px] top-[43px] h-px bg-line-soft"
-                />
-                {children}
-            </div>
-        </div>
-    );
 }
 
 export default function ProjectModal({ project, isOpen, onClose, onNext, onPrevious }: ProjectModalProps) {
@@ -99,36 +39,15 @@ export default function ProjectModal({ project, isOpen, onClose, onNext, onPrevi
 
     const IconComponent = Icons[project.iconKey as keyof typeof Icons];
 
+    /*
+     * Diagrams are data now (project.architectureNodes). This used to be three
+     * hardcoded `if (project.id === ...)` branches, which meant a fourth diagram
+     * required editing this component. The mermaid <pre> remains the fallback
+     * for projects that carry a diagram string but no nodes.
+     */
     const architecture = () => {
-        if (project.id === "liquidity-platform") {
-            return (
-                <Flow>
-                    <Node label="Sources" value="8" unit="systems" />
-                    <Node label="Ingest" value="Prefect" emphasis />
-                    <Node label="Transform" value="dbt" emphasis />
-                    <Node label="Consume" value="16" unit="dashboards" />
-                </Flow>
-            );
-        }
-        if (project.id === "cloud-modernization") {
-            return (
-                <Flow>
-                    <Node label="Intake" value="435" unit="tickets" />
-                    <Node label="Build" value="338" unit="views" emphasis />
-                    <Node label="Release" value="CI/CD" emphasis />
-                    <Node label="Production" value="265" unit="tier-1" emphasis />
-                    <Node label="Consume" value="Analytics" />
-                </Flow>
-            );
-        }
-        if (project.id === "certification-center") {
-            return (
-                <Flow>
-                    <Node label="Partners" value="5+" unit="alliances" />
-                    <Node label="Platform" value="Center" unit="community" emphasis />
-                    <Node label="Talent" value="600+" unit="certified" />
-                </Flow>
-            );
+        if (project.architectureNodes?.length) {
+            return <ArchitectureFlow nodes={project.architectureNodes} />;
         }
         return (
             project.architectureDiagram && (
@@ -225,12 +144,12 @@ export default function ProjectModal({ project, isOpen, onClose, onNext, onPrevi
 
                         <div className="space-y-16 sm:space-y-20">
                             {project.overview && (
-                                <Section title="Overview">
+                                <Section title="Overview" as="h3">
                                     <p className="text-body leading-[1.75] text-ink-secondary">{project.overview}</p>
                                 </Section>
                             )}
 
-                            <Section title="Problem & baseline">
+                            <Section title="Problem & baseline" as="h3">
                                 <ol className="space-y-5">
                                     {project.problem.map((item, i) => (
                                         <li key={i} className="flex gap-4">
@@ -258,7 +177,7 @@ export default function ProjectModal({ project, isOpen, onClose, onNext, onPrevi
                                 )}
                             </Section>
 
-                            <Section title="Solution">
+                            <Section title="Solution" as="h3">
                                 {project.solution && (
                                     <p className="text-body leading-[1.75] text-ink-secondary">{project.solution}</p>
                                 )}
@@ -288,8 +207,8 @@ export default function ProjectModal({ project, isOpen, onClose, onNext, onPrevi
                                 )}
                             </Section>
 
-                            {(project.architectureDiagram || project.architectureComponents) && (
-                                <Section title="Architecture">
+                            {(project.architectureNodes || project.architectureDiagram || project.architectureComponents) && (
+                                <Section title="Architecture" as="h3">
                                     {architecture()}
 
                                     {project.architectureComponents && (
@@ -312,7 +231,7 @@ export default function ProjectModal({ project, isOpen, onClose, onNext, onPrevi
                             )}
 
                             {project.governance && (
-                                <Section title="Governance & reliability">
+                                <Section title="Governance & reliability" as="h3">
                                     <ul className="space-y-3.5">
                                         {project.governance.map((item, i) => (
                                             <li key={i} className="flex gap-3 text-body leading-[1.7] text-ink-secondary">
@@ -327,7 +246,7 @@ export default function ProjectModal({ project, isOpen, onClose, onNext, onPrevi
                                 </Section>
                             )}
 
-                            <Section title="Value delivered">
+                            <Section title="Value delivered" as="h3">
                                 <ul className="grid gap-px overflow-hidden rounded-lg bg-line-soft">
                                     {project.impact.map((result, i) => (
                                         <li key={i} className="bg-surface-sunken px-5 py-5">
@@ -342,16 +261,7 @@ export default function ProjectModal({ project, isOpen, onClose, onNext, onPrevi
 
                             <div className="border-t border-line-soft pt-10">
                                 <p className="mb-4 text-label uppercase text-ink-quaternary">Stack</p>
-                                <ul className="flex flex-wrap gap-2">
-                                    {project.techStack.map((tech) => (
-                                        <li
-                                            key={tech}
-                                            className="rounded-full bg-surface-muted px-3 py-1.5 text-caption text-ink-secondary"
-                                        >
-                                            {tech}
-                                        </li>
-                                    ))}
-                                </ul>
+                                <PillList items={project.techStack} />
 
                                 {(project.links.demo || project.links.repo || project.links.pdf) && (
                                     <div className="mt-9 flex flex-wrap gap-3">
