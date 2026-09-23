@@ -1,7 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import CategoryNav from "@/components/CategoryNav";
+import SiteNav from "@/components/site/SiteNav";
+import SiteFooter from "@/components/site/SiteFooter";
+import { themeScript } from "@/components/site/ThemeToggle";
+import { profile } from "@/data/site";
 
 // Exposed as a CSS variable so globals.css and the Tailwind font stack can both
 // reference it. Weights 200-600: the display sizes need the lighter cuts, and
@@ -13,46 +16,63 @@ const inter = Inter({
     display: "swap",
 });
 
+const description =
+    "Senior Forward Deployed Engineer at Deloitte and CPA. I learn how a business really works, then build the GenAI, agentic and data systems it runs on.";
+
 export const metadata: Metadata = {
-    metadataBase: new URL("https://daehanlim.com"),
+    metadataBase: new URL(profile.site),
     title: {
-        default: "Daehan Lim | Data & AI Engineering",
-        template: "%s | Daehan Lim"
+        default: "Daehan Lim | Forward Deployed Engineer, AI & Data",
+        template: "%s | Daehan Lim",
     },
-    description: "Senior Forward Deployed Engineer at Deloitte specializing in GenAI platforms, agentic workflows, and enterprise data architecture. Building production AI and data systems for Fortune 500 clients.",
-    keywords: ["Forward Deployed Engineer", "GenAI", "Agentic AI", "Data Engineering", "AI", "Snowflake", "dbt", "Databricks", "Azure", "Cloud Architecture", "Enterprise Analytics"],
-    authors: [{ name: "Daehan Lim" }],
-    creator: "Daehan Lim",
+    description,
+    keywords: [
+        "Forward Deployed Engineer",
+        "GenAI",
+        "Agentic AI",
+        "Data Engineering",
+        "Snowflake",
+        "dbt",
+        "Databricks",
+        "AML",
+        "Regulatory Reporting",
+        "CPA",
+    ],
+    authors: [{ name: profile.name, url: profile.site }],
+    creator: profile.name,
     openGraph: {
         type: "website",
         locale: "en_US",
-        url: "https://daehanlim.com",
-        siteName: "Daehan Lim Portfolio",
-        title: "Daehan Lim | Data & AI Engineering",
-        description: "Senior Forward Deployed Engineer at Deloitte specializing in GenAI platforms, agentic workflows, and enterprise data architecture.",
-        images: [
-            {
-                url: "/images/og-image.png",
-                width: 1200,
-                height: 630,
-                alt: "Daehan Lim Portfolio"
-            }
-        ]
+        url: profile.site,
+        siteName: profile.name,
+        title: "Daehan Lim | Forward Deployed Engineer, AI & Data",
+        description,
     },
     twitter: {
         card: "summary_large_image",
-        title: "Daehan Lim | Data & AI Engineering",
-        description: "Senior Forward Deployed Engineer at Deloitte specializing in GenAI platforms, agentic workflows, and enterprise data architecture.",
-        images: ["/images/og-image.png"]
+        title: "Daehan Lim | Forward Deployed Engineer, AI & Data",
+        description,
     },
-    robots: {
-        index: true,
-        follow: true
-    },
-    icons: {
-        icon: "/favicon.ico",
-        apple: "/apple-touch-icon.png"
-    }
+    robots: { index: true, follow: true },
+};
+
+export const viewport: Viewport = {
+    themeColor: [
+        { media: "(prefers-color-scheme: light)", color: "#fdfdfc" },
+        { media: "(prefers-color-scheme: dark)", color: "#0a0a0b" },
+    ],
+};
+
+/** Structured data, so search engines can attach the profile to the name. */
+const personSchema = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: profile.name,
+    jobTitle: profile.role,
+    worksFor: { "@type": "Organization", name: profile.employer },
+    url: profile.site,
+    sameAs: [profile.linkedin],
+    hasCredential: "Certified Public Accountant",
 };
 
 export default function RootLayout({
@@ -61,10 +81,28 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" className={inter.variable}>
-            <body className="font-sans antialiased">
-                <CategoryNav />
-                {children}
+        // The theme script sets data-theme before hydration, which React would
+        // otherwise report as a mismatch on this one element.
+        <html lang="en" className={inter.variable} suppressHydrationWarning>
+            <head>
+                <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
+                />
+            </head>
+            <body className="flex min-h-dvh flex-col bg-surface font-sans antialiased">
+                <a
+                    href="#main"
+                    className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-[100] focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-caption focus:text-on-ink"
+                >
+                    Skip to content
+                </a>
+                <SiteNav />
+                <main id="main" className="flex-1">
+                    {children}
+                </main>
+                <SiteFooter />
             </body>
         </html>
     );

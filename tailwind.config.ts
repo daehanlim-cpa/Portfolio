@@ -19,12 +19,14 @@ const config: Config = {
                     DEFAULT: "var(--surface)",
                     sunken: "var(--surface-sunken)",
                     muted: "var(--surface-muted)",
+                    raised: "var(--surface-raised)",
                 },
                 line: {
                     DEFAULT: "var(--line)",
                     soft: "var(--line-soft)",
                 },
                 accent: "var(--accent)",
+                "on-ink": "var(--on-ink)",
             },
             fontFamily: {
                 sans: ["var(--font-inter)", "system-ui", "sans-serif"],
@@ -44,6 +46,7 @@ const config: Config = {
                 "display-sm": ["2.25rem", { lineHeight: "1.14", letterSpacing: "-0.024em" }],
                 "display": ["3rem", { lineHeight: "1.06", letterSpacing: "-0.028em" }],
                 "display-lg": ["4rem", { lineHeight: "1.02", letterSpacing: "-0.032em" }],
+                "display-xl": ["5.25rem", { lineHeight: "0.98", letterSpacing: "-0.036em" }],
             },
             borderRadius: {
                 sm: "var(--r-sm)",

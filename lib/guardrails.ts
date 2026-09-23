@@ -1,6 +1,9 @@
-import type { ScoredChunk } from "./embeddings";
+
+import { LEAK_MARKERS, redact, screen } from "./safety";
 
 export const MAX_MESSAGE_CHARS = 1000;
+/** Assistant turns come back from the browser, so they are capped too. */
+export const MAX_ASSISTANT_CHARS = 8000;
 export const MAX_HISTORY_MESSAGES = 40;
 /** How many prior turns get replayed to the model. Caps token growth per turn. */
 export const MAX_REPLAYED_TURNS = 14;
@@ -93,7 +96,12 @@ export function validateBody(body: unknown): ValidationFailure | ValidationSucce
         ) {
             return { ok: false, status: 400, message: "Malformed message." };
         }
-        parsed.push(message as ChatMessage);
+        const { role, content } = message as ChatMessage;
+        const cap = role === "user" ? MAX_MESSAGE_CHARS : MAX_ASSISTANT_CHARS;
+        if (content.length > cap) {
+            return { ok: false, status: 400, message: "A message in this conversation is too long." };
+        }
+        parsed.push({ role, content });
     }
 
     const question = parsed.filter((m) => m.role === "user").pop()?.content.trim() ?? "";
@@ -126,80 +134,17 @@ export const GREETING_REPLY =
     "If you're hiring, tell me the role and I'll give you a straight read on fit. " +
     "If you're just curious about the work, that's good too.";
 
-/**
- * Only reached now by questions with essentially no relation to Daehan or his
- * field. Deliberately soft — it invites rather than scolds.
- */
-export const OFF_TOPIC_REPLY =
-    "That one's outside what I can speak to — I'm here for Daehan's work and " +
-    "background.\n\n" +
-    "Happy to get into his projects, how he approaches data and AI problems, or " +
-    "how his experience lines up with a role you have in mind. For things I don't " +
-    "hold, like compensation or availability, he's at daehanlim1@gmail.com.";
-
-export type TopicVerdict = "ok" | "thin" | "off_topic";
-
-/**
- * Three-way relevance judgement from retrieval scores, which we already have.
- *
- * The previous single cutoff at 0.60 refused anything it didn't recognise,
- * which made the assistant feel interrogative — a visitor asking a reasonable
- * adjacent question ("how does dbt fit into that stack?") got stonewalled.
- * Now only the genuinely unrelated is refused outright; the middle band is
- * answered with the retrieved context plus a note that it may be loose, and
- * the model decides how far it can honestly go.
- */
-export function topicVerdict(results: ScoredChunk[]): TopicVerdict {
-    if (results.length === 0) return "off_topic";
-    const top = results[0].score;
-    if (top >= confidentThreshold()) return "ok";
-    if (top >= floorThreshold()) return "thin";
-    return "off_topic";
-}
-
-/**
- * Calibrated against the real corpus with gemini-embedding-001 (768d,
- * RETRIEVAL_QUERY) — re-run `npx tsx --env-file=.env.local
- * scripts/calibrate-topic.ts` if the corpus changes materially. Measured bands:
- *
- *   core questions       0.620 - 0.700
- *   adjacent questions   0.572 - 0.688   ("what would he be bad at?" = 0.572)
- *   unrelated + probes   0.509 - 0.593   ("capital of France?" = 0.527)
- *
- * The adjacent and unrelated bands overlap, so no single cutoff separates them
- * cleanly — which is exactly why the middle band exists rather than a hard
- * yes/no. The floor sits at the bottom of the adjacent band: everything below
- * it is refused outright, everything above reaches the model with context.
- *
- * Note this means the old single 0.60 cutoff was refusing genuine questions —
- * "what would he be bad at?" scored 0.572 and never reached the model at all.
- *
- * Injection attempts land near the floor (0.564 for a system-prompt probe) and
- * some will pass it. The system instruction, not the score, is the real defense
- * there; the gate exists to keep unrelated traffic off the generation budget.
- */
-const DEFAULT_CONFIDENT_THRESHOLD = 0.62;
-const DEFAULT_FLOOR_THRESHOLD = 0.57;
-
-function envNumber(name: string, fallback: number): number {
-    const parsed = Number.parseFloat(process.env[name] ?? "");
-    return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-function confidentThreshold(): number {
-    return envNumber("CHAT_TOPIC_THRESHOLD", DEFAULT_CONFIDENT_THRESHOLD);
-}
-
-function floorThreshold(): number {
-    return envNumber("CHAT_TOPIC_FLOOR", DEFAULT_FLOOR_THRESHOLD);
-}
-
 export function limitMessage(reason: string): string {
     switch (reason) {
         case "conversation":
             return (
                 "That's as far as this conversation goes. If you want to keep going, " +
                 "Daehan himself is the better next step — daehanlim1@gmail.com."
+            );
+        case "blocked":
+            return (
+                "The assistant isn't available from your connection right now. You can " +
+                "still reach Daehan directly at daehanlim1@gmail.com."
             );
         case "global_daily":
             return (
@@ -219,4 +164,30 @@ export function clientIp(request: Request): string {
     const forwarded = request.headers.get("x-forwarded-for");
     if (forwarded) return forwarded.split(",")[0].trim();
     return request.headers.get("x-real-ip") ?? "unknown";
+}
+
+/**
+ * Prior turns are sent back by the browser, so they can't be trusted: a
+ * visitor can edit them, including forging "assistant" replies to steer the
+ * model. Before replaying them this drops any user turn the screen would have
+ * refused (with the reply that followed it), any assistant turn that quotes
+ * the instructions or carries injection markup, and removes personal data from
+ * what remains.
+ */
+export function sanitizeHistory(history: ChatMessage[]): ChatMessage[] {
+    const out: ChatMessage[] = [];
+    let skipReply = false;
+    for (const message of history) {
+        if (message.role === "user") {
+            skipReply = screen(message.content) !== null;
+            if (!skipReply) out.push({ role: "user", content: redact(message.content) });
+            continue;
+        }
+        const forged =
+            screen(message.content) === "injection" ||
+            LEAK_MARKERS.some((marker) => message.content.includes(marker));
+        if (!skipReply && !forged) out.push({ role: "assistant", content: redact(message.content) });
+        skipReply = false;
+    }
+    return out;
 }

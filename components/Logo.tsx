@@ -8,7 +8,7 @@ export default function Logo() {
         <span className="flex items-center gap-2.5">
             <span
                 aria-hidden
-                className="flex h-7 w-7 items-center justify-center rounded-[9px] bg-ink text-white"
+                className="flex h-7 w-7 items-center justify-center rounded-[9px] bg-ink text-on-ink"
             >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                     <path
@@ -20,7 +20,7 @@ export default function Logo() {
                     />
                 </svg>
             </span>
-            <span className="text-caption font-medium tracking-[-0.011em] text-ink">
+            <span className="hidden text-caption font-medium tracking-[-0.011em] text-ink min-[400px]:inline">
                 Daehan Lim
             </span>
         </span>

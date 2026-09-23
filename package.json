@@ -7,11 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "build:embeddings": "tsx scripts/build-embeddings.ts",
-    "calibrate:topic": "tsx --env-file=.env.local scripts/calibrate-topic.ts"
+    "test": "node --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.21.0",
+    "@anthropic-ai/sdk": "^0.128.0",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
     "framer-motion": "^11.15.0",
@@ -30,7 +29,7 @@
     "eslint-config-next": "^15.1.4",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
-    "tsx": "^4.19.2",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

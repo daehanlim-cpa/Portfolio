@@ -1,19 +1,21 @@
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { loadEmbeddings } from "@/lib/embeddings";
-import { CHAT_MODEL } from "@/lib/models";
+import { cachedSystem, chatJson } from "@/lib/llm";
+import { siteCorpus } from "@/lib/corpus";
+import { buildReference } from "@/lib/prompt";
 import {
+    FOLLOW_UP_SCHEMA,
     FOLLOW_UP_SYSTEM_INSTRUCTION,
     MAX_FOLLOW_UPS,
     buildFollowUpPrompt,
-    buildTopicMap,
     parseFollowUps,
 } from "@/lib/followups";
-import { checkFollowupLimits } from "@/lib/ratelimit";
-import { clientIp, isAllowedOrigin, validateBody } from "@/lib/guardrails";
+import { checkFollowupLimits, isBlocked } from "@/lib/ratelimit";
+import { clientIp, isAllowedOrigin, sanitizeHistory, validateBody } from "@/lib/guardrails";
+import { LEAK_MARKERS, redact, screen } from "@/lib/safety";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 /** How much of the answer the suggester needs. Enough for topic, not the essay. */
 const ANSWER_EXCERPT_CHARS = 1200;
@@ -53,49 +55,41 @@ export async function POST(request: Request) {
     const last = messages[messages.length - 1];
     if (last?.role !== "assistant" || !last.content.trim()) return none();
 
-    if (!process.env.GOOGLE_API_KEY) return none();
+    // Everything below goes into a prompt, and all of it came from the browser.
+    // Suggestions are decorative, so anything suspicious just gets none.
+    const ip = clientIp(request);
+    if (await isBlocked(ip)) return none();
+    if (screen(question) || screen(last.content) === "injection") return none();
+    if (LEAK_MARKERS.some((marker) => last.content.includes(marker))) return none();
 
-    const withinQuota = await checkFollowupLimits(clientIp(request));
+    const withinQuota = await checkFollowupLimits(ip);
     if (!withinQuota) return none();
 
-    const asked = messages
+    const asked = sanitizeHistory(messages)
         .filter((message) => message.role === "user")
         .map((message) => message.content.trim())
         .slice(-MAX_ASKED_REPLAYED);
 
     try {
-        const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-        const model = genAI.getGenerativeModel({
-            model: CHAT_MODEL,
-            systemInstruction: FOLLOW_UP_SYSTEM_INSTRUCTION,
-        });
-
-        const result = await model.generateContent({
-            contents: [
+        // Same cached site content as the chat, so suggestions stay answerable
+        // and the reference is read from cache rather than paid for again.
+        const raw = await chatJson(
+            cachedSystem(FOLLOW_UP_SYSTEM_INSTRUCTION, buildReference(siteCorpus())),
+            [
                 {
                     role: "user",
-                    parts: [
-                        {
-                            text: buildFollowUpPrompt({
-                                topicMap: buildTopicMap(loadEmbeddings()),
-                                question,
-                                answer: last.content.slice(0, ANSWER_EXCERPT_CHARS),
-                                asked,
-                            }),
-                        },
-                    ],
+                    content: buildFollowUpPrompt({
+                        question: redact(question),
+                        answer: redact(last.content.slice(0, ANSWER_EXCERPT_CHARS)),
+                        asked,
+                    }),
                 },
             ],
-            generationConfig: {
-                // Higher than the chat's 0.45 on purpose: identical suggestions
-                // turn after turn defeat the point of generating them at all.
-                temperature: 0.9,
-                maxOutputTokens: 256,
-                responseMimeType: "application/json",
-            },
-        });
+            FOLLOW_UP_SCHEMA,
+            { maxTokens: 512, signal: request.signal }
+        );
 
-        const followUps = parseFollowUps(result.response.text(), asked);
+        const followUps = parseFollowUps(raw, asked);
         return NextResponse.json(
             { followUps: followUps.slice(0, MAX_FOLLOW_UPS) },
             { headers: { "Cache-Control": "no-store" } }

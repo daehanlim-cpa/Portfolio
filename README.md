@@ -1,200 +1,96 @@
-# Daehan Lim - Minimal Portfolio
+# Daehan Lim — Portfolio
 
-A minimalist portfolio website inspired by premium e-commerce storefronts. Features a clean product-grid layout with skillset filtering.
+The personal site of Daehan Lim, CPA: Senior Forward Deployed Engineer building
+production GenAI and data systems for regulated financial institutions.
 
-## Design Philosophy
+**Positioning:** a Forward Deployed Engineer who learns how a business really
+works, then builds the AI and data systems it runs on. Domain knowledge first,
+builder second, and not tied to any single industry.
 
-- **Extremely minimal**: White background, generous whitespace, grayscale palette
-- **Premium feel**: Subtle hover effects, smooth transitions (200-300ms)
-- **Product-focused**: Projects displayed like products in an e-commerce grid
-- **Category filtering**: Navigate by skillsets (Data Engineering, Cloud, etc.)
+The home page is three acts in order: **(1) Forward Deployed Engineer**, what the
+role is and how an engagement runs; **(2) the path** from domain expert to
+builder; **(3) the work**, led by its numbers. Credentials, writing and contact
+follow. The visual language follows Apple's: one idea per section, centered
+statements, two-tone semibold headlines, generous space.
 
-## Features
+## Pages
 
-✅ **Product Grid Layout**
-- Responsive: 2 columns (mobile) → 3 (tablet) →  5-6 (desktop)
-- Centered project images with code labels (DL-01, DL-02, etc.)
-- Subtle hover scale effect (1.05x)
+| Route | What it is |
+| --- | --- |
+| `/` | Home: hero, Forward Deployed Engineer, the path, the work (headline figures and featured case studies), credentials, writing, contact |
+| `/work` | Every case study, filterable by type |
+| `/project/[id]` | Full case study: metric scorecard, before/after, context, problem, what was built, approach, architecture, governance, stack |
+| `/ask` | The recruiter assistant, full page. `/ask?q=...` asks a question on arrival (used by the hero and the case-study pages) |
+| `/writing`, `/blog/[slug]` | Posts in English and Korean |
+| `/resume` | The full resume |
 
-✅ **Category Navigation**
-- Sticky top nav with centered skillset filters
-- Smooth filtering without page reload
-- URL-based routing (`/skill/Data Engineering`)
+Old routes (`/experience`, `/projects`, `/professional`, `/purpose`, `/skill/*`, `/chat`) redirect to their new homes.
 
-✅ **E-Commerce Style Project Pages**
-- Large image gallery on left
-- Detailed specs on right (Problem, Approach, Impact)
-- Tech stack tags and action buttons
-- Next/Previous project navigation
+## Editing content
 
-✅ **AI Recruiter Chat**
-- Grounded responses using Google Gemini RAG over the resume and project case studies
-- Located at `/chat`, plus a launcher in the nav
-- Streaming replies, topic guardrails, and durable rate limiting
+Nothing on the site needs a code change to update:
 
-## Tech Stack
+- **Home-page copy and figures:** `data/site.ts` (profile, headline metrics, featured case studies, timeline, method, credentials, stack, education). Every figure there comes from the resume or a case study. Keep it that way.
+- **Case studies:** `data/projects.ts`. Each project's `metrics` array is its scorecard, and the first one or two appear on cards. **Never estimate a figure.** Every value must appear in the project's own text. Where nothing was measured, use a scope count from the text or a directional word ("Faster") and explain it in `metricsNote`. The page shows that note under the scorecard.
+- **Posts:** `data/blog.ts`.
+- **Resume:** `content/resume.md`.
 
-- **Framework**: Next.js 15 (App Router)
-- **Language**: TypeScript
-- **Styling**: TailwindCSS
-- **Animations**: Framer Motion
-- **AI**: Google Gemini
-- **Font**: Inter
+The AI assistant reads all of the above on every question, so whatever the site says, it knows. Nothing needs rebuilding.
 
-## Quick Start
+## Design system
+
+- **Tokens** live in `app/globals.css` as CSS variables and are mapped into Tailwind in `tailwind.config.ts`. Components only use tokens (`text-ink`, `bg-surface`, `text-on-ink`…), which is what makes dark mode work.
+- **Dark mode** follows the OS by default. The nav toggle stores an explicit choice in `localStorage`, and an inline script applies it before first paint, so there is no flash.
+- **Type:** Inter only. Headlines are semibold with tight tracking, and the qualifying half of each is set in grey.
+- **Colour:** one near-black ink, evenly stepped greys, and a blue `accent` for links and focus.
+- **Motion:** decelerating curves, small travel distances, one-time scroll reveals. Everything respects `prefers-reduced-motion`.
+
+## SEO
+
+`app/opengraph-image.tsx`, `app/icon.tsx` and `app/apple-icon.tsx` generate the social card and icons at build time. `app/sitemap.ts` and `app/robots.ts` cover crawling, and the root layout emits `Person` structured data.
+
+## Tech stack
+
+Next.js 15 (App Router) · TypeScript · Tailwind CSS · Framer Motion · Claude API (assistant) · Upstash (rate limiting)
+
+## Quick start
 
 ```bash
-# Install dependencies
 npm install
-
-# Run development server
-npm run dev
-
-# Open http://localhost:3000
-```
-
-## Adding New Projects
-
-### 1. Add Project Data
-
-Edit `data/projects.ts` and add a new project:
-
-```typescript
-{
-  id: "your-project-id",
-  code: "DL-07",  // Use sequential code
-  title: "Your Project Title",
-  categories: ["Data Engineering", "Cloud"],  // Pick from existing categories
-  heroImage: "/images/project7.png",
-  galleryImages: ["/images/project7.png"],  // Optional additional images
-  shortDescription: "One-sentence description",
-  problem: [
-    "Problem point 1",
-    "Problem point 2"
-  ],
-  approach: [
-    "Approach step 1",
-    "Approach step 2"
-  ],
-  impact: [
-    "Impact metric 1",
-    "Impact metric 2"
-  ],
-  techStack: ["Tech1", "Tech2", "Tech3"],
-  links: {
-    demo: "https://demo.com",  // Optional
-    repo: "https://github.com/...",  // Optional
-    pdf: "/files/case-study.pdf"  // Optional
-  }
-}
-```
-
-### 2. Add Project Image
-
-Place your image in `public/images/` folder:
-- Recommended: PNG with transparent background
-- Size: Square aspect ratio (1:1)
-- Format: Clean product-shot style (centered, minimal)
-
-### 3. Restart Dev Server
-
-```bash
-npm run dev
-```
-
-Your project will automatically appear in the grid!
-
-## Available Categories
-
-Current skillset categories:
-- ALL
-- Data Engineering
-- Cloud
-- Financial Services
-- Analytics  
-- Compliance
-- DevOps
-- Migration
-- Governance
-- Data Modeling
-
-To add a new category, edit the `categories` array in `data/projects.ts`.
-
-## Project Structure
-
-```
-Portfolio/
-├── app/
-│   ├── page.tsx                  # Homepage (product grid)
-│   ├── layout.tsx                # Root layout with nav
-│   ├── skill/[category]/         # Filtered category pages
-│   ├── project/[id]/             # Project detail (PDP style)
-│   └── resume/                   # Resume + AI chat
-├── components/
-│   ├── CategoryNav.tsx           # Top navigation bar
-│   ├── ProjectCard.tsx           # Individual product card
-│   └── ProjectGrid.tsx           # Responsive grid layout
-├── data/
-│   └── projects.ts               # All project data
-└── public/images/                # Project images
-```
-
-## Customization
-
-### Change Code Prefix
-
-In `data/projects.ts`, update all `code` fields from "DL-XX" to your preferred prefix:
-```typescript
-code: "YourInitials-01"
-```
-
-### Adjust Grid Columns
-
-In `components/ProjectGrid.tsx`:
-```typescript
-// Current: 2 → 3 → 5 → 6 columns
-className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6"
-
-// Change to 3 → 4 columns:
-className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-```
-
-### Modify Hover Scale
-
-In `components/ProjectCard.tsx`:
-```typescript
-// Current: 1.05x scale
-className="... group-hover:scale-105"
-
-// Change to 1.02x:
-className="... group-hover:scale-102"
+npm run dev      # http://localhost:3000
+npm run build    # production build
 ```
 
 ## Recruiter Chat Setup
 
-An AI assistant at `/chat` (also reachable from the chat icon in the nav) that answers
-recruiter questions about Daehan's background and how it maps to a role they're hiring for.
-Answers are grounded in `content/resume.md` and `data/projects.ts`.
+An AI assistant at `/ask` (and the "Ask AI" sheet in the nav) that answers questions about
+Daehan's background and how it maps to a role. It runs on the Claude API
+(`claude-haiku-4-5` by default).
 
-### 1. Google API key
+### 1. API key
 
-Get one from [Google AI Studio](https://makersuite.google.com/app/apikey), then create `.env.local`:
-
-```bash
-GOOGLE_API_KEY=your_key_here
-```
-
-### 2. Generate embeddings
+Create a key at [platform.claude.com](https://platform.claude.com) (Settings → API keys),
+then set it locally in `.env.local` and in Vercel (Project → Settings → Environment
+Variables):
 
 ```bash
-npm run build:embeddings
+ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-This indexes the resume **and** every project case study, writing `data/embeddings.json`.
-That file is committed, so production builds don't need an API key.
+**Set a spend limit** under Settings → Billing, for example $5/month. When it's reached,
+the assistant shows its "unavailable" message instead of spending more.
 
-> **Re-run this whenever you edit `content/resume.md` or `data/projects.ts`** — otherwise
-> the chat answers from stale content.
+### 2. How it answers
+
+The whole website is small (about 13k tokens), so instead of searching it, the assistant
+is given **all of it** on every question: the home page, the resume, every case study and
+every blog post (`lib/corpus.ts`). Prompt caching makes the repeat reads cost a tenth of
+the normal input price, so a question costs well under a cent on Haiku. There's no index
+to rebuild: edit `content/resume.md`, `data/*.ts` or a post, redeploy, and the assistant
+knows.
+
+All model access goes through `lib/llm.ts`. Change models with `RESUME_CHAT_MODEL`. Each
+answer logs one `[llm]` line with its token usage and cache hits.
 
 ### 3. Rate limiting (required for production)
 
@@ -206,7 +102,7 @@ UPSTASH_REDIS_REST_TOKEN=...
 ```
 
 Without these the app falls back to in-memory counters that reset on every cold start —
-fine locally, but **they will not protect your API budget in production**.
+fine locally, but **they will not protect your API spend in production**.
 
 ### How the cost and abuse controls work
 
@@ -219,17 +115,42 @@ Checks run cheapest-first, so abusive traffic is rejected before it can spend an
 | Per-conversation | 30 messages | Zero |
 | Per-IP | 45/hour, 90/day | Zero |
 | **Global daily** | **500/day** (`CHAT_DAILY_GLOBAL_LIMIT`) | Zero — shows an "at capacity" state |
-| Topic gate | Retrieval similarity below `CHAT_TOPIC_FLOOR` (0.57) | One embedding call — **never reaches the chat model** |
+| Greeting | "hi", "hello" and similar | Zero — canned reply, no API call |
+| Answer size | 2,048 output tokens max | Caps the cost of any single answer |
 
-The topic gate is the main saver: off-topic questions are answered with a canned redirect
-and never trigger generation. Quota is consumed in order, so a user who trips the
-per-conversation cap never draws down the global daily budget.
+Quota is consumed in order, so a user who trips the per-conversation cap never draws down
+the global daily budget. Off-topic questions reach the model, which steers back to
+Daehan's work; with the site content cached, each costs a fraction of a cent. Your
+Console spend limit is the final backstop.
+
+### Privacy and abuse guardrails
+
+The assistant's instructions (`lib/prompt.ts`) are the first line of defense. Behind them
+sit deterministic checks that don't depend on the model behaving (`lib/safety.ts`):
+
+| Guardrail | What it does | Cost |
+|---|---|---|
+| Injection screen | "Ignore previous instructions", "reveal your system prompt", jailbreak modes, spoofed `<system>`/chat-template tags, long encoded blobs: fixed reply, no model call | Zero |
+| Personal-info screen | Home address, phone, age, birth date, family, finances: fixed reply pointing to email | Zero |
+| Repeat offenders | 3 screened attempts in an hour block that IP for 24 hours | Zero |
+| History sanitizing | The browser sends back prior turns, so screened turns and forged "assistant" replies are dropped before replay | Zero |
+| Redaction | Emails, phone numbers, card and social security numbers a visitor types are removed before they reach Claude **and** before transcripts are stored | Zero |
+| Output guard | Each streamed answer is checked as it goes out: personal data is redacted, and if the model starts reciting its instructions the answer is cut off | Zero |
+| Security headers | CSP, `frame-ancestors 'none'`, HSTS, `nosniff`, a strict referrer policy and permissions policy on every page (production only) | Zero |
+
+The instructions also forbid guessing the confidential client names, repeating back a
+visitor's personal data, and doing unrelated work (code, essays) on your API bill.
+
+These checks are pattern-based on purpose: predictable and auditable, not exhaustive.
+`npm test` runs regression tests covering both directions: attacks must be caught, and the
+questions real visitors ask (and everything the site itself says) must pass untouched. Add a
+case there whenever you adjust a pattern.
 
 ### Follow-up suggestions
 
 `/api/followups` generates the three suggestion chips shown under each answer on the
-landing chat. It runs after the answer has finished streaming, taking the exchange plus an
-inventory of what the corpus covers, and returns a short JSON array.
+chat page. It runs after the answer has finished streaming, taking the exchange plus the
+same cached site content as the chat, and returns JSON constrained by a schema.
 
 It is deliberately fenced off from the chat itself:
 
@@ -238,8 +159,8 @@ It is deliberately fenced off from the chat itself:
   capacity, and they never touch the per-conversation counter — a visitor shouldn't lose a
   question they could have asked because the UI generated chips on their behalf.
 - **Failure is silent.** Every error path returns an empty array, and the client falls back
-  to a static list. No API key, no Redis, a malformed model response, or a network drop all
-  degrade to the same working UI.
+  to a static list. No API key, no Redis, a malformed model response, or a network
+  drop all degrade to the same working UI.
 
 The compact chat sheet doesn't call it at all; it uses the static list.
 
@@ -248,48 +169,5 @@ list) so you can see what recruiters actually ask. Read them from the Upstash co
 
 ## Deployment
 
-### Vercel (Recommended)
-
-1. Push code to GitHub
-2. Import repository in Vercel
-3. Add environment variables: `GOOGLE_API_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
-4. Deploy!
-
-### Other Platforms
-
-Build the project:
-```bash
-npm run build
-npm run start
-```
-
-## Design Principles
-
-✨ **Minimalism**
-- White background only
-- No gradients or colors (except images)
-- Generous spacing between elements
-
-✨ **Typography**
-- Light font weights (300-400)
-- Uppercase labels with wide tracking
-- Small, understated text sizes
-
-✨ **Interactions**
-- Subtle hover effects (opacity, scale)
-- Smooth 200-300ms transitions
-- No jarring animations
-
-✨ **Layout**
-- Centered, balanced compositions
-- Consistent grid spacing
-- Product-gallery aesthetic
-
-## Browser Support
-
-- Chrome, Safari, Firefox, Edge (latest versions)
-- Mobile responsive on iOS and Android
-
----
-
-**© 2026 Daehan Lim**
+Import the repository into Vercel and set `ANTHROPIC_API_KEY`, `UPSTASH_REDIS_REST_URL` and
+`UPSTASH_REDIS_REST_TOKEN`. Anywhere else: `npm run build && npm run start`.
