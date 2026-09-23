@@ -1,21 +1,19 @@
 /**
- * Model ids, in one place because two routes now depend on them — `/api/chat`
- * and `/api/followups`. When these were inline constants there was nothing
- * stopping the two from drifting onto different models.
+ * Model names, in one place because both API routes and both scripts depend on
+ * them. These are Ollama model tags: pull each on the model server first
+ * (`ollama pull <tag>`). See SETUP_OLLAMA.md for sizing by machine memory.
  */
 
 /**
- * Verified against the live API. Two traps informed this choice:
- * - gemini-2.5-flash still appears in ListModels but is closed to new keys.
- * - The full 3.x Flash models think by default and thought tokens count against
- *   maxOutputTokens; gemini-3.6-flash burned ~380 of a 400 budget on thinking
- *   and truncated every answer mid-sentence. Thinking cannot be disabled there.
- * This model emits zero thought tokens, which suits grounded extractive answers
- * and keeps cost low. Raise maxOutputTokens if you switch to a thinking model.
+ * Chat model. qwen2.5:7b is the default because it follows long system
+ * instructions and JSON schemas reliably, and runs comfortably on a 16 GB Mac
+ * mini. With more memory, a larger model (e.g. gemma3:12b) answers better.
  */
-export const CHAT_MODEL = process.env.RESUME_CHAT_MODEL || "gemini-3.5-flash-lite";
+export const CHAT_MODEL = process.env.RESUME_CHAT_MODEL || "qwen2.5:7b";
 
-export const EMBEDDING_MODEL = process.env.RESUME_EMBEDDING_MODEL || "gemini-embedding-001";
-
-/** Must match EMBEDDING_DIMENSIONS in scripts/build-embeddings.ts. */
-export const EMBEDDING_DIMENSIONS = 768;
+/**
+ * Embedding model. nomic-embed-text is small, fast, and trained with separate
+ * query/document prefixes (applied in lib/llm.ts). Changing it invalidates
+ * data/embeddings.json — rebuild with `npm run build:embeddings`.
+ */
+export const EMBEDDING_MODEL = process.env.RESUME_EMBEDDING_MODEL || "nomic-embed-text";

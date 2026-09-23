@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { loadEmbeddings } from "@/lib/embeddings";
-import { CHAT_MODEL } from "@/lib/models";
+import { chatJson } from "@/lib/llm";
 import {
+    FOLLOW_UP_SCHEMA,
     FOLLOW_UP_SYSTEM_INSTRUCTION,
     MAX_FOLLOW_UPS,
     buildFollowUpPrompt,
@@ -14,6 +14,7 @@ import { clientIp, isAllowedOrigin, validateBody } from "@/lib/guardrails";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 /** How much of the answer the suggester needs. Enough for topic, not the essay. */
 const ANSWER_EXCERPT_CHARS = 1200;
@@ -53,8 +54,6 @@ export async function POST(request: Request) {
     const last = messages[messages.length - 1];
     if (last?.role !== "assistant" || !last.content.trim()) return none();
 
-    if (!process.env.GOOGLE_API_KEY) return none();
-
     const withinQuota = await checkFollowupLimits(clientIp(request));
     if (!withinQuota) return none();
 
@@ -64,38 +63,26 @@ export async function POST(request: Request) {
         .slice(-MAX_ASKED_REPLAYED);
 
     try {
-        const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-        const model = genAI.getGenerativeModel({
-            model: CHAT_MODEL,
-            systemInstruction: FOLLOW_UP_SYSTEM_INSTRUCTION,
-        });
-
-        const result = await model.generateContent({
-            contents: [
+        const raw = await chatJson(
+            [
+                { role: "system", content: FOLLOW_UP_SYSTEM_INSTRUCTION },
                 {
                     role: "user",
-                    parts: [
-                        {
-                            text: buildFollowUpPrompt({
-                                topicMap: buildTopicMap(loadEmbeddings()),
-                                question,
-                                answer: last.content.slice(0, ANSWER_EXCERPT_CHARS),
-                                asked,
-                            }),
-                        },
-                    ],
+                    content: buildFollowUpPrompt({
+                        topicMap: buildTopicMap(loadEmbeddings()),
+                        question,
+                        answer: last.content.slice(0, ANSWER_EXCERPT_CHARS),
+                        asked,
+                    }),
                 },
             ],
-            generationConfig: {
-                // Higher than the chat's 0.45 on purpose: identical suggestions
-                // turn after turn defeat the point of generating them at all.
-                temperature: 0.9,
-                maxOutputTokens: 256,
-                responseMimeType: "application/json",
-            },
-        });
+            FOLLOW_UP_SCHEMA,
+            // Higher than the chat's 0.45 on purpose: identical suggestions
+            // turn after turn defeat the point of generating them at all.
+            { temperature: 0.9, maxTokens: 256, signal: request.signal }
+        );
 
-        const followUps = parseFollowUps(result.response.text(), asked);
+        const followUps = parseFollowUps(raw, asked);
         return NextResponse.json(
             { followUps: followUps.slice(0, MAX_FOLLOW_UPS) },
             { headers: { "Cache-Control": "no-store" } }

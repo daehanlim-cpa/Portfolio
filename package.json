@@ -8,10 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "build:embeddings": "tsx scripts/build-embeddings.ts",
-    "calibrate:topic": "tsx --env-file=.env.local scripts/calibrate-topic.ts"
+    "calibrate:topic": "tsx scripts/calibrate-topic.ts"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.21.0",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
     "framer-motion": "^11.15.0",

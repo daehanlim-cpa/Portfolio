@@ -1,4 +1,4 @@
-import type { ScoredChunk } from "./embeddings";
+import { loadIndex, type ScoredChunk } from "./embeddings";
 
 export const MAX_MESSAGE_CHARS = 1000;
 export const MAX_HISTORY_MESSAGES = 40;
@@ -158,40 +158,38 @@ export function topicVerdict(results: ScoredChunk[]): TopicVerdict {
 }
 
 /**
- * Calibrated against the real corpus with gemini-embedding-001 (768d,
- * RETRIEVAL_QUERY) — re-run `npx tsx --env-file=.env.local
- * scripts/calibrate-topic.ts` if the corpus changes materially. Measured bands:
+ * Thresholds are measured, not guessed. `npm run build:embeddings` scores a
+ * fixed set of probe questions (lib/topic-probes.ts) against the index it just
+ * built and stores the resulting cut-offs in data/embeddings.json:
  *
- *   core questions       0.620 - 0.700
- *   adjacent questions   0.572 - 0.688   ("what would he be bad at?" = 0.572)
- *   unrelated + probes   0.509 - 0.593   ("capital of France?" = 0.527)
+ *   confident = just below the weakest core question
+ *   floor     = just below the weakest adjacent question
  *
- * The adjacent and unrelated bands overlap, so no single cutoff separates them
- * cleanly — which is exactly why the middle band exists rather than a hard
- * yes/no. The floor sits at the bottom of the adjacent band: everything below
- * it is refused outright, everything above reaches the model with context.
+ * They have to be re-measured per embedding model — similarity scores from
+ * different models live on different scales (Gemini's core band sat around
+ * 0.62–0.70; nomic-embed-text's is elsewhere). Adjacent and unrelated bands
+ * usually overlap, which is why the middle "thin" band exists: some unrelated
+ * questions will reach the model, and the system instruction, not the score,
+ * is the real defense there. The gate exists to keep obviously unrelated
+ * traffic off the model server.
  *
- * Note this means the old single 0.60 cutoff was refusing genuine questions —
- * "what would he be bad at?" scored 0.572 and never reached the model at all.
- *
- * Injection attempts land near the floor (0.564 for a system-prompt probe) and
- * some will pass it. The system instruction, not the score, is the real defense
- * there; the gate exists to keep unrelated traffic off the generation budget.
+ * CHAT_TOPIC_THRESHOLD / CHAT_TOPIC_FLOOR override the stored values. The
+ * fallbacks below apply only to an index built without calibration.
  */
-const DEFAULT_CONFIDENT_THRESHOLD = 0.62;
-const DEFAULT_FLOOR_THRESHOLD = 0.57;
+const FALLBACK_CONFIDENT_THRESHOLD = 0.62;
+const FALLBACK_FLOOR_THRESHOLD = 0.5;
 
-function envNumber(name: string, fallback: number): number {
+function envNumber(name: string): number | undefined {
     const parsed = Number.parseFloat(process.env[name] ?? "");
-    return Number.isFinite(parsed) ? parsed : fallback;
+    return Number.isFinite(parsed) ? parsed : undefined;
 }
 
 function confidentThreshold(): number {
-    return envNumber("CHAT_TOPIC_THRESHOLD", DEFAULT_CONFIDENT_THRESHOLD);
+    return envNumber("CHAT_TOPIC_THRESHOLD") ?? loadIndex().thresholds?.confident ?? FALLBACK_CONFIDENT_THRESHOLD;
 }
 
 function floorThreshold(): number {
-    return envNumber("CHAT_TOPIC_FLOOR", DEFAULT_FLOOR_THRESHOLD);
+    return envNumber("CHAT_TOPIC_FLOOR") ?? loadIndex().thresholds?.floor ?? FALLBACK_FLOOR_THRESHOLD;
 }
 
 export function limitMessage(reason: string): string {

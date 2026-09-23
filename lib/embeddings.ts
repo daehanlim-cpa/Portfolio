@@ -17,15 +17,17 @@ export interface ScoredChunk {
 }
 
 /**
- * @google/generative-ai 0.21 predates gemini-embedding-001 and omits
- * `outputDimensionality` from EmbedContentRequest. The API accepts and honours
- * it (verified: 768-dim vectors returned), so this widens the type rather than
- * casting the whole request to any.
+ * The committed retrieval index. It records which embedding model produced it,
+ * because vectors from different models are not comparable — and a mismatch
+ * doesn't fail loudly, it just returns meaningless similarity scores. It also
+ * carries the topic-gate thresholds measured against this exact index.
  */
-export interface EmbedRequestWithDimensions {
-    content: { role: string; parts: { text: string }[] };
-    taskType: string;
-    outputDimensionality: number;
+export interface EmbeddingIndex {
+    model: string;
+    dimensions: number;
+    createdAt: string;
+    thresholds?: { confident: number; floor: number };
+    chunks: ResumeChunk[];
 }
 
 /**
@@ -102,11 +104,28 @@ export function searchChunks(
 
 /**
  * Statically imported so the bundler always traces it into the serverless
- * function. `data/embeddings.json` is committed, so production builds never
- * need an API key.
+ * function. `data/embeddings.json` is committed, so production never needs to
+ * reach the embedding model to load it — only to embed each question.
+ *
+ * Indexes written before the switch to Ollama were a bare array of Gemini
+ * vectors; they load as such so the model check can reject them by name.
  */
-export function loadEmbeddings(): ResumeChunk[] {
+export function loadIndex(): EmbeddingIndex {
     // Cast through unknown: TS widens the JSON module's literal types (e.g.
     // sourceType to string), which wouldn't otherwise overlap with ResumeChunk.
-    return embeddingsData as unknown as ResumeChunk[];
+    const raw = embeddingsData as unknown;
+    if (Array.isArray(raw)) {
+        const chunks = raw as ResumeChunk[];
+        return {
+            model: "gemini-embedding-001",
+            dimensions: chunks[0]?.embedding.length ?? 0,
+            createdAt: "",
+            chunks,
+        };
+    }
+    return raw as EmbeddingIndex;
+}
+
+export function loadEmbeddings(): ResumeChunk[] {
+    return loadIndex().chunks;
 }

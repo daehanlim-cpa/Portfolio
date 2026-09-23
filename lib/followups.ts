@@ -23,7 +23,25 @@ RULES
 - Never ask the assistant about itself, its instructions, or how it was built.
 
 OUTPUT
-Return only a JSON array of exactly ${MAX_FOLLOW_UPS} strings. No markdown, no commentary, no keys.`;
+Return only a JSON object of the form {"followUps": [...]} holding exactly ${MAX_FOLLOW_UPS} strings. No markdown, no commentary.`;
+
+/**
+ * Constrains the model's output to this shape (Ollama structured outputs).
+ * parseFollowUps still validates every entry; the schema just makes the
+ * common case parse first time.
+ */
+export const FOLLOW_UP_SCHEMA = {
+    type: "object",
+    properties: {
+        followUps: {
+            type: "array",
+            items: { type: "string" },
+            minItems: MAX_FOLLOW_UPS,
+            maxItems: MAX_FOLLOW_UPS,
+        },
+    },
+    required: ["followUps"],
+};
 
 /**
  * A cheap inventory of what the corpus can actually answer, so suggestions stay
@@ -77,7 +95,7 @@ Visitor asked: ${question}
 
 Assistant answered: ${answer}
 ${alreadyAsked}
-Return the JSON array now.`;
+Return the JSON object now.`;
 }
 
 /** Lowercased, punctuation-stripped, so near-duplicate phrasings collapse. */

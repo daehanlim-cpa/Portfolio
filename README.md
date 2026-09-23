@@ -49,7 +49,7 @@ Nothing on the site needs a code change to update:
 
 ## Tech stack
 
-Next.js 15 (App Router) · TypeScript · Tailwind CSS · Framer Motion · Google Gemini (assistant) · Upstash (rate limiting)
+Next.js 15 (App Router) · TypeScript · Tailwind CSS · Framer Motion · Ollama on-prem (assistant) · Upstash (rate limiting)
 
 ## Quick start
 
@@ -61,29 +61,36 @@ npm run build    # production build
 
 ## Recruiter Chat Setup
 
-An AI assistant at `/chat` (also reachable from the chat icon in the nav) that answers
-recruiter questions about Daehan's background and how it maps to a role they're hiring for.
-Answers are grounded in `content/resume.md` and `data/projects.ts`.
+An AI assistant at `/ask` (and the "Ask AI" sheet in the nav) that answers recruiter
+questions about Daehan's background and how it maps to a role. Answers are grounded in
+`content/resume.md` and `data/projects.ts`.
 
-### 1. Google API key
+It runs on **Ollama on a Mac mini**, with no cloud AI API. **Full setup: [SETUP_OLLAMA.md](SETUP_OLLAMA.md).**
+In short:
 
-Get one from [Google AI Studio](https://makersuite.google.com/app/apikey), then create `.env.local`:
+### 1. Models
 
 ```bash
-GOOGLE_API_KEY=your_key_here
+ollama pull nomic-embed-text && ollama pull qwen2.5:7b
 ```
 
-### 2. Generate embeddings
+### 2. Build the index
 
 ```bash
 npm run build:embeddings
 ```
 
-This indexes the resume **and** every project case study, writing `data/embeddings.json`.
-That file is committed, so production builds don't need an API key.
+This indexes the resume **and** every case study into `data/embeddings.json`, and measures
+the topic-gate thresholds against that index. The file is committed, so production only
+calls Ollama to embed each question and to generate answers. The index records which
+embedding model built it; a mismatch makes the assistant refuse rather than search with
+incompatible vectors.
 
-> **Re-run this whenever you edit `content/resume.md` or `data/projects.ts`** — otherwise
+> **Re-run this whenever you edit `content/resume.md` or `data/projects.ts`,** otherwise
 > the chat answers from stale content.
+
+All model access goes through `lib/llm.ts`. Hosts and models are set with environment
+variables (see `.env.local.example`).
 
 ### 3. Rate limiting (required for production)
 
@@ -95,7 +102,7 @@ UPSTASH_REDIS_REST_TOKEN=...
 ```
 
 Without these the app falls back to in-memory counters that reset on every cold start —
-fine locally, but **they will not protect your API budget in production**.
+fine locally, but **they will not protect the Mac mini from load in production**.
 
 ### How the cost and abuse controls work
 
@@ -108,7 +115,7 @@ Checks run cheapest-first, so abusive traffic is rejected before it can spend an
 | Per-conversation | 30 messages | Zero |
 | Per-IP | 45/hour, 90/day | Zero |
 | **Global daily** | **500/day** (`CHAT_DAILY_GLOBAL_LIMIT`) | Zero — shows an "at capacity" state |
-| Topic gate | Retrieval similarity below `CHAT_TOPIC_FLOOR` (0.57) | One embedding call — **never reaches the chat model** |
+| Topic gate | Retrieval similarity below the measured floor | One embedding call — **never reaches the chat model** |
 
 The topic gate is the main saver: off-topic questions are answered with a canned redirect
 and never trigger generation. Quota is consumed in order, so a user who trips the
@@ -117,8 +124,8 @@ per-conversation cap never draws down the global daily budget.
 ### Follow-up suggestions
 
 `/api/followups` generates the three suggestion chips shown under each answer on the
-landing chat. It runs after the answer has finished streaming, taking the exchange plus an
-inventory of what the corpus covers, and returns a short JSON array.
+chat page. It runs after the answer has finished streaming, taking the exchange plus an
+inventory of what the corpus covers, and returns JSON constrained by a schema.
 
 It is deliberately fenced off from the chat itself:
 
@@ -127,8 +134,8 @@ It is deliberately fenced off from the chat itself:
   capacity, and they never touch the per-conversation counter — a visitor shouldn't lose a
   question they could have asked because the UI generated chips on their behalf.
 - **Failure is silent.** Every error path returns an empty array, and the client falls back
-  to a static list. No API key, no Redis, a malformed model response, or a network drop all
-  degrade to the same working UI.
+  to a static list. Ollama being offline, no Redis, a malformed model response, or a network
+  drop all degrade to the same working UI.
 
 The compact chat sheet doesn't call it at all; it uses the static list.
 
@@ -137,4 +144,4 @@ list) so you can see what recruiters actually ask. Read them from the Upstash co
 
 ## Deployment
 
-Import the repository into Vercel and set `GOOGLE_API_KEY`, `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`. Anywhere else: `npm run build && npm run start`.
+Import the repository into Vercel and set `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, plus `OLLAMA_BASE_URL` and the Cloudflare Access token for reaching the Mac mini (see [SETUP_OLLAMA.md](SETUP_OLLAMA.md)). Or host the whole site on the Mac mini: `npm run build && npm run start`.

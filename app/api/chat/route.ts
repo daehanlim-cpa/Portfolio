@@ -1,11 +1,7 @@
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI, TaskType } from "@google/generative-ai";
-import {
-    loadEmbeddings,
-    searchChunks,
-    type EmbedRequestWithDimensions,
-} from "@/lib/embeddings";
-import { CHAT_MODEL, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL } from "@/lib/models";
+import { loadIndex, searchChunks } from "@/lib/embeddings";
+import { LlmUnavailableError, chatStream, embed, type LlmMessage } from "@/lib/llm";
+import { EMBEDDING_MODEL } from "@/lib/models";
 import { SYSTEM_INSTRUCTION, buildContextBlock, buildTurnPrompt } from "@/lib/prompt";
 import { checkLimits, logTranscript, CONVERSATION_LIMIT } from "@/lib/ratelimit";
 import {
@@ -23,8 +19,13 @@ import {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+/**
+ * Headroom for a local model: the first request after it's been unloaded pays
+ * a cold load before the first token, and a long answer streams for a while.
+ */
+export const maxDuration = 60;
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "");
+const UNAVAILABLE = "The assistant isn't available right now. You can reach Daehan directly at daehanlim1@gmail.com.";
 
 type ChatStatus = "ok" | "greeting" | "off_topic";
 
@@ -52,14 +53,11 @@ function refuse(status: number, message: string, retryAfterSeconds?: number) {
     );
 }
 
-/** Gemini requires history to begin with a user turn. */
-function buildHistory(messages: ChatMessage[]) {
+/** Replayed turns, starting on a user turn so the exchange reads coherently. */
+function buildHistory(messages: ChatMessage[]): LlmMessage[] {
     const prior = messages.slice(0, -1).slice(-MAX_REPLAYED_TURNS);
     while (prior.length && prior[0].role !== "user") prior.shift();
-    return prior.map((m) => ({
-        role: m.role === "user" ? "user" : "model",
-        parts: [{ text: m.content }],
-    }));
+    return prior.map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.content }));
 }
 
 export async function POST(request: Request) {
@@ -105,34 +103,21 @@ export async function POST(request: Request) {
         return textStream(GREETING_REPLY, "greeting", limits.conversationRemaining);
     }
 
-    if (!process.env.GOOGLE_API_KEY) {
-        console.error("[chat] GOOGLE_API_KEY is not configured");
-        return refuse(
-            503,
-            "The assistant isn't available right now. You can reach Daehan directly at daehanlim1@gmail.com."
+    // Vectors from a different embedding model would still produce scores —
+    // just meaningless ones. Refuse rather than answer from the wrong context.
+    const index = loadIndex();
+    if (index.chunks.length === 0 || index.model !== EMBEDDING_MODEL) {
+        console.error(
+            `[chat] embeddings.json was built with "${index.model}" but "${EMBEDDING_MODEL}" is configured - run \`npm run build:embeddings\``
         );
+        return refuse(503, UNAVAILABLE);
     }
-
-    const chunks = loadEmbeddings();
-    if (chunks.length === 0) {
-        console.error("[chat] embeddings.json is empty - run `npm run build:embeddings`");
-        return refuse(
-            503,
-            "The assistant isn't available right now. You can reach Daehan directly at daehanlim1@gmail.com."
-        );
-    }
+    const chunks = index.chunks;
 
     try {
         // 5. One embedding call. This is all an off-topic question ever costs.
-        const embeddingModel = genAI.getGenerativeModel({ model: EMBEDDING_MODEL });
-        const embedded = await embeddingModel.embedContent({
-            content: { role: "user", parts: [{ text: question }] },
-            taskType: TaskType.RETRIEVAL_QUERY,
-            outputDimensionality: EMBEDDING_DIMENSIONS,
-        } satisfies EmbedRequestWithDimensions as unknown as Parameters<
-            typeof embeddingModel.embedContent
-        >[0]);
-        const results = searchChunks(embedded.embedding.values, chunks, 8);
+        const [queryVector] = await embed([question], "query");
+        const results = searchChunks(queryVector, chunks, 8);
         const verdict = topicVerdict(results);
 
         if (verdict === "off_topic") {
@@ -147,35 +132,22 @@ export async function POST(request: Request) {
             return textStream(OFF_TOPIC_REPLY, "off_topic", limits.conversationRemaining);
         }
 
-        // 6. Only now do we spend a generation call.
-        const model = genAI.getGenerativeModel({
-            model: CHAT_MODEL,
-            systemInstruction: SYSTEM_INSTRUCTION,
-        });
-
-        const result = await model.generateContentStream({
-            contents: [
+        // 6. Only now do we spend a generation call. The generator connects
+        // lazily, so pull the first delta here: an unreachable model server
+        // then becomes a clean 503 instead of a broken half-open stream.
+        const deltas = chatStream(
+            [
+                { role: "system", content: SYSTEM_INSTRUCTION },
                 ...buildHistory(messages),
                 {
                     role: "user",
-                    parts: [
-                        {
-                            text: buildTurnPrompt(
-                                buildContextBlock(results),
-                                question,
-                                verdict === "thin"
-                            ),
-                        },
-                    ],
+                    content: buildTurnPrompt(buildContextBlock(results), question, verdict === "thin"),
                 },
             ],
-            generationConfig: {
-                // Raised from 0.2: the assistant is meant to converse now, not
-                // just extract. Still low enough to keep it factual.
-                temperature: 0.45,
-                maxOutputTokens: 1536,
-            },
-        });
+            // Low enough to stay factual, high enough to converse rather than recite.
+            { temperature: 0.45, maxTokens: 1536, signal: request.signal }
+        );
+        const first = await deltas.next();
 
         const sources = results
             .filter(({ chunk }) => chunk.sourceType === "project" && chunk.sourceId)
@@ -191,9 +163,11 @@ export async function POST(request: Request) {
         const stream = new ReadableStream({
             async start(controller) {
                 try {
-                    for await (const chunk of result.stream) {
-                        const text = chunk.text();
-                        if (!text) continue;
+                    if (!first.done && first.value) {
+                        full += first.value;
+                        controller.enqueue(encoder.encode(first.value));
+                    }
+                    for await (const text of deltas) {
                         full += text;
                         controller.enqueue(encoder.encode(text));
                     }
@@ -222,6 +196,10 @@ export async function POST(request: Request) {
             },
         });
     } catch (error) {
+        if (error instanceof LlmUnavailableError) {
+            console.error("[chat] model server unavailable:", error.message);
+            return refuse(503, UNAVAILABLE);
+        }
         console.error("[chat] error:", error);
         return refuse(500, "Sorry — something went wrong. Please try again.");
     }
