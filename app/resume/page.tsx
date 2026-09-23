@@ -1,15 +1,26 @@
 import ResumeContent from "@/components/ResumeContent";
 
 export const metadata = {
-    title: "Resume | Daehan Lim",
+    title: "Resume",
     description: "Professional resume and experience of Daehan Lim, CPA",
 };
 
 export default function ResumePage() {
     return (
-        <div className="min-h-screen px-6 pb-24 pt-16 sm:px-8 sm:pt-24">
+        <div className="px-6 pb-24 pt-14 sm:px-8 sm:pt-20">
             <div className="mx-auto max-w-3xl">
-                <h1 className="mb-14 text-display-sm font-light text-ink sm:text-display">Resume</h1>
+                <header className="mb-14 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+                    <div>
+                        <p className="text-label uppercase text-ink-quaternary">Resume</p>
+                        <h1 className="mt-4 font-serif text-display-sm text-ink sm:text-display">Experience &amp; credentials</h1>
+                    </div>
+                    <a
+                        href="mailto:daehanlim1@gmail.com"
+                        className="self-start rounded-full bg-ink px-5 py-2.5 text-caption font-medium text-on-ink transition-opacity hover:opacity-85 sm:self-auto"
+                    >
+                        Get in touch
+                    </a>
+                </header>
 
                 {/* Full Resume Content Only */}
                 <ResumeContent />

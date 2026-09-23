@@ -12,24 +12,36 @@
  * from two soft layers rather than one hard drop.
  */
 :root {
+    color-scheme: light;
+
     /* Ink — never pure black. Pure black on white is optically harsh. */
     --ink: #1d1d1f;
-    --ink-secondary: #4a4a4f;
+    --ink-secondary: #45454a;
     --ink-tertiary: #6e6e73;
-    --ink-quaternary: #9a9aa0;
+    --ink-quaternary: #8e8e93;
+    /* Text set on an ink-filled surface (primary buttons, user bubbles). */
+    --on-ink: #ffffff;
 
-    /* Surfaces */
-    --surface: #ffffff;
+    /* Surfaces. A faint warmth keeps large white fields from feeling clinical. */
+    --surface: #fdfdfc;
     --surface-raised: #ffffff;
-    --surface-sunken: #fafafa;
-    --surface-muted: #f5f5f7;
+    --surface-sunken: #f7f7f5;
+    --surface-muted: #f0f0ee;
+    /* Translucent bars (nav, composer) that frost over scrolling content. */
+    --surface-glass: rgba(253, 253, 252, 0.78);
 
     /* Hairlines. Two weights: structural and incidental. */
     --line: rgba(0, 0, 0, 0.1);
     --line-soft: rgba(0, 0, 0, 0.06);
 
-    /* One accent. Used for focus and the rare deliberate emphasis. */
+    /* One accent, used for focus and the rare deliberate emphasis. */
     --accent: #0066cc;
+    /*
+     * The signal colour marks an exception: the record a control caught. It
+     * appears in the pipeline diagram and nowhere decorative, so it keeps its
+     * meaning.
+     */
+    --signal: #d9480f;
 
     /* Radii — a consistent scale, so nothing looks arbitrary. */
     --r-sm: 10px;
@@ -48,6 +60,49 @@
      * up clipped off the bottom of the screen on mobile.
      */
     --nav-h: 57px;
+}
+
+/*
+ * Dark theme. Defined twice on purpose: once for an explicit choice from the
+ * toggle, once for the OS preference when no choice has been made. Only the
+ * tokens change — components never branch on the theme themselves.
+ */
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --ink: #f5f5f7;
+    --ink-secondary: #d1d1d6;
+    --ink-tertiary: #a1a1a6;
+    --ink-quaternary: #7c7c82;
+    --on-ink: #0a0a0b;
+    --surface: #0a0a0b;
+    --surface-raised: #161618;
+    --surface-sunken: #111113;
+    --surface-muted: #1c1c1f;
+    --surface-glass: rgba(10, 10, 11, 0.72);
+    --line: rgba(255, 255, 255, 0.13);
+    --line-soft: rgba(255, 255, 255, 0.075);
+    --accent: #4da3ff;
+    --signal: #ff8a4c;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --ink: #f5f5f7;
+        --ink-secondary: #d1d1d6;
+        --ink-tertiary: #a1a1a6;
+        --ink-quaternary: #7c7c82;
+        --on-ink: #0a0a0b;
+        --surface: #0a0a0b;
+        --surface-raised: #161618;
+        --surface-sunken: #111113;
+        --surface-muted: #1c1c1f;
+        --surface-glass: rgba(10, 10, 11, 0.72);
+        --line: rgba(255, 255, 255, 0.13);
+        --line-soft: rgba(255, 255, 255, 0.075);
+        --accent: #4da3ff;
+        --signal: #ff8a4c;
+    }
 }
 
 @media (min-width: 640px) {
@@ -93,7 +148,13 @@ p {
 }
 
 ::selection {
-    background: rgba(0, 102, 204, 0.14);
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+/* The editorial serif is a display face only; it never sets running text. */
+.font-serif {
+    font-feature-settings: normal;
+    letter-spacing: -0.01em;
 }
 
 /* A single consistent focus treatment, visible only for keyboard users. */
@@ -128,9 +189,17 @@ p {
     }
 
     /*
-     * Where a surface sits over its own scrolling content and translucency would
-     * buy nothing — the project sheet, the résumé drawer — use a solid bar
-     * instead. Frosting is reserved for the site nav, which floats over page
-     * content, and is applied there with Tailwind's backdrop utilities.
+     * Frosted-bar tint for the nav and chat composer. The blur itself comes from
+     * Tailwind's backdrop utilities at the call site: a raw backdrop-filter here
+     * was being dropped and computed to `none`.
      */
+    .glass {
+        background: var(--surface-glass);
+    }
+
+    /* A faint dot grid, used behind the hero diagram as drafting paper. */
+    .bg-dots {
+        background-image: radial-gradient(var(--line) 1px, transparent 1px);
+        background-size: 22px 22px;
+    }
 }

@@ -27,10 +27,10 @@ export default function BlogPostPage() {
             .map((line, index) => {
                 // Headers
                 if (line.startsWith('### ')) {
-                    return `<h3 key="${index}" class="text-base font-light text-ink mt-8 mb-3">${line.slice(4)}</h3>`;
+                    return `<h3 key="${index}" class="text-body-lg font-medium text-ink mt-10 mb-3">${line.slice(4)}</h3>`;
                 }
                 if (line.startsWith('## ')) {
-                    return `<h2 key="${index}" class="text-lg font-light text-ink mt-12 mb-4">${line.slice(3)}</h2>`;
+                    return `<h2 key="${index}" class="font-serif text-title text-ink mt-14 mb-4">${line.slice(3)}</h2>`;
                 }
                 if (line.startsWith('# ')) {
                     // Skip the first H1 header (it's already shown as the page title)
@@ -38,7 +38,7 @@ export default function BlogPostPage() {
                         firstH1Skipped = true;
                         return '';
                     }
-                    return `<h1 key="${index}" class="text-2xl font-light text-ink mb-8">${line.slice(2)}</h1>`;
+                    return `<h1 key="${index}" class="font-serif text-display-sm text-ink mb-8">${line.slice(2)}</h1>`;
                 }
 
                 // Bold text
@@ -46,12 +46,12 @@ export default function BlogPostPage() {
 
                 // List items
                 if (line.trim().startsWith('- ')) {
-                    return `<li key="${index}" class="text-sm text-ink-secondary leading-relaxed ml-4">${line.slice(2)}</li>`;
+                    return `<li key="${index}" class="text-body-lg font-light text-ink-secondary leading-[1.75] ml-5 list-disc">${line.slice(2)}</li>`;
                 }
 
                 // Numbered lists
                 if (line.match(/^\d+\.\s/)) {
-                    return `<li key="${index}" class="text-sm text-ink-secondary leading-relaxed ml-4">${line.replace(/^\d+\.\s/, '')}</li>`;
+                    return `<li key="${index}" class="text-body-lg font-light text-ink-secondary leading-[1.75] ml-5 list-decimal">${line.replace(/^\d+\.\s/, '')}</li>`;
                 }
 
                 // Empty lines
@@ -65,21 +65,21 @@ export default function BlogPostPage() {
                 }
 
                 // Regular paragraphs
-                return `<p key="${index}" class="text-sm text-ink-secondary leading-relaxed">${line}</p>`;
+                return `<p key="${index}" class="text-body-lg font-light text-ink-secondary leading-[1.75]">${line}</p>`;
             })
             .join('');
     };
 
     return (
-        <div className="min-h-screen px-6 sm:px-8 py-20">
-            <div className="max-w-3xl mx-auto">
+        <div className="px-6 pb-24 pt-14 sm:px-8 sm:pt-20">
+            <div className="mx-auto max-w-[40rem]">
                 {/* Header with Back Button and Language Toggle */}
                 <div className="mb-12 flex items-center justify-between">
                     <Link
-                        href="/experience"
+                        href="/writing"
                         className="text-caption text-ink-tertiary transition-colors hover:text-ink"
                     >
-                        ← Back
+                        ← Writing
                     </Link>
 
                     {/* Language Toggle */}
@@ -103,7 +103,7 @@ export default function BlogPostPage() {
 
                 {/* Post Metadata */}
                 <div className="mb-10 border-b border-line-soft pb-8">
-                    <h1 className="text-title font-light text-ink sm:text-display-sm">
+                    <h1 className="font-serif text-display-sm text-ink sm:text-display">
                         {post.title[language]}
                     </h1>
                     {post.tags && post.tags.length > 0 && (
@@ -122,14 +122,14 @@ export default function BlogPostPage() {
 
                 {/* Post Content */}
                 <article
-                    className="prose prose-sm max-w-none"
+                    className="max-w-none"
                     dangerouslySetInnerHTML={{ __html: formatContent(post.content[language]) }}
                 />
 
                 {/* LinkedIn Contact Section */}
                 <div className="mt-16 pt-8 border-t border-line-soft">
                     <div className="text-center">
-                        <p className="text-sm text-ink-secondary mb-4">
+                        <p className="mb-4 text-body text-ink-secondary">
                             {language === "ko"
                                 ? "궁금한 점이 있으시거나 더 이야기하고 싶으시다면"
                                 : "Have questions or want to connect?"}

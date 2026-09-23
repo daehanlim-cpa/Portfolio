@@ -8,6 +8,8 @@ export interface Project {
     heroImage: string;
     galleryImages?: string[];
     shortDescription: string;
+    /** One headline figure for cards, taken verbatim from `impact`. */
+    highlight?: { value: string; label: string };
     // Enhanced Case Study Fields
     overview?: string;
     baselineKPIs?: string[];
@@ -39,6 +41,7 @@ export const projects: Project[] = [
         heroImage: "/images/project1.png",
         galleryImages: ["/images/project1.png"],
         shortDescription: "Automated liquidity reporting for large government pension fund",
+        highlight: { value: "6h → 1h", label: "per reporting run, now daily" },
         overview: "A large government pension fund relied on manual, Excel-based workflows to produce critical investment and operational reports used by leadership. These processes were time-consuming, error-prone, and limited decision-making due to delayed data availability. The initiative focused on modernizing reporting through automated ingestion, SQL-based transformations, and orchestrated pipelines to improve reliability, reduce operational risk, and enable faster, data-driven decisions.",
         problem: [
             "Manual execution: Weekly Excel workflows required significant analyst effort and manual validation, creating inefficiency and operational fragility.",
@@ -129,6 +132,7 @@ export const projects: Project[] = [
         heroImage: "/images/project2.png",
         galleryImages: ["/images/project2.png"],
         shortDescription: "Scaling a Snowflake consumption layer for enterprise analytics",
+        highlight: { value: "265", label: "Tier-1 assets, 100% available" },
         overview: "A top-tier U.S. regional financial institution launched a multi-year Data Factory initiative to modernize enterprise analytics and standardize how data is delivered to downstream consumers. The Snowflake Hydration Pod served as the centralized execution team responsible for delivering approved enterprise data elements into Snowflake with production-grade quality and reliability.",
         problem: [
             "Fragmented execution ownership: Enterprise data elements were identified by multiple upstream teams, but no single team owned execution into analytics platforms.",
@@ -222,6 +226,7 @@ export const projects: Project[] = [
         heroImage: "/images/project3.png",
         galleryImages: ["/images/project3.png"],
         shortDescription: "Building a scalable learning platform to upskill enterprise data talent",
+        highlight: { value: "600+", label: "professionals upskilled" },
         overview: "Within EY, rapid growth in data and cloud engagements created demand for certified talent across modern platforms—but learning efforts were fragmented, hard to scale, and difficult to track. The Certification Center was established as a centralized learning and talent enablement platform to address this gap.",
         problem: [
             "No centralized learning community or platform for certification preparation",
@@ -327,6 +332,7 @@ export const projects: Project[] = [
         heroImage: "/images/project5.png",
         galleryImages: ["/images/project5.png"],
         shortDescription: "Strategic platform selection POC for Teradata migration",
+        highlight: { value: "3,000+", label: "hours of platform training" },
         overview: "A large enterprise was migrating off Teradata, which had become a bottleneck for both analytics and advanced use cases. Leadership needed to decide between Snowflake and Databricks as the strategic data platform. This decision would influence years of delivery, cost structure, and capability.",
         problem: [
             "Existing Teradata environment suffered from long query runtimes",
@@ -559,6 +565,7 @@ export const projects: Project[] = [
         heroImage: "/images/project10.png",
         galleryImages: ["/images/project10.png"],
         shortDescription: "RAG-based AI system for assessing analyst review quality using structured and unstructured data",
+        highlight: { value: "RAG", label: "over alert data and policy documents" },
         overview: "Built an AI-powered system that combines Retrieval-Augmented Generation (RAG) and Large Language Models (LLMs) to assess the quality of analyst dispositions on transaction monitoring alerts. The system integrates structured data (analyst reviews, alert details, case outcomes) with unstructured data (business policies, procedures, semantic context) to answer complex business questions about analyst decision-making quality and consistency.",
         problem: [
             "Analyst disposition quality is difficult to assess at scale across thousands of alerts",
@@ -611,6 +618,7 @@ export const projects: Project[] = [
         heroImage: "/images/purpose1.png",
         galleryImages: ["/images/purpose1.png"],
         shortDescription: "Strategic advisor to Cambodia Hope Foundation supporting 500+ students",
+        highlight: { value: "500+", label: "students served" },
         overview: "Served as a Strategic Advisor to the founders of the Cambodia Hope Foundation, supporting long-term financial sustainability and strategic direction for a mission-driven education organization. The foundation provides affordable, values-based education to 500+ students and employs 40 faculty and staff, operating in a resource-constrained environment where financial decisions directly affect access, quality, and continuity of education.",
         problem: [
             "Mission sustainability risk: As the organization scaled, there was a growing risk that financial pressures could dilute or unintentionally shift the founder-led mission",

@@ -241,7 +241,7 @@ function SendButton({
             onClick={onClick}
             disabled={disabled}
             aria-label="Send message"
-            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-white transition-colors duration-200 hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-20 ${className}`}
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-on-ink transition-colors duration-200 hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-20 ${className}`}
         >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <path
@@ -349,7 +349,14 @@ function Composer({
     );
 }
 
-export default function RecruiterChat({ variant = "page" }: { variant?: ChatVariant }) {
+export default function RecruiterChat({
+    variant = "page",
+    initialQuestion,
+}: {
+    variant?: ChatVariant;
+    /** Asked on arrival — the home-page hero hands its question over this way. */
+    initialQuestion?: string;
+}) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
     const [isStreaming, setIsStreaming] = useState(false);
@@ -368,6 +375,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
     const sessionRef = useRef<string>("");
     const followUpAbort = useRef<AbortController | null>(null);
     const chatAbort = useRef<AbortController | null>(null);
+    const askedInitial = useRef(false);
 
     const isLanding = variant === "landing";
     const isCompact = variant === "compact";
@@ -599,6 +607,19 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
 
     const exchanges = messages.filter((m) => m.role === "user").length;
     const showEmailCta = exchanges >= 5 || closed;
+    /*
+     * Send the handed-over question once. The ref guard matters: Strict Mode
+     * runs effects twice in development, which would otherwise ask it twice.
+     * The query string is dropped afterwards so a refresh doesn't re-ask.
+     */
+    useEffect(() => {
+        if (!initialQuestion || askedInitial.current) return;
+        askedInitial.current = true;
+        window.history.replaceState(null, "", window.location.pathname);
+        send(initialQuestion);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initialQuestion]);
+
     const isEmpty = messages.length === 0;
     // Only surface the counter near the end — a running tally from message one
     // makes an open conversation feel metered.
@@ -692,7 +713,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                 omits this bar entirely. */}
             {!isLanding && (
                 <header
-                    className={`sticky top-0 z-10 border-b border-line-soft bg-white/80 py-4 pl-6 backdrop-blur-xl backdrop-saturate-150 ${
+                    className={`sticky top-0 z-10 border-b border-line-soft glass py-4 pl-6 backdrop-blur-xl backdrop-saturate-150 ${
                         isCompact ? "pr-14" : "pr-6"
                     }`}
                 >
@@ -786,7 +807,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                                     <div
                                         className={`max-w-[86%] text-[15px] leading-relaxed ${
                                             message.role === "user"
-                                                ? "rounded-[22px] bg-ink px-4 py-2.5 text-white"
+                                                ? "rounded-[22px] bg-ink px-4 py-2.5 text-on-ink"
                                                 : message.notice
                                                   ? "rounded-[22px] border border-line-soft bg-surface px-4 py-3 text-ink-tertiary"
                                                   : "rounded-[22px] bg-surface-muted px-4 py-3 text-ink"
@@ -858,7 +879,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
 
             {/* Composer */}
             <div
-                className={`bg-white/80 backdrop-blur-xl backdrop-saturate-150 ${
+                className={`glass backdrop-blur-xl backdrop-saturate-150 ${
                     isLanding ? "px-5 pb-6 pt-2 sm:px-6" : "border-t border-line-soft px-6 py-4"
                 }`}
             >
