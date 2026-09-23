@@ -10,18 +10,36 @@ import { CHAT_MODEL } from "./models";
 export type LlmMessage = Anthropic.MessageParam;
 
 /**
- * Any reason the model can't answer right now: no key configured, the key was
- * rejected, the account's spend limit was reached, rate limiting, or a network
- * failure. The routes turn all of these into the same polite "unavailable"
- * message rather than surfacing API details to visitors.
+ * Why the model couldn't answer, as a short code. Visitors see the code next
+ * to the polite "unavailable" message, which tells the site owner what to fix
+ * without exposing API details: the full error only goes to the server log.
  */
-export class LlmUnavailableError extends Error {}
+export type UnavailableCode =
+    | "no_key" // ANTHROPIC_API_KEY isn't set for this deployment
+    | "invalid_key" // 401: the key is wrong, revoked, or pasted with extra characters
+    | "no_permission" // 403: the key's workspace can't use this model
+    | "billing" // no credit balance, or the Console spend limit was reached
+    | "rate_limited" // 429 after retries
+    | "model_not_found" // 404: RESUME_CHAT_MODEL names a model that doesn't exist
+    | "overloaded" // 5xx / 529 after retries
+    | "network" // couldn't reach the API at all
+    | "bad_request" // any other 400
+    | "unknown";
+
+export class LlmUnavailableError extends Error {
+    constructor(
+        message: string,
+        readonly code: UnavailableCode
+    ) {
+        super(message);
+    }
+}
 
 let client: Anthropic | null = null;
 
 function getClient(): Anthropic {
     if (!process.env.ANTHROPIC_API_KEY) {
-        throw new LlmUnavailableError("ANTHROPIC_API_KEY is not configured");
+        throw new LlmUnavailableError("ANTHROPIC_API_KEY is not configured", "no_key");
     }
     // Two retries covers transient 429/5xx; the timeout bounds the wait for a
     // response so a hung request can't hold a serverless function open.
@@ -29,12 +47,37 @@ function getClient(): Anthropic {
     return client;
 }
 
+function classify(error: InstanceType<typeof Anthropic.APIError>): UnavailableCode {
+    if (error instanceof Anthropic.APIConnectionError) return "network";
+    const text = error.message.toLowerCase();
+    // Billing problems arrive as 400s; the message is the only way to tell.
+    if (text.includes("credit balance") || text.includes("usage limits") || text.includes("billing")) {
+        return "billing";
+    }
+    switch (error.status) {
+        case 401:
+            return "invalid_key";
+        case 403:
+            return "no_permission";
+        case 404:
+            return "model_not_found";
+        case 429:
+            return "rate_limited";
+        case 400:
+            return "bad_request";
+    }
+    return error.status && error.status >= 500 ? "overloaded" : "unknown";
+}
+
 function unavailable(error: unknown): LlmUnavailableError {
     if (error instanceof LlmUnavailableError) return error;
     if (error instanceof Anthropic.APIError) {
-        return new LlmUnavailableError(`Claude API ${error.status ?? "connection"} error: ${error.message}`);
+        return new LlmUnavailableError(
+            `Claude API ${error.status ?? "connection"} error: ${error.message}`,
+            classify(error)
+        );
     }
-    return new LlmUnavailableError(error instanceof Error ? error.message : String(error));
+    return new LlmUnavailableError(error instanceof Error ? error.message : String(error), "unknown");
 }
 
 /**

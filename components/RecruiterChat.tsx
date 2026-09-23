@@ -531,10 +531,13 @@ export default function RecruiterChat({
                 }));
                 // 409 = conversation exhausted, 429 = rate limited: both end the session.
                 if (response.status === 409 || response.status === 429) setClosed(true);
+                // A short reason code (e.g. "billing") tells the site owner what
+                // to fix; the details stay in the server log.
+                const code = typeof data.code === "string" ? ` (code: ${data.code})` : "";
                 setMessages((prev) =>
                     resolvePending(prev, {
                         role: "assistant",
-                        content: data.message,
+                        content: data.message + code,
                         notice: true,
                     })
                 );

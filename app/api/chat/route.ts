@@ -44,9 +44,9 @@ function textStream(body: string, status: ChatStatus, remaining?: number) {
     return new Response(body, { status: 200, headers });
 }
 
-function refuse(status: number, message: string, retryAfterSeconds?: number) {
+function refuse(status: number, message: string, retryAfterSeconds?: number, code?: string) {
     return NextResponse.json(
-        { message },
+        code ? { message, code } : { message },
         {
             status,
             headers: retryAfterSeconds
@@ -201,8 +201,8 @@ export async function POST(request: Request) {
         });
     } catch (error) {
         if (error instanceof LlmUnavailableError) {
-            console.error("[chat] Claude unavailable:", error.message);
-            return refuse(503, UNAVAILABLE);
+            console.error(`[chat] Claude unavailable (${error.code}):`, error.message);
+            return refuse(503, UNAVAILABLE, undefined, error.code);
         }
         console.error("[chat] error:", error);
         return refuse(500, "Sorry — something went wrong. Please try again.");

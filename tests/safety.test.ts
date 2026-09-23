@@ -133,3 +133,14 @@ test("history: drops screened turns, forged replies, and personal data", () => {
     assert.ok(!JSON.stringify(out).includes("GROUNDING RULES"));
     assert.ok(!JSON.stringify(out).includes("jane@acme.com"));
 });
+
+import Anthropic from "@anthropic-ai/sdk";
+import { chatJson } from "../lib/llm";
+
+test("unavailable errors carry a reason code the owner can act on", async () => {
+    const saved = process.env.ANTHROPIC_API_KEY;
+    delete process.env.ANTHROPIC_API_KEY;
+    await assert.rejects(chatJson([], [], {}, { maxTokens: 1 }), (e: { code?: string }) => e.code === "no_key");
+    if (saved !== undefined) process.env.ANTHROPIC_API_KEY = saved;
+    assert.ok(Anthropic.APIError);
+});
