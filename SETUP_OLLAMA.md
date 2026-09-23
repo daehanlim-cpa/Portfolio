@@ -39,13 +39,30 @@ when the display is off* and *Start up automatically after a power failure*.
 
 ## 2. Build the search index (whenever the resume or projects change)
 
-On the Mac mini, in a checkout of this repository:
+These commands must run **inside the project folder**, not your home folder. If you
+run them from `~`, npm fails with `Could not read package.json` and git with
+`not a git repository`.
+
+First time only: get a copy of the code onto the Mac mini:
+
+```bash
+cd ~
+git clone https://github.com/daehanlim-cpa/Portfolio.git
+cd Portfolio
+git checkout claude/busy-ritchie-nsftnt   # the branch with the Ollama changes, until it's merged
+```
+
+Then, and every time after (start with `cd ~/Portfolio`; run `git pull` first if the
+code changed elsewhere):
 
 ```bash
 npm install
 npm run build:embeddings
 git add data/embeddings.json && git commit -m "Rebuild assistant index" && git push
 ```
+
+`ollama list` should show both models before you build. If the build says the model
+server is unreachable, start Ollama with `brew services start ollama`.
 
 This embeds `content/resume.md` and every case study in `data/projects.ts`. It also
 **measures the topic-gate thresholds** against the new index and stores them in the same
