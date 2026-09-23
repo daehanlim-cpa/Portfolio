@@ -61,7 +61,7 @@ export default function SiteFooter() {
             </div>
             <div className="mx-auto mt-16 flex max-w-content flex-col justify-between gap-2 border-t border-line-soft pt-6 text-label text-ink-quaternary sm:flex-row">
                 <span>© {new Date().getFullYear()} {profile.name}</span>
-                <span>Built with Next.js. The assistant answers from his resume and case studies only.</span>
+                <span>Built with Next.js. The assistant answers only from what this site says.</span>
             </div>
         </footer>
     );

@@ -1,4 +1,3 @@
-import { loadIndex, type ScoredChunk } from "./embeddings";
 
 export const MAX_MESSAGE_CHARS = 1000;
 export const MAX_HISTORY_MESSAGES = 40;
@@ -125,72 +124,6 @@ export const GREETING_REPLY =
     "shipped, and how he works, so ask me whatever's useful.\n\n" +
     "If you're hiring, tell me the role and I'll give you a straight read on fit. " +
     "If you're just curious about the work, that's good too.";
-
-/**
- * Only reached now by questions with essentially no relation to Daehan or his
- * field. Deliberately soft — it invites rather than scolds.
- */
-export const OFF_TOPIC_REPLY =
-    "That one's outside what I can speak to — I'm here for Daehan's work and " +
-    "background.\n\n" +
-    "Happy to get into his projects, how he approaches data and AI problems, or " +
-    "how his experience lines up with a role you have in mind. For things I don't " +
-    "hold, like compensation or availability, he's at daehanlim1@gmail.com.";
-
-export type TopicVerdict = "ok" | "thin" | "off_topic";
-
-/**
- * Three-way relevance judgement from retrieval scores, which we already have.
- *
- * The previous single cutoff at 0.60 refused anything it didn't recognise,
- * which made the assistant feel interrogative — a visitor asking a reasonable
- * adjacent question ("how does dbt fit into that stack?") got stonewalled.
- * Now only the genuinely unrelated is refused outright; the middle band is
- * answered with the retrieved context plus a note that it may be loose, and
- * the model decides how far it can honestly go.
- */
-export function topicVerdict(results: ScoredChunk[]): TopicVerdict {
-    if (results.length === 0) return "off_topic";
-    const top = results[0].score;
-    if (top >= confidentThreshold()) return "ok";
-    if (top >= floorThreshold()) return "thin";
-    return "off_topic";
-}
-
-/**
- * Thresholds are measured, not guessed. `npm run build:embeddings` scores a
- * fixed set of probe questions (lib/topic-probes.ts) against the index it just
- * built and stores the resulting cut-offs in data/embeddings.json:
- *
- *   confident = just below the weakest core question
- *   floor     = just below the weakest adjacent question
- *
- * They have to be re-measured per embedding model — similarity scores from
- * different models live on different scales (Gemini's core band sat around
- * 0.62–0.70; nomic-embed-text's is elsewhere). Adjacent and unrelated bands
- * usually overlap, which is why the middle "thin" band exists: some unrelated
- * questions will reach the model, and the system instruction, not the score,
- * is the real defense there. The gate exists to keep obviously unrelated
- * traffic off the model server.
- *
- * CHAT_TOPIC_THRESHOLD / CHAT_TOPIC_FLOOR override the stored values. The
- * fallbacks below apply only to an index built without calibration.
- */
-const FALLBACK_CONFIDENT_THRESHOLD = 0.62;
-const FALLBACK_FLOOR_THRESHOLD = 0.5;
-
-function envNumber(name: string): number | undefined {
-    const parsed = Number.parseFloat(process.env[name] ?? "");
-    return Number.isFinite(parsed) ? parsed : undefined;
-}
-
-function confidentThreshold(): number {
-    return envNumber("CHAT_TOPIC_THRESHOLD") ?? loadIndex().thresholds?.confident ?? FALLBACK_CONFIDENT_THRESHOLD;
-}
-
-function floorThreshold(): number {
-    return envNumber("CHAT_TOPIC_FLOOR") ?? loadIndex().thresholds?.floor ?? FALLBACK_FLOOR_THRESHOLD;
-}
 
 export function limitMessage(reason: string): string {
     switch (reason) {

@@ -79,7 +79,25 @@ function staticFollowUps(history: WireMessage[]): string[] {
 const MAX_INPUT_CHARS = 1000;
 const EMAIL = "daehanlim1@gmail.com";
 
-/** Minimal, injection-safe inline formatter: **bold** and *italic* only. */
+/**
+ * The assistant points visitors to pages by path ("see /project/liquidity-platform").
+ * Only this site's own routes are matched, so a link can never lead off-site.
+ */
+const SITE_PATH = /((?<![\w.:/])\/(?:project|blog)\/[a-z0-9-]+|(?<![\w.:/])\/(?:work|writing|resume)\b)/g;
+
+function linkify(text: string, keyPrefix: string) {
+    return text.split(SITE_PATH).map((part, i) =>
+        i % 2 === 1 ? (
+            <Link key={`${keyPrefix}-l${i}`} href={part} className="underline underline-offset-2 hover:opacity-70">
+                {part}
+            </Link>
+        ) : (
+            <span key={`${keyPrefix}-t${i}`}>{part}</span>
+        )
+    );
+}
+
+/** Minimal, injection-safe inline formatter: **bold**, *italic* and site links only. */
 function inline(text: string, keyPrefix: string) {
     const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g).filter(Boolean);
     return parts.map((part, i) => {
@@ -90,7 +108,7 @@ function inline(text: string, keyPrefix: string) {
         if (part.startsWith("*") && part.endsWith("*") && part.length > 2) {
             return <em key={key}>{part.slice(1, -1)}</em>;
         }
-        return <span key={key}>{part}</span>;
+        return <span key={key}>{linkify(part, key)}</span>;
     });
 }
 
@@ -658,7 +676,7 @@ export default function RecruiterChat({
         />
     );
 
-    const disclaimer = "Answers come from Daehan's resume and project work.";
+    const disclaimer = "Answers come from the content of Daehan's website.";
 
     if (showHero) {
         return (

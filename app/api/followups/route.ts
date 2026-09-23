@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { loadEmbeddings } from "@/lib/embeddings";
-import { chatJson } from "@/lib/llm";
+import { cachedSystem, chatJson } from "@/lib/llm";
+import { siteCorpus } from "@/lib/corpus";
+import { buildReference } from "@/lib/prompt";
 import {
     FOLLOW_UP_SCHEMA,
     FOLLOW_UP_SYSTEM_INSTRUCTION,
     MAX_FOLLOW_UPS,
     buildFollowUpPrompt,
-    buildTopicMap,
     parseFollowUps,
 } from "@/lib/followups";
 import { checkFollowupLimits } from "@/lib/ratelimit";
@@ -63,13 +63,14 @@ export async function POST(request: Request) {
         .slice(-MAX_ASKED_REPLAYED);
 
     try {
+        // Same cached site content as the chat, so suggestions stay answerable
+        // and the reference is read from cache rather than paid for again.
         const raw = await chatJson(
+            cachedSystem(FOLLOW_UP_SYSTEM_INSTRUCTION, buildReference(siteCorpus())),
             [
-                { role: "system", content: FOLLOW_UP_SYSTEM_INSTRUCTION },
                 {
                     role: "user",
                     content: buildFollowUpPrompt({
-                        topicMap: buildTopicMap(loadEmbeddings()),
                         question,
                         answer: last.content.slice(0, ANSWER_EXCERPT_CHARS),
                         asked,
@@ -77,9 +78,7 @@ export async function POST(request: Request) {
                 },
             ],
             FOLLOW_UP_SCHEMA,
-            // Higher than the chat's 0.45 on purpose: identical suggestions
-            // turn after turn defeat the point of generating them at all.
-            { temperature: 0.9, maxTokens: 256, signal: request.signal }
+            { maxTokens: 512, signal: request.signal }
         );
 
         const followUps = parseFollowUps(raw, asked);

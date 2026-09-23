@@ -3,7 +3,7 @@ import RecruiterChat from "@/components/RecruiterChat";
 export const metadata = {
     title: "Ask",
     description:
-        "Ask Daehan Lim's AI assistant about his work, projects and background. Answers are grounded in his resume and case studies.",
+        "Ask Daehan Lim's AI assistant about his work, projects and background. Answers are grounded in the content of his website.",
 };
 
 export default async function AskPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {

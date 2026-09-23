@@ -33,7 +33,9 @@ Nothing on the site needs a code change to update:
 - **Home-page copy and figures:** `data/site.ts` (profile, headline metrics, featured case studies, timeline, method, credentials, stack, education). Every figure there comes from the resume or a case study. Keep it that way.
 - **Case studies:** `data/projects.ts`. Each project's `metrics` array is its scorecard, and the first one or two appear on cards. **Never estimate a figure.** Every value must appear in the project's own text. Where nothing was measured, use a scope count from the text or a directional word ("Faster") and explain it in `metricsNote`. The page shows that note under the scorecard.
 - **Posts:** `data/blog.ts`.
-- **Resume:** `content/resume.md` (also the assistant's source; re-run `npm run build:embeddings` after editing it or the projects).
+- **Resume:** `content/resume.md`.
+
+The AI assistant reads all of the above on every question, so whatever the site says, it knows. Nothing needs rebuilding.
 
 ## Design system
 
@@ -49,7 +51,7 @@ Nothing on the site needs a code change to update:
 
 ## Tech stack
 
-Next.js 15 (App Router) · TypeScript · Tailwind CSS · Framer Motion · Ollama on-prem (assistant) · Upstash (rate limiting)
+Next.js 15 (App Router) · TypeScript · Tailwind CSS · Framer Motion · Claude API (assistant) · Upstash (rate limiting)
 
 ## Quick start
 
@@ -61,36 +63,34 @@ npm run build    # production build
 
 ## Recruiter Chat Setup
 
-An AI assistant at `/ask` (and the "Ask AI" sheet in the nav) that answers recruiter
-questions about Daehan's background and how it maps to a role. Answers are grounded in
-`content/resume.md` and `data/projects.ts`.
+An AI assistant at `/ask` (and the "Ask AI" sheet in the nav) that answers questions about
+Daehan's background and how it maps to a role. It runs on the Claude API
+(`claude-haiku-4-5` by default).
 
-It runs on **Ollama on a Mac mini**, with no cloud AI API. **Full setup: [SETUP_OLLAMA.md](SETUP_OLLAMA.md).**
-In short:
+### 1. API key
 
-### 1. Models
-
-```bash
-ollama pull nomic-embed-text && ollama pull qwen2.5:7b
-```
-
-### 2. Build the index
+Create a key at [platform.claude.com](https://platform.claude.com) (Settings → API keys),
+then set it locally in `.env.local` and in Vercel (Project → Settings → Environment
+Variables):
 
 ```bash
-npm run build:embeddings
+ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-This indexes the resume **and** every case study into `data/embeddings.json`, and measures
-the topic-gate thresholds against that index. The file is committed, so production only
-calls Ollama to embed each question and to generate answers. The index records which
-embedding model built it; a mismatch makes the assistant refuse rather than search with
-incompatible vectors.
+**Set a spend limit** under Settings → Billing, for example $5/month. When it's reached,
+the assistant shows its "unavailable" message instead of spending more.
 
-> **Re-run this whenever you edit `content/resume.md` or `data/projects.ts`,** otherwise
-> the chat answers from stale content.
+### 2. How it answers
 
-All model access goes through `lib/llm.ts`. Hosts and models are set with environment
-variables (see `.env.local.example`).
+The whole website is small (about 13k tokens), so instead of searching it, the assistant
+is given **all of it** on every question: the home page, the resume, every case study and
+every blog post (`lib/corpus.ts`). Prompt caching makes the repeat reads cost a tenth of
+the normal input price, so a question costs well under a cent on Haiku. There's no index
+to rebuild: edit `content/resume.md`, `data/*.ts` or a post, redeploy, and the assistant
+knows.
+
+All model access goes through `lib/llm.ts`. Change models with `RESUME_CHAT_MODEL`. Each
+answer logs one `[llm]` line with its token usage and cache hits.
 
 ### 3. Rate limiting (required for production)
 
@@ -102,7 +102,7 @@ UPSTASH_REDIS_REST_TOKEN=...
 ```
 
 Without these the app falls back to in-memory counters that reset on every cold start —
-fine locally, but **they will not protect the Mac mini from load in production**.
+fine locally, but **they will not protect your API spend in production**.
 
 ### How the cost and abuse controls work
 
@@ -115,17 +115,19 @@ Checks run cheapest-first, so abusive traffic is rejected before it can spend an
 | Per-conversation | 30 messages | Zero |
 | Per-IP | 45/hour, 90/day | Zero |
 | **Global daily** | **500/day** (`CHAT_DAILY_GLOBAL_LIMIT`) | Zero — shows an "at capacity" state |
-| Topic gate | Retrieval similarity below the measured floor | One embedding call — **never reaches the chat model** |
+| Greeting | "hi", "hello" and similar | Zero — canned reply, no API call |
+| Answer size | 2,048 output tokens max | Caps the cost of any single answer |
 
-The topic gate is the main saver: off-topic questions are answered with a canned redirect
-and never trigger generation. Quota is consumed in order, so a user who trips the
-per-conversation cap never draws down the global daily budget.
+Quota is consumed in order, so a user who trips the per-conversation cap never draws down
+the global daily budget. Off-topic questions reach the model, which steers back to
+Daehan's work; with the site content cached, each costs a fraction of a cent. Your
+Console spend limit is the final backstop.
 
 ### Follow-up suggestions
 
 `/api/followups` generates the three suggestion chips shown under each answer on the
-chat page. It runs after the answer has finished streaming, taking the exchange plus an
-inventory of what the corpus covers, and returns JSON constrained by a schema.
+chat page. It runs after the answer has finished streaming, taking the exchange plus the
+same cached site content as the chat, and returns JSON constrained by a schema.
 
 It is deliberately fenced off from the chat itself:
 
@@ -134,7 +136,7 @@ It is deliberately fenced off from the chat itself:
   capacity, and they never touch the per-conversation counter — a visitor shouldn't lose a
   question they could have asked because the UI generated chips on their behalf.
 - **Failure is silent.** Every error path returns an empty array, and the client falls back
-  to a static list. Ollama being offline, no Redis, a malformed model response, or a network
+  to a static list. No API key, no Redis, a malformed model response, or a network
   drop all degrade to the same working UI.
 
 The compact chat sheet doesn't call it at all; it uses the static list.
@@ -144,4 +146,5 @@ list) so you can see what recruiters actually ask. Read them from the Upstash co
 
 ## Deployment
 
-Import the repository into Vercel and set `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, plus `OLLAMA_BASE_URL` and the Cloudflare Access token for reaching the Mac mini (see [SETUP_OLLAMA.md](SETUP_OLLAMA.md)). Or host the whole site on the Mac mini: `npm run build && npm run start`.
+Import the repository into Vercel and set `ANTHROPIC_API_KEY`, `UPSTASH_REDIS_REST_URL` and
+`UPSTASH_REDIS_REST_TOKEN`. Anywhere else: `npm run build && npm run start`.

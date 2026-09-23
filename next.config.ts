@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+    /*
+     * The assistant reads content/resume.md at runtime (lib/corpus.ts). File
+     * tracing can't always see a runtime fs read, so include it explicitly or
+     * the deployed functions won't have the file.
+     */
+    outputFileTracingIncludes: {
+        "/api/chat": ["./content/**/*"],
+        "/api/followups": ["./content/**/*"],
+    },
     images: {
         remotePatterns: [],
     },

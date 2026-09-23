@@ -43,7 +43,7 @@ export default function Closing() {
             </Reveal>
 
             <Reveal delay={0.08} className="mx-auto mt-20 max-w-2xl">
-                <p className="text-caption text-ink-quaternary">Or ask the AI assistant, which answers from my resume and case studies</p>
+                <p className="text-caption text-ink-quaternary">Or ask the AI assistant, which answers from everything on this site</p>
                 <ul className="mt-5 flex flex-wrap justify-center gap-2">
                     {QUESTIONS.map((q) => (
                         <li key={q}>

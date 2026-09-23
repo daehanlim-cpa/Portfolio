@@ -1,33 +1,34 @@
 import { NextResponse } from "next/server";
-import { loadIndex, searchChunks } from "@/lib/embeddings";
-import { LlmUnavailableError, chatStream, embed, type LlmMessage } from "@/lib/llm";
-import { EMBEDDING_MODEL } from "@/lib/models";
-import { SYSTEM_INSTRUCTION, buildContextBlock, buildTurnPrompt } from "@/lib/prompt";
+import { siteCorpus } from "@/lib/corpus";
+import { LlmUnavailableError, cachedSystem, chatStream, type LlmMessage } from "@/lib/llm";
+import { SYSTEM_INSTRUCTION, buildReference } from "@/lib/prompt";
+import { pickSources } from "@/lib/sources";
 import { checkLimits, logTranscript, CONVERSATION_LIMIT } from "@/lib/ratelimit";
 import {
     GREETING_REPLY,
     MAX_REPLAYED_TURNS,
-    OFF_TOPIC_REPLY,
     clientIp,
     isAllowedOrigin,
     isGreeting,
     limitMessage,
-    topicVerdict,
     validateBody,
     type ChatMessage,
 } from "@/lib/guardrails";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-/**
- * Headroom for a local model: the first request after it's been unloaded pays
- * a cold load before the first token, and a long answer streams for a while.
- */
+/** Headroom for a long streamed answer. */
 export const maxDuration = 60;
+
+/** Cost ceiling for a single answer. Typical answers use a few hundred tokens. */
+const MAX_ANSWER_TOKENS = 2048;
+
+const EMPTY_ANSWER =
+    "I can't help with that one. Ask me about Daehan's work, projects or background, or reach him at daehanlim1@gmail.com.";
 
 const UNAVAILABLE = "The assistant isn't available right now. You can reach Daehan directly at daehanlim1@gmail.com.";
 
-type ChatStatus = "ok" | "greeting" | "off_topic";
+type ChatStatus = "ok" | "greeting";
 
 function textStream(body: string, status: ChatStatus, remaining: number) {
     return new Response(body, {
@@ -103,59 +104,20 @@ export async function POST(request: Request) {
         return textStream(GREETING_REPLY, "greeting", limits.conversationRemaining);
     }
 
-    // Vectors from a different embedding model would still produce scores —
-    // just meaningless ones. Refuse rather than answer from the wrong context.
-    const index = loadIndex();
-    if (index.chunks.length === 0 || index.model !== EMBEDDING_MODEL) {
-        console.error(
-            `[chat] embeddings.json was built with "${index.model}" but "${EMBEDDING_MODEL}" is configured - run \`npm run build:embeddings\``
-        );
-        return refuse(503, UNAVAILABLE);
-    }
-    const chunks = index.chunks;
-
     try {
-        // 5. One embedding call. This is all an off-topic question ever costs.
-        const [queryVector] = await embed([question], "query");
-        const results = searchChunks(queryVector, chunks, 8);
-        const verdict = topicVerdict(results);
-
-        if (verdict === "off_topic") {
-            console.log(
-                `[chat] off-topic (top score ${results[0]?.score.toFixed(3) ?? "n/a"}) - no generation call`
-            );
-            await logTranscript(sessionId, {
-                question,
-                answer: OFF_TOPIC_REPLY,
-                blocked: "off_topic",
-            });
-            return textStream(OFF_TOPIC_REPLY, "off_topic", limits.conversationRemaining);
-        }
-
-        // 6. Only now do we spend a generation call. The generator connects
-        // lazily, so pull the first delta here: an unreachable model server
-        // then becomes a clean 503 instead of a broken half-open stream.
+        // 5. One generation call, with the whole site as cached reference. There
+        // is no relevance gate: the site is small enough to send in full, and the
+        // system instruction handles questions that stray off topic.
         const deltas = chatStream(
-            [
-                { role: "system", content: SYSTEM_INSTRUCTION },
-                ...buildHistory(messages),
-                {
-                    role: "user",
-                    content: buildTurnPrompt(buildContextBlock(results), question, verdict === "thin"),
-                },
-            ],
-            // Low enough to stay factual, high enough to converse rather than recite.
-            { temperature: 0.45, maxTokens: 1536, signal: request.signal }
+            cachedSystem(SYSTEM_INSTRUCTION, buildReference(siteCorpus())),
+            [...buildHistory(messages), { role: "user", content: question }],
+            { maxTokens: MAX_ANSWER_TOKENS, signal: request.signal }
         );
+        // The stream connects lazily; pull the first delta here so a missing
+        // key or unreachable API becomes a clean 503, not a half-open stream.
         const first = await deltas.next();
 
-        const sources = results
-            .filter(({ chunk }) => chunk.sourceType === "project" && chunk.sourceId)
-            .slice(0, 3)
-            .map(({ chunk }) => ({
-                title: chunk.sourceTitle ?? chunk.section,
-                href: `/project/${chunk.sourceId}`,
-            }));
+        const sources = pickSources(question);
 
         const encoder = new TextEncoder();
         let full = "";
@@ -170,6 +132,11 @@ export async function POST(request: Request) {
                     for await (const text of deltas) {
                         full += text;
                         controller.enqueue(encoder.encode(text));
+                    }
+                    // A declined or empty answer would otherwise render as a
+                    // blank bubble.
+                    if (!full.trim()) {
+                        controller.enqueue(encoder.encode(EMPTY_ANSWER));
                     }
                 } catch (error) {
                     console.error("[chat] stream error:", error);
@@ -197,7 +164,7 @@ export async function POST(request: Request) {
         });
     } catch (error) {
         if (error instanceof LlmUnavailableError) {
-            console.error("[chat] model server unavailable:", error.message);
+            console.error("[chat] Claude unavailable:", error.message);
             return refuse(503, UNAVAILABLE);
         }
         console.error("[chat] error:", error);
