@@ -15,9 +15,12 @@ export default function Hero() {
                 <h1 className="mt-4 text-[2.75rem] font-semibold leading-[1.02] tracking-[-0.04em] text-ink sm:text-display-lg lg:text-display-xl">
                     Forward Deployed Engineer.
                 </h1>
-                <p className="mx-auto mt-7 max-w-2xl text-title-sm font-normal leading-[1.4] text-ink-tertiary sm:text-title sm:leading-[1.3]">
-                    I learn how a business really works, then build the AI and data systems it
-                    runs on.
+                {/* Two phrases, two lines: from tablet up the break falls at the
+                    comma by design. On a phone each phrase would itself wrap, so
+                    the sentence flows as one balanced paragraph instead. */}
+                <p className="mx-auto mt-7 max-w-3xl text-balance text-title-sm font-normal leading-[1.4] text-ink-tertiary sm:text-title sm:leading-[1.3]">
+                    <span className="sm:block">I learn how a business really works, </span>
+                    <span className="sm:block sm:whitespace-nowrap">then build the AI and data systems it runs on.</span>
                 </p>
                 <div className="mt-11 flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
                     <Link
@@ -34,7 +37,10 @@ export default function Hero() {
                     </Link>
                 </div>
                 <p className="mt-16 text-caption text-ink-quaternary">
-                    {profile.role} at {profile.employer} · {profile.location}
+                    <span className="whitespace-nowrap">
+                        {profile.role} at {profile.employer}
+                    </span>{" "}
+                    · <span className="whitespace-nowrap">{profile.location}</span>
                 </p>
             </div>
         </section>

@@ -46,12 +46,12 @@ export default function BlogPostPage() {
 
                 // List items
                 if (line.trim().startsWith('- ')) {
-                    return `<li key="${index}" class="text-body-lg font-light text-ink-secondary leading-[1.75] ml-5 list-disc">${line.slice(2)}</li>`;
+                    return `<li key="${index}" class="text-body-lg text-ink-secondary leading-[1.75] ml-5 list-disc">${line.slice(2)}</li>`;
                 }
 
                 // Numbered lists
                 if (line.match(/^\d+\.\s/)) {
-                    return `<li key="${index}" class="text-body-lg font-light text-ink-secondary leading-[1.75] ml-5 list-decimal">${line.replace(/^\d+\.\s/, '')}</li>`;
+                    return `<li key="${index}" class="text-body-lg text-ink-secondary leading-[1.75] ml-5 list-decimal">${line.replace(/^\d+\.\s/, '')}</li>`;
                 }
 
                 // Empty lines
@@ -65,7 +65,7 @@ export default function BlogPostPage() {
                 }
 
                 // Regular paragraphs
-                return `<p key="${index}" class="text-body-lg font-light text-ink-secondary leading-[1.75]">${line}</p>`;
+                return `<p key="${index}" class="text-body-lg text-ink-secondary leading-[1.75]">${line}</p>`;
             })
             .join('');
     };

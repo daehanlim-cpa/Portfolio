@@ -40,7 +40,8 @@ export default function BlogSection({ showHeading = true }: { showHeading?: bool
                     <div>
                         <p className="text-caption font-medium text-ink-tertiary">Writing</p>
                         <h2 className="mt-3 text-display-sm font-semibold tracking-[-0.03em] text-ink sm:text-display">
-                            Notes on the craft. <span className="text-ink-quaternary">And the career.</span>
+                            <span className="block">Notes on the craft.</span>
+                            <span className="block text-ink-quaternary">And the career.</span>
                         </h2>
                     </div>
                 ) : (
