@@ -84,61 +84,65 @@ port-forwarding: anyone could use your machine. Choose one of these instead.
 ### Option A — Site stays on Vercel, Ollama behind a Cloudflare Tunnel (recommended)
 
 The tunnel makes an outbound-only connection from the Mac, so no ports are opened.
-Cloudflare Access then admits only requests carrying your service token. This needs the
-domain's DNS on Cloudflare; the free plan is enough.
+Cloudflare Access then admits only requests carrying your service token. The tunnel is
+managed from the dashboard: one command on the Mac, and no config files.
 
-1. **Create the tunnel** (on the Mac mini):
+**0. The domain must be on Cloudflare.** At dash.cloudflare.com, `daehanlim.com` must
+appear under *Websites* with status **Active**. If it doesn't, choose *Add a site* (Free
+plan), check that the imported DNS records include your Vercel records **and any MX email
+records**, set the Vercel records to *DNS only* (grey cloud), then change the domain's
+nameservers at your registrar to the two Cloudflare gives you. Activation usually takes
+minutes, sometimes a few hours.
 
-   ```bash
-   brew install cloudflared
-   cloudflared tunnel login
-   cloudflared tunnel create ollama
-   cloudflared tunnel route dns ollama ollama.daehanlim.com
-   ```
+**1. Lock the door before opening it.** In Zero Trust (dash → Zero Trust):
+- *Access → Service credentials → Service Tokens → Create Service Token*, named
+  `vercel-portfolio`. Copy the **Client ID** and **Client Secret**. The secret is shown
+  only once.
+- *Access → Applications → Add an application → Self-hosted*. Name it `Ollama`, set the
+  domain to subdomain `ollama` on `daehanlim.com`, then add a policy with **Action:
+  Service Auth**, including the `vercel-portfolio` service token. Save.
 
-   Create `~/.cloudflared/config.yml`. Use the tunnel ID that `create` printed:
+**2. Create the tunnel.** *Networks → Tunnels → Create a tunnel → Cloudflared*, named
+`mac-mini`. Choose **macOS**, and on the Mac mini run the two commands it shows:
 
-   ```yaml
-   tunnel: <TUNNEL-ID>
-   credentials-file: /Users/<you>/.cloudflared/<TUNNEL-ID>.json
-   ingress:
-     - hostname: ollama.daehanlim.com
-       service: http://localhost:11434
-       originRequest:
-         httpHostHeader: localhost:11434   # Ollama expects a local Host header
-     - service: http_status:404
-   ```
+```bash
+brew install cloudflared
+sudo cloudflared service install <long-token-from-the-dashboard>
+```
 
-   Run it as a service so it survives reboots:
+This installs a background service that starts at boot. Continue once the dashboard
+shows the connector as **Healthy**.
 
-   ```bash
-   sudo cloudflared service install
-   ```
+**3. Route the hostname to Ollama.** On the tunnel's *Public Hostname* step:
+- Subdomain `ollama`, domain `daehanlim.com`
+- Service **HTTP**, URL `localhost:11434`
+- *Additional application settings → HTTP Settings → HTTP Host Header*: `localhost:11434`
+  (Ollama expects a local Host header)
 
-2. **Lock it down** in the Cloudflare dashboard → Zero Trust:
-   - *Access → Service Auth → Service Tokens → Create*. Copy the **Client ID** and
-     **Client Secret**; the secret is shown only once.
-   - *Access → Applications → Add → Self-hosted*, domain `ollama.daehanlim.com`. Add a
-     policy with **Action: Service Auth** that includes that service token.
+**4. Check it** (from any terminal):
 
-3. **Check it** from any other machine:
+```bash
+# Must be refused (403): no token
+curl -i https://ollama.daehanlim.com/api/tags
+# Must list your models: with the token
+curl https://ollama.daehanlim.com/api/tags \
+  -H "CF-Access-Client-Id: <id>" -H "CF-Access-Client-Secret: <secret>"
+```
 
-   ```bash
-   # Rejected (403) — no token:
-   curl -i https://ollama.daehanlim.com/api/tags
-   # Allowed — with the token:
-   curl https://ollama.daehanlim.com/api/tags \
-     -H "CF-Access-Client-Id: <id>" -H "CF-Access-Client-Secret: <secret>"
-   ```
+If the first command returns your model list, **stop**: the Access application isn't
+covering the hostname, and Ollama is open to the internet. Recheck step 1.
 
-4. **Set the Vercel environment variables** (Project → Settings → Environment Variables),
-   then redeploy:
+**5. Give the site the credentials.** In Vercel → Project → Settings → Environment
+Variables, add these for **Production and Preview**:
 
-   ```
-   OLLAMA_BASE_URL=https://ollama.daehanlim.com
-   CF_ACCESS_CLIENT_ID=<id>
-   CF_ACCESS_CLIENT_SECRET=<secret>
-   ```
+```
+OLLAMA_BASE_URL=https://ollama.daehanlim.com
+CF_ACCESS_CLIENT_ID=<id>
+CF_ACCESS_CLIENT_SECRET=<secret>
+```
+
+Then redeploy (Deployments → ⋯ → Redeploy). Environment variables apply only to new
+deployments.
 
 ### Option B — Host the whole site on the Mac mini
 
@@ -149,8 +153,8 @@ extra setup:
 npm run build && npm start      # serves on :3000
 ```
 
-Point a Cloudflare Tunnel ingress for `daehanlim.com` at `http://localhost:3000`, using the
-same steps as above but **without** the `httpHostHeader` line. The site then depends on
+Create a tunnel as above, but route the public hostname `daehanlim.com` to
+`localhost:3000`, and **skip** the HTTP Host Header setting and the Access application. The site then depends on
 the Mac being up, not only the assistant.
 
 ## 4. Configuration reference
