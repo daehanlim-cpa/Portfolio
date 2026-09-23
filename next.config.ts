@@ -18,6 +18,43 @@ const nextConfig: NextConfig = {
      * and the /experience view that replaced them — now lands on /work. These
      * keep old links, shares and search index entries working instead of 404ing.
      */
+    /*
+     * Browser-level protection for every page. The CSP allows only this site's
+     * own scripts, styles, fonts and API: inline scripts are needed for Next's
+     * hydration payload, the theme script and the JSON-LD block, and
+     * vercel.live for Vercel's preview toolbar. Applied in production only,
+     * since the dev server needs eval for hot reloading.
+     */
+    async headers() {
+        if (process.env.NODE_ENV !== "production") return [];
+        const csp = [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline' https://vercel.live",
+            "style-src 'self' 'unsafe-inline'",
+            "img-src 'self' data: blob:",
+            "font-src 'self'",
+            "connect-src 'self' https://vercel.live wss://ws-us3.pusher.com",
+            "frame-src https://vercel.live",
+            "frame-ancestors 'none'",
+            "object-src 'none'",
+            "base-uri 'self'",
+            "form-action 'self'",
+            "upgrade-insecure-requests",
+        ].join("; ");
+        return [
+            {
+                source: "/:path*",
+                headers: [
+                    { key: "Content-Security-Policy", value: csp },
+                    { key: "X-Frame-Options", value: "DENY" },
+                    { key: "X-Content-Type-Options", value: "nosniff" },
+                    { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+                    { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+                    { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+                ],
+            },
+        ];
+    },
     async redirects() {
         return [
             { source: "/experience", destination: "/work", permanent: true },

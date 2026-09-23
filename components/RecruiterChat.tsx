@@ -552,7 +552,9 @@ export default function RecruiterChat({
                 }
             }
 
-            const notice = response.headers.get("X-Chat-Status") === "off_topic";
+            // Screened-out attempts render as a quiet notice, which also keeps
+            // them out of the history sent back with the next question.
+            const notice = response.headers.get("X-Chat-Status") === "blocked";
 
             // The pending turn already exists; this only tags it as a notice so
             // canned replies render in the quieter style.

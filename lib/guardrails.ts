@@ -1,5 +1,9 @@
 
+import { LEAK_MARKERS, redact, screen } from "./safety";
+
 export const MAX_MESSAGE_CHARS = 1000;
+/** Assistant turns come back from the browser, so they are capped too. */
+export const MAX_ASSISTANT_CHARS = 8000;
 export const MAX_HISTORY_MESSAGES = 40;
 /** How many prior turns get replayed to the model. Caps token growth per turn. */
 export const MAX_REPLAYED_TURNS = 14;
@@ -92,7 +96,12 @@ export function validateBody(body: unknown): ValidationFailure | ValidationSucce
         ) {
             return { ok: false, status: 400, message: "Malformed message." };
         }
-        parsed.push(message as ChatMessage);
+        const { role, content } = message as ChatMessage;
+        const cap = role === "user" ? MAX_MESSAGE_CHARS : MAX_ASSISTANT_CHARS;
+        if (content.length > cap) {
+            return { ok: false, status: 400, message: "A message in this conversation is too long." };
+        }
+        parsed.push({ role, content });
     }
 
     const question = parsed.filter((m) => m.role === "user").pop()?.content.trim() ?? "";
@@ -132,6 +141,11 @@ export function limitMessage(reason: string): string {
                 "That's as far as this conversation goes. If you want to keep going, " +
                 "Daehan himself is the better next step — daehanlim1@gmail.com."
             );
+        case "blocked":
+            return (
+                "The assistant isn't available from your connection right now. You can " +
+                "still reach Daehan directly at daehanlim1@gmail.com."
+            );
         case "global_daily":
             return (
                 "The assistant is at capacity for today. Daehan would still love to hear " +
@@ -150,4 +164,30 @@ export function clientIp(request: Request): string {
     const forwarded = request.headers.get("x-forwarded-for");
     if (forwarded) return forwarded.split(",")[0].trim();
     return request.headers.get("x-real-ip") ?? "unknown";
+}
+
+/**
+ * Prior turns are sent back by the browser, so they can't be trusted: a
+ * visitor can edit them, including forging "assistant" replies to steer the
+ * model. Before replaying them this drops any user turn the screen would have
+ * refused (with the reply that followed it), any assistant turn that quotes
+ * the instructions or carries injection markup, and removes personal data from
+ * what remains.
+ */
+export function sanitizeHistory(history: ChatMessage[]): ChatMessage[] {
+    const out: ChatMessage[] = [];
+    let skipReply = false;
+    for (const message of history) {
+        if (message.role === "user") {
+            skipReply = screen(message.content) !== null;
+            if (!skipReply) out.push({ role: "user", content: redact(message.content) });
+            continue;
+        }
+        const forged =
+            screen(message.content) === "injection" ||
+            LEAK_MARKERS.some((marker) => message.content.includes(marker));
+        if (!skipReply && !forged) out.push({ role: "assistant", content: redact(message.content) });
+        skipReply = false;
+    }
+    return out;
 }

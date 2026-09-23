@@ -123,6 +123,29 @@ the global daily budget. Off-topic questions reach the model, which steers back 
 Daehan's work; with the site content cached, each costs a fraction of a cent. Your
 Console spend limit is the final backstop.
 
+### Privacy and abuse guardrails
+
+The assistant's instructions (`lib/prompt.ts`) are the first line of defense. Behind them
+sit deterministic checks that don't depend on the model behaving (`lib/safety.ts`):
+
+| Guardrail | What it does | Cost |
+|---|---|---|
+| Injection screen | "Ignore previous instructions", "reveal your system prompt", jailbreak modes, spoofed `<system>`/chat-template tags, long encoded blobs: fixed reply, no model call | Zero |
+| Personal-info screen | Home address, phone, age, birth date, family, finances: fixed reply pointing to email | Zero |
+| Repeat offenders | 3 screened attempts in an hour block that IP for 24 hours | Zero |
+| History sanitizing | The browser sends back prior turns, so screened turns and forged "assistant" replies are dropped before replay | Zero |
+| Redaction | Emails, phone numbers, card and social security numbers a visitor types are removed before they reach Claude **and** before transcripts are stored | Zero |
+| Output guard | Each streamed answer is checked as it goes out: personal data is redacted, and if the model starts reciting its instructions the answer is cut off | Zero |
+| Security headers | CSP, `frame-ancestors 'none'`, HSTS, `nosniff`, a strict referrer policy and permissions policy on every page (production only) | Zero |
+
+The instructions also forbid guessing the confidential client names, repeating back a
+visitor's personal data, and doing unrelated work (code, essays) on your API bill.
+
+These checks are pattern-based on purpose: predictable and auditable, not exhaustive.
+`npm test` runs regression tests covering both directions: attacks must be caught, and the
+questions real visitors ask (and everything the site itself says) must pass untouched. Add a
+case there whenever you adjust a pattern.
+
 ### Follow-up suggestions
 
 `/api/followups` generates the three suggestion chips shown under each answer on the
