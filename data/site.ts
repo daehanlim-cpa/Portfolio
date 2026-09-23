@@ -18,25 +18,28 @@ export const profile = {
     site: "https://daehanlim.com",
 };
 
-/** Headline figures. `source` is the project id the number comes from. */
-export const metrics: Array<{ value: string; label: string; source?: string }> = [
-    { value: "7", label: "years in regulated financial services" },
-    { value: "6h → 1h", label: "per reporting run, weekly cadence made daily", source: "liquidity-platform" },
-    { value: "265", label: "Tier-1 analytics assets at 100% production availability", source: "cloud-modernization" },
-    { value: "600+", label: "professionals upskilled through a certification program he built", source: "certification-center" },
+/**
+ * Headline figures for the top of the work section, each from a case study.
+ * `source` is the project id, so every number links to its evidence.
+ */
+export const metrics: Array<{ value: string; label: string; source: string }> = [
+    { value: "435+", label: "enterprise data requests delivered with zero backlog", source: "cloud-modernization" },
+    { value: "6h → 1h", label: "per reporting run, with weekly reporting made daily", source: "liquidity-platform" },
+    { value: "600+", label: "professionals upskilled through a program I co-founded", source: "certification-center" },
+    { value: "3,000+", label: "hours of platform training after a strategic platform decision", source: "regulatory-reporting" },
 ];
 
-/** Case studies given full-width treatment on the home page, in order. */
+/** Case studies featured on the home page, in order. */
 export const featuredIds = [
-    "liquidity-platform",
     "cloud-modernization",
-    "ai-portfolio",
+    "liquidity-platform",
     "regulatory-reporting",
+    "ai-portfolio",
 ] as const;
 
 /**
- * The career arc, oldest first. Each step adds a layer rather than replacing
- * the last — that accumulation is the point of the section.
+ * The career arc, oldest first: domain knowledge first, then the build skills
+ * layered on top of it. Each step adds range rather than replacing the last.
  */
 export const timeline: Array<{
     period: string;
@@ -49,30 +52,30 @@ export const timeline: Array<{
         period: "2019",
         org: "University of Arizona",
         role: "B.S. Accounting & Management Information Systems",
-        lesson: "The ledger",
-        detail: "Trained as an accountant, then licensed as a CPA: every number needs evidence behind it.",
+        lesson: "Foundation",
+        detail: "Studied accounting and information systems, then earned the CPA. Learned how a business really works by following its numbers.",
     },
     {
         period: "2019 – 2021",
         org: "Ernst & Young",
         role: "Enterprise Risk, Financial Services",
-        lesson: "The auditor's eye",
+        lesson: "Domain",
         detail:
-            "Independent AML, BSA and OFAC controls assessments. Reported findings to Chief Compliance Officers and Chief Audit Executives.",
+            "Worked inside banks and digital-asset platforms, presenting to their compliance and audit leadership. Learned what institutions care about, and why.",
     },
     {
         period: "2021 – 2024",
         org: "Ernst & Young",
         role: "AI & Data Senior, Technology Consulting",
-        lesson: "The builder",
+        lesson: "Build",
         detail:
-            "On-site lead building production data models, ingestion frameworks and PII masking controls. Ran platform proofs of concept that shaped client modernization decisions.",
+            "Moved into engineering: production data models, ingestion frameworks, PII masking, and platform proofs of concept that shaped modernization decisions.",
     },
     {
         period: "2024 – 2026",
         org: "Ernst & Young",
         role: "AI & Data Manager, Technology Consulting",
-        lesson: "The owner",
+        lesson: "Own",
         detail:
             "Forward-deployed technical owner across enterprise clients, from executive discovery through value realization.",
     },
@@ -80,9 +83,9 @@ export const timeline: Array<{
         period: "2026 –",
         org: "Deloitte",
         role: "Senior Forward Deployed Engineer",
-        lesson: "The agent era",
+        lesson: "Deploy AI",
         detail:
-            "Builds and deploys production GenAI platforms and agentic workflows directly alongside client teams.",
+            "Building and deploying production GenAI platforms and agentic workflows alongside client teams.",
     },
 ];
 
@@ -90,39 +93,44 @@ export const timeline: Array<{
 export const method: Array<{ step: string; title: string; body: string }> = [
     {
         step: "01",
-        title: "Sit with the business",
-        body: "Executive discovery and walkthroughs with the people doing the work, to map the real workflow and the pain points in it before choosing any technology.",
+        title: "Understand the business",
+        body: "Executive discovery and walkthroughs with the people doing the work. I map the real workflow and its pain points before choosing any technology.",
     },
     {
         step: "02",
         title: "Design the whole system",
-        body: "End-to-end architecture across ingestion, governance, analytics and BI, with metadata, lineage and data quality designed in from the start.",
+        body: "End-to-end architecture across ingestion, governance, analytics and AI, with data quality and lineage designed in from the start.",
     },
     {
         step: "03",
-        title: "Build it personally",
-        body: "Hands-on delivery of the models, pipelines and agents themselves, working inside the client's environment alongside their team.",
+        title: "Build it myself",
+        body: "Hands-on delivery of the models, pipelines and agents, inside the client's environment and alongside their team.",
     },
     {
         step: "04",
-        title: "Prove it in production",
-        body: "Controlled environments, CI/CD promotion and demonstrations with users, then staying with it until the outcome is measurable.",
+        title: "Ship it and prove it",
+        body: "Controlled environments, CI/CD and demonstrations with users. I stay with it until the outcome is measurable.",
     },
 ];
 
+/** Newest first. The resume page renders this same list. */
 export const certifications = [
-    { name: "Certified Public Accountant", short: "CPA" },
-    { name: "SnowPro Advanced: Data Architect", short: "Snowflake" },
-    { name: "SnowPro Advanced: Data Engineer", short: "Snowflake" },
-    { name: "SnowPro Core", short: "Snowflake" },
-    { name: "Databricks Certified Data Engineer Associate", short: "Databricks" },
+    { name: "Claude Certified Architect – Foundations", issuer: "Anthropic" },
+    { name: "Gemini Enterprise Agent Development, Certified Partner Specialist", issuer: "Google" },
+    { name: "Gemini Enterprise Deployment, Certified Partner Specialist", issuer: "Google" },
+    { name: "SnowPro Specialty: Gen AI", issuer: "Snowflake" },
+    { name: "SnowPro Advanced: Data Architect", issuer: "Snowflake" },
+    { name: "SnowPro Advanced: Data Engineer", issuer: "Snowflake" },
+    { name: "SnowPro Core", issuer: "Snowflake" },
+    { name: "Databricks Certified Data Engineer Associate", issuer: "Databricks" },
+    { name: "Certified Public Accountant", issuer: "CPA" },
 ];
 
 export const stack: Array<{ group: string; items: string[] }> = [
-    { group: "AI", items: ["GenAI platforms", "Agentic workflows", "RAG", "Vector search", "Gemini"] },
+    { group: "AI", items: ["GenAI platforms", "Agentic workflows", "RAG", "Gemini Enterprise", "Claude"] },
     { group: "Data", items: ["Snowflake", "Databricks", "dbt", "Prefect", "SQL", "Python"] },
     { group: "Cloud", items: ["Azure", "AWS", "CI/CD", "Power BI"] },
-    { group: "Domain", items: ["AML / BSA / OFAC", "Liquidity reporting", "Data governance", "PII controls"] },
+    { group: "Domain", items: ["Financial services", "Accounting", "Risk & compliance", "Data governance"] },
 ];
 
 export const education = [

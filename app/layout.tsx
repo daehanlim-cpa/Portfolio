@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Instrument_Serif } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import SiteNav from "@/components/site/SiteNav";
 import SiteFooter from "@/components/site/SiteFooter";
@@ -16,18 +16,8 @@ const inter = Inter({
     display: "swap",
 });
 
-// Display-only serif. It carries the editorial voice in headlines; Inter does
-// everything else, so the two never compete in the same line of body text.
-const serif = Instrument_Serif({
-    subsets: ["latin"],
-    weight: "400",
-    style: ["normal", "italic"],
-    variable: "--font-serif",
-    display: "swap",
-});
-
 const description =
-    "Senior Forward Deployed Engineer at Deloitte and CPA. Builds production GenAI platforms, agentic workflows and governed data systems for regulated financial institutions.";
+    "Senior Forward Deployed Engineer at Deloitte and CPA. I learn how a business really works, then build the GenAI, agentic and data systems it runs on.";
 
 export const metadata: Metadata = {
     metadataBase: new URL(profile.site),
@@ -93,7 +83,7 @@ export default function RootLayout({
     return (
         // The theme script sets data-theme before hydration, which React would
         // otherwise report as a mismatch on this one element.
-        <html lang="en" className={`${inter.variable} ${serif.variable}`} suppressHydrationWarning>
+        <html lang="en" className={inter.variable} suppressHydrationWarning>
             <head>
                 <script dangerouslySetInnerHTML={{ __html: themeScript }} />
                 <script

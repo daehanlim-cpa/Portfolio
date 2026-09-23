@@ -1,63 +1,42 @@
 import Link from "next/link";
-import AskBox from "./AskBox";
-import PipelineDiagram from "./PipelineDiagram";
 import { profile } from "@/data/site";
 
-const CREDENTIALS = ["CPA", "SnowPro Advanced ×2", "Databricks Certified", "Ph.D. in AI, in progress"];
-
+/**
+ * One statement, centred, with room around it. Nothing sits beside the
+ * headline: the page earns attention by what it leaves out.
+ */
 export default function Hero() {
     return (
-        <section className="relative overflow-hidden px-6 pb-20 pt-14 sm:px-10 sm:pb-28 sm:pt-20 lg:pt-24">
-            <div className="mx-auto grid max-w-content items-center gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-10">
-                <div className="animate-fade-up">
-                    <p className="inline-flex items-center gap-2 rounded-full border border-line-soft bg-surface-raised px-3 py-1 text-caption text-ink-tertiary">
-                        <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-[#30a46c]" />
-                        {profile.role} at {profile.employer}
-                    </p>
-
-                    <h1 className="mt-7 text-display-sm font-light text-ink sm:text-display-lg xl:text-display-xl">
-                        Production AI,
-                        <br />
-                        built to{" "}
-                        <em className="font-serif font-normal italic tracking-[-0.02em]">pass the audit.</em>
-                    </h1>
-
-                    <p className="mt-7 max-w-[34rem] text-body-lg font-light leading-relaxed text-ink-secondary">
-                        I&rsquo;m Daehan Lim, a CPA who became an engineer. For seven years I&rsquo;ve
-                        built data platforms and GenAI systems for regulated financial institutions,
-                        designed the way an auditor would want to test them.
-                    </p>
-
-                    <div className="mt-9">
-                        <AskBox />
-                        <p className="mt-3 pl-5 text-caption text-ink-quaternary">
-                            An AI assistant answers from his resume and case studies. Or{" "}
-                            <Link href="/work" className="text-ink-tertiary underline underline-offset-2 hover:text-ink">
-                                go straight to the work
-                            </Link>
-                            .
-                        </p>
-                    </div>
+        <section className="px-6 pb-28 pt-24 text-center sm:px-10 sm:pb-40 sm:pt-36 lg:pt-44">
+            <div className="mx-auto max-w-4xl animate-fade-up">
+                <p className="text-body-lg font-medium text-ink-tertiary">
+                    {profile.name}, {profile.credential}
+                </p>
+                <h1 className="mt-4 text-[2.75rem] font-semibold leading-[1.02] tracking-[-0.04em] text-ink sm:text-display-lg lg:text-display-xl">
+                    Forward Deployed Engineer.
+                </h1>
+                <p className="mx-auto mt-7 max-w-2xl text-title-sm font-normal leading-[1.4] text-ink-tertiary sm:text-title sm:leading-[1.3]">
+                    I learn how a business really works, then build the AI and data systems it
+                    runs on.
+                </p>
+                <div className="mt-11 flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
+                    <Link
+                        href="/work"
+                        className="rounded-full bg-ink px-6 py-3 text-body font-medium text-on-ink transition-opacity hover:opacity-85"
+                    >
+                        See the work
+                    </Link>
+                    <Link href="/ask" className="group text-body font-medium text-accent">
+                        Ask my AI assistant{" "}
+                        <span aria-hidden className="inline-block transition-transform group-hover:translate-x-0.5">
+                            ›
+                        </span>
+                    </Link>
                 </div>
-
-                <div className="relative animate-fade-up [animation-delay:120ms]">
-                    <div className="bg-dots relative rounded-xl border border-line-soft bg-surface-sunken p-4 sm:p-8">
-                        <PipelineDiagram />
-                        <p className="mt-2 text-center text-caption text-ink-tertiary">
-                            Every record passes a control before an agent acts on it.{" "}
-                            <span className="text-signal">Exceptions</span> go to a person.
-                        </p>
-                    </div>
-                </div>
+                <p className="mt-16 text-caption text-ink-quaternary">
+                    {profile.role} at {profile.employer} · {profile.location}
+                </p>
             </div>
-
-            <ul className="mx-auto mt-16 flex max-w-content flex-wrap gap-x-8 gap-y-3 border-t border-line-soft pt-6 sm:mt-24">
-                {CREDENTIALS.map((c) => (
-                    <li key={c} className="text-label uppercase text-ink-tertiary">
-                        {c}
-                    </li>
-                ))}
-            </ul>
         </section>
     );
 }

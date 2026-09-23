@@ -3,18 +3,23 @@
 The personal site of Daehan Lim, CPA: Senior Forward Deployed Engineer building
 production GenAI and data systems for regulated financial institutions.
 
-**Positioning:** *Production AI, built to pass the audit.* The site argues one
-idea in order: the claim (hero), the evidence (numbers and case studies), why
-it's credible (the auditor-to-engineer career path), how the work gets done, and
-what to do next (email, or ask the AI assistant).
+**Positioning:** a Forward Deployed Engineer who learns how a business really
+works, then builds the AI and data systems it runs on. Domain knowledge first,
+builder second, and not tied to any single industry.
+
+The home page is three acts in order: **(1) Forward Deployed Engineer**, what the
+role is and how an engagement runs; **(2) the path** from domain expert to
+builder; **(3) the work**, led by its numbers. Credentials, writing and contact
+follow. The visual language follows Apple's: one idea per section, centered
+statements, two-tone semibold headlines, generous space.
 
 ## Pages
 
 | Route | What it is |
 | --- | --- |
-| `/` | Narrative home page: hero with the animated governed-pipeline diagram and an "ask" box, impact figures, featured case studies, career timeline, method, credentials, writing, contact |
+| `/` | Home: hero, Forward Deployed Engineer, the path, the work (headline figures and featured case studies), credentials, writing, contact |
 | `/work` | Every case study, filterable by type |
-| `/project/[id]` | Full case study: results, context, problem and baseline, what was built, approach, architecture, controls, stack |
+| `/project/[id]` | Full case study: metric scorecard, before/after, context, problem, what was built, approach, architecture, governance, stack |
 | `/ask` | The recruiter assistant, full page. `/ask?q=...` asks a question on arrival (used by the hero and the case-study pages) |
 | `/writing`, `/blog/[slug]` | Posts in English and Korean |
 | `/resume` | The full resume |
@@ -26,7 +31,7 @@ Old routes (`/experience`, `/projects`, `/professional`, `/purpose`, `/skill/*`,
 Nothing on the site needs a code change to update:
 
 - **Home-page copy and figures:** `data/site.ts` (profile, headline metrics, featured case studies, timeline, method, credentials, stack, education). Every figure there comes from the resume or a case study. Keep it that way.
-- **Case studies:** `data/projects.ts`. The optional `highlight` field is the big number on cards; take it verbatim from that project's `impact`.
+- **Case studies:** `data/projects.ts`. Each project's `metrics` array is its scorecard, and the first one or two appear on cards. **Never estimate a figure.** Every value must appear in the project's own text. Where nothing was measured, use a scope count from the text or a directional word ("Faster") and explain it in `metricsNote`. The page shows that note under the scorecard.
 - **Posts:** `data/blog.ts`.
 - **Resume:** `content/resume.md` (also the assistant's source; re-run `npm run build:embeddings` after editing it or the projects).
 
@@ -34,9 +39,9 @@ Nothing on the site needs a code change to update:
 
 - **Tokens** live in `app/globals.css` as CSS variables and are mapped into Tailwind in `tailwind.config.ts`. Components only use tokens (`text-ink`, `bg-surface`, `text-on-ink`…), which is what makes dark mode work.
 - **Dark mode** follows the OS by default. The nav toggle stores an explicit choice in `localStorage`, and an inline script applies it before first paint, so there is no flash.
-- **Type:** Inter for everything, and Instrument Serif (italic) for display emphasis only.
-- **Colour:** one near-black ink, evenly stepped greys, a blue `accent` for focus, and a `signal` orange reserved for "an exception a control caught".
-- **Motion:** decelerating curves, small travel distances, one-time scroll reveals. Everything respects `prefers-reduced-motion`; the hero diagram's particles aren't drawn at all under it.
+- **Type:** Inter only. Headlines are semibold with tight tracking, and the qualifying half of each is set in grey.
+- **Colour:** one near-black ink, evenly stepped greys, and a blue `accent` for links and focus.
+- **Motion:** decelerating curves, small travel distances, one-time scroll reveals. Everything respects `prefers-reduced-motion`.
 
 ## SEO
 

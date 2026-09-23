@@ -11,8 +11,8 @@ export default function ResumePage() {
             <div className="mx-auto max-w-3xl">
                 <header className="mb-14 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
                     <div>
-                        <p className="text-label uppercase text-ink-quaternary">Resume</p>
-                        <h1 className="mt-4 font-serif text-display-sm text-ink sm:text-display">Experience &amp; credentials</h1>
+                        <p className="text-caption font-medium text-ink-tertiary">Resume</p>
+                        <h1 className="mt-3 text-display-sm font-semibold tracking-[-0.03em] text-ink sm:text-display">Experience &amp; credentials</h1>
                     </div>
                     <a
                         href="mailto:daehanlim1@gmail.com"

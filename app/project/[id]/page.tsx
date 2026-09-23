@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { projects } from "@/data/projects";
-import WorkVisual from "@/components/work/WorkVisual";
 import ArchitectureFlow, { hasFlow } from "@/components/work/ArchitectureFlow";
+import { isLongMetric } from "@/components/work/WorkVisual";
 
 export async function generateStaticParams() {
     return projects.map((project) => ({ id: project.id }));
@@ -25,14 +25,11 @@ const TYPE_LABEL = {
     purpose: "Pro bono",
 } as const;
 
-/**
- * Column spans for the last results cell, so a count that doesn't fill the
- * final row stretches to the edge instead of leaving an empty grey cell.
- */
-function lastCellSpan(count: number) {
-    const sm = count % 2 === 1 ? "sm:col-span-2" : "";
-    const lg = { 0: "lg:col-span-1", 1: "lg:col-span-3", 2: "lg:col-span-2" }[count % 3];
-    return `${sm} ${lg}`;
+/** Columns for the scorecard at desktop width: never more than the metrics fill. */
+function scorecardCols(count: number) {
+    if (count % 3 === 0) return "lg:grid-cols-3";
+    if (count >= 4) return "lg:grid-cols-4";
+    return "lg:grid-cols-2";
 }
 
 /** "Term: detail" strings are common in the data; split them for display. */
@@ -45,7 +42,7 @@ function splitTerm(text: string) {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (
         <section className="grid gap-5 border-t border-line-soft pt-8 md:grid-cols-[11rem_minmax(0,1fr)] md:gap-10">
-            <h2 className="text-label uppercase text-ink-quaternary md:pt-1">{title}</h2>
+            <h2 className="text-caption font-medium text-ink-tertiary md:pt-1">{title}</h2>
             <div className="min-w-0">{children}</div>
         </section>
     );
@@ -88,47 +85,79 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                     ← All work
                 </Link>
 
-                {/* Header */}
-                <header className="mt-10 grid items-end gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-16">
-                    <div className="animate-fade-up">
-                        <p className="text-label uppercase text-ink-quaternary">
-                            {TYPE_LABEL[project.type]}
-                            {project.categories.length > 0 && ` · ${project.categories.join(" · ")}`}
-                        </p>
-                        <h1 className="mt-4 text-display-sm font-light text-ink sm:text-display lg:text-display-lg">
-                            {project.title}
-                        </h1>
-                        <p className="mt-6 max-w-prose text-body-lg font-light leading-relaxed text-ink-secondary">
-                            {project.shortDescription}.
-                        </p>
-                    </div>
-                    <div className="animate-fade-up [animation-delay:100ms]">
-                        <WorkVisual project={project} />
-                    </div>
+                {/* Header: one statement, centred, nothing beside it. */}
+                <header className="mx-auto mt-14 max-w-3xl animate-fade-up text-center sm:mt-20">
+                    <p className="text-caption font-medium text-ink-tertiary">
+                        {TYPE_LABEL[project.type]}
+                        {project.categories.length > 0 && ` · ${project.categories.join(" · ")}`}
+                    </p>
+                    <h1 className="mt-3 text-display-sm font-semibold tracking-[-0.03em] text-ink sm:text-display lg:text-display-lg">
+                        {project.title}
+                    </h1>
+                    <p className="mx-auto mt-6 max-w-2xl text-body-lg leading-relaxed text-ink-tertiary sm:text-title-sm sm:leading-[1.45]">
+                        {project.shortDescription}.
+                    </p>
                 </header>
 
-                {/* Results first: a reader deciding whether to keep going wants the
-                    outcome before the method. */}
-                <section aria-label="Results" className="mt-16 sm:mt-20">
-                    <ol className="grid gap-px overflow-hidden rounded-xl border border-line-soft bg-line-soft sm:grid-cols-2 lg:grid-cols-3">
-                        {project.impact.map((result, i) => (
-                            <li
-                                key={i}
-                                className={`bg-surface p-6 sm:p-7 ${i === project.impact.length - 1 ? lastCellSpan(project.impact.length) : ""}`}
-                            >
-                                <span className="font-serif text-title-sm italic text-ink-quaternary">
-                                    {String(i + 1).padStart(2, "0")}
-                                </span>
-                                <p className="mt-3 text-body leading-[1.6] text-ink">{result}</p>
-                            </li>
+                {/* The scorecard. Results come before method: a reader deciding
+                    whether to keep going wants the outcome first. */}
+                <section aria-label="Results at a glance" className="mt-20 sm:mt-28">
+                    <dl className={`grid gap-x-8 gap-y-12 sm:grid-cols-2 ${scorecardCols(project.metrics.length)}`}>
+                        {project.metrics.map((m) => (
+                            <div key={m.label} className="border-t border-line pt-6">
+                                <dd
+                                    className={`font-semibold tracking-[-0.03em] text-ink ${
+                                        isLongMetric(m.value) ? "text-title sm:text-display-sm" : "text-display-sm sm:text-display"
+                                    }`}
+                                >
+                                    {m.value}
+                                </dd>
+                                <dt className="mt-3 max-w-[18rem] text-body leading-snug text-ink-tertiary">{m.label}</dt>
+                            </div>
                         ))}
-                    </ol>
+                    </dl>
+                    {project.metricsNote && (
+                        <p className="mt-10 max-w-2xl text-caption text-ink-quaternary">{project.metricsNote}</p>
+                    )}
+                </section>
+
+                {/* Before and after, side by side where a baseline was recorded. */}
+                <section aria-label="Outcomes" className="mt-20 grid gap-4 sm:mt-28 md:grid-cols-2">
+                    {project.baselineKPIs && (
+                        <div className="rounded-xl bg-surface-muted p-8 sm:p-10">
+                            <h2 className="text-caption font-medium text-ink-tertiary">Before</h2>
+                            <dl className="mt-6 space-y-5">
+                                {project.baselineKPIs.map((kpi, i) => {
+                                    const { term, detail } = splitTerm(kpi);
+                                    return (
+                                        <div key={i}>
+                                            <dt className="text-caption text-ink-quaternary">{term ?? "Baseline"}</dt>
+                                            <dd className="mt-0.5 text-body text-ink-secondary">{detail}</dd>
+                                        </div>
+                                    );
+                                })}
+                            </dl>
+                        </div>
+                    )}
+                    <div className={`rounded-xl bg-ink p-8 text-on-ink sm:p-10 ${project.baselineKPIs ? "" : "md:col-span-2"}`}>
+                        <h2 className="text-caption font-medium opacity-60">{project.baselineKPIs ? "After" : "Outcomes"}</h2>
+                        <ul className={`mt-6 grid gap-x-10 gap-y-5 ${project.baselineKPIs ? "" : "md:grid-cols-2"}`}>
+                            {project.impact.map((result, i) => (
+                                <li key={i} className="flex gap-3 text-body leading-[1.55]">
+                                    <svg className="mt-[0.3em] h-4 w-4 shrink-0 opacity-60" viewBox="0 0 24 24" fill="none" aria-hidden>
+                                        <path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                    <span>{result}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 </section>
 
                 <div className="mx-auto mt-20 max-w-4xl space-y-14 sm:mt-24">
                     {project.overview && (
                         <Section title="Context">
-                            <p className="text-body-lg font-light leading-[1.75] text-ink-secondary">{project.overview}</p>
+                            <p className="text-body-lg leading-[1.7] text-ink-secondary">{project.overview}</p>
                         </Section>
                     )}
 
@@ -149,25 +178,11 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                                 );
                             })}
                         </ol>
-
-                        {project.baselineKPIs && (
-                            <dl className="mt-8 grid gap-px overflow-hidden rounded-lg border border-line-soft bg-line-soft sm:grid-cols-2">
-                                {project.baselineKPIs.map((kpi, i) => {
-                                    const { term, detail } = splitTerm(kpi);
-                                    return (
-                                        <div key={i} className="bg-surface-sunken px-5 py-4">
-                                            <dt className="text-label uppercase text-ink-quaternary">{term ?? "Baseline"}</dt>
-                                            <dd className="mt-1 text-caption text-ink-secondary">{detail}</dd>
-                                        </div>
-                                    );
-                                })}
-                            </dl>
-                        )}
                     </Section>
 
                     <Section title="What was built">
                         {project.solution && (
-                            <p className="mb-7 text-body-lg font-light leading-[1.75] text-ink-secondary">{project.solution}</p>
+                            <p className="mb-7 text-body-lg leading-[1.7] text-ink-secondary">{project.solution}</p>
                         )}
                         {project.keyCapabilities && <Bullets items={project.keyCapabilities} />}
                     </Section>
@@ -189,12 +204,12 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                         <Section title="Architecture">
                             <ArchitectureFlow id={project.id} />
                             {project.architectureComponents && (
-                                <dl className="mt-4 grid gap-px overflow-hidden rounded-lg border border-line-soft bg-line-soft sm:grid-cols-2">
+                                <dl className="mt-4 grid gap-x-8 sm:grid-cols-2">
                                     {project.architectureComponents.map((comp, i) => {
                                         const { term, detail } = splitTerm(comp);
                                         return (
-                                            <div key={i} className="bg-surface-sunken px-5 py-4">
-                                                <dt className="text-label uppercase text-ink-quaternary">{term ?? "Component"}</dt>
+                                            <div key={i} className="border-t border-line-soft py-4">
+                                                <dt className="text-caption font-medium text-ink">{term ?? "Component"}</dt>
                                                 <dd className="mt-1.5 text-caption leading-relaxed text-ink-secondary">{detail}</dd>
                                             </div>
                                         );
@@ -205,7 +220,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                     )}
 
                     {project.governance && (
-                        <Section title="Controls">
+                        <Section title="Governance">
                             <ul className="space-y-3.5">
                                 {project.governance.map((item, i) => (
                                     <li key={i} className="flex gap-3 text-body leading-[1.7] text-ink-secondary">

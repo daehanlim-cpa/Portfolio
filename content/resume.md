@@ -5,7 +5,7 @@
 Senior Forward Deployed Engineer with 7 years of experience owning enterprise customer engagements from discovery through production deployment. Leads executive and stakeholder conversations, shapes ambiguous business problems into practical solutions, and personally builds production GenAI platforms, agentic workflows, and scalable data architectures in regulated environments. Brings a CPA background with strong hands-on execution across AI, data modernization, and reporting platforms.
 
 ## CERTIFICATION AND SKILLS
-**Certifications:** Certified Public Accountant (CPA), Snowpro Advanced: Data Engineer, Snowpro Advanced: Data Architect, SnowPro Core Certification, Databricks Certified Data Engineer Associate
+**Certifications:** Certified Public Accountant (CPA), Anthropic Claude Certified Architect – Foundations, Google Certified Partner Specialist: Gemini Enterprise Agent Development, Google Certified Partner Specialist: Gemini Enterprise Deployment, SnowPro Specialty: Gen AI, SnowPro Advanced: Data Engineer, SnowPro Advanced: Data Architect, SnowPro Core Certification, Databricks Certified Data Engineer Associate
 
 **Languages and Tools:** SQL, Python, Snowflake, Databricks, dbt, Prefect, AWS, Azure
 

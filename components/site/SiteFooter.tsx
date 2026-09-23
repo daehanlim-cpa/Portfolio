@@ -32,7 +32,7 @@ export default function SiteFooter() {
         <footer className="border-t border-line-soft px-6 pb-12 pt-16 sm:px-10">
             <div className="mx-auto grid max-w-content gap-12 sm:grid-cols-[1fr_auto_auto] sm:gap-20">
                 <div>
-                    <p className="font-serif text-title text-ink">{profile.name}</p>
+                    <p className="text-body-lg font-semibold tracking-[-0.02em] text-ink">{profile.name}</p>
                     <p className="mt-2 max-w-xs text-caption text-ink-tertiary">
                         {profile.role} at {profile.employer}. {profile.location}.
                     </p>

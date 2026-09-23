@@ -19,6 +19,12 @@ const nextConfig: NextConfig = {
             // /projects/[slug] was an unlinked duplicate of /project/[id],
             // which remains the canonical case-study route.
             { source: "/projects/:slug", destination: "/project/:slug", permanent: true },
+            // DL-09 duplicated DL-06 (same engagement) and was merged into it.
+            {
+                source: "/project/liquidity-controls",
+                destination: "/project/data-governance",
+                permanent: true,
+            },
         ];
     },
 };

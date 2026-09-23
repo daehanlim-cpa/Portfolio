@@ -1,27 +1,24 @@
 import Hero from "@/components/home/Hero";
-import Metrics from "@/components/home/Metrics";
-import FeaturedWork from "@/components/home/FeaturedWork";
+import WhatIDo from "@/components/home/WhatIDo";
 import Journey from "@/components/home/Journey";
-import Method from "@/components/home/Method";
+import Work from "@/components/home/Work";
 import Toolkit from "@/components/home/Toolkit";
 import Closing from "@/components/home/Closing";
 import BlogSection from "@/components/BlogSection";
 
 /**
- * The page is an argument in order: the claim (hero), the evidence (numbers,
- * then the work behind them), why it's credible (the path), how it's done
- * (method), the qualifications, and finally what to do about it.
+ * Three acts, in order: what a Forward Deployed Engineer does, the path that
+ * led here, and the work it produced. Credentials, writing and contact follow.
  */
 export default function HomePage() {
     return (
         <>
             <Hero />
-            <Metrics />
-            <FeaturedWork />
+            <WhatIDo />
             <Journey />
-            <Method />
+            <Work />
             <Toolkit />
-            <section className="px-6 pb-24 sm:px-10 sm:pb-32">
+            <section className="px-6 pt-28 sm:px-10 sm:pt-40">
                 <div className="mx-auto max-w-content">
                     <BlogSection />
                 </div>

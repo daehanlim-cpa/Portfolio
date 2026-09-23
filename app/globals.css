@@ -36,12 +36,6 @@
 
     /* One accent, used for focus and the rare deliberate emphasis. */
     --accent: #0066cc;
-    /*
-     * The signal colour marks an exception: the record a control caught. It
-     * appears in the pipeline diagram and nowhere decorative, so it keeps its
-     * meaning.
-     */
-    --signal: #d9480f;
 
     /* Radii — a consistent scale, so nothing looks arbitrary. */
     --r-sm: 10px;
@@ -82,7 +76,6 @@
     --line: rgba(255, 255, 255, 0.13);
     --line-soft: rgba(255, 255, 255, 0.075);
     --accent: #4da3ff;
-    --signal: #ff8a4c;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -101,8 +94,7 @@
         --line: rgba(255, 255, 255, 0.13);
         --line-soft: rgba(255, 255, 255, 0.075);
         --accent: #4da3ff;
-        --signal: #ff8a4c;
-    }
+        }
 }
 
 @media (min-width: 640px) {
@@ -151,11 +143,6 @@ p {
     background: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
-/* The editorial serif is a display face only; it never sets running text. */
-.font-serif {
-    font-feature-settings: normal;
-    letter-spacing: -0.01em;
-}
 
 /* A single consistent focus treatment, visible only for keyboard users. */
 :focus-visible {

@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Daehan Lim — Production AI, built to pass the audit.";
+export const alt = "Daehan Lim, Forward Deployed Engineer.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -33,18 +33,18 @@ export default function OpenGraphImage() {
                     <div style={{ width: 44, height: 44, borderRadius: 12, background: "#1d1d1f", display: "flex" }} />
                     Daehan Lim, CPA
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", fontSize: 84, lineHeight: 1.02, letterSpacing: -3, fontWeight: 300 }}>
-                    <span>Production AI,</span>
-                    <span>built to pass the audit.</span>
+                <div style={{ display: "flex", flexDirection: "column", fontSize: 84, lineHeight: 1.02, letterSpacing: -3, fontWeight: 600 }}>
+                    <span>Forward Deployed</span>
+                    <span>Engineer.</span>
                 </div>
                 <div style={{ display: "flex", fontSize: 26, color: "#6e6e73" }}>
-                    Senior Forward Deployed Engineer · GenAI · Data platforms · Regulated finance
+                    I learn how a business really works, then build the AI and data systems it runs on.
                 </div>
                 {/* A single rule with nodes along it: the hero pipeline, reduced. */}
                 <div style={{ position: "absolute", left: 800, right: 80, top: 479, height: 2, background: "rgba(0,0,0,0.12)" }} />
                 {dot(800, "#c7c7cc")}
                 {dot(900, "#c7c7cc")}
-                {dot(1000, "#d9480f")}
+                {dot(1000, "#c7c7cc")}
                 {dot(1102)}
             </div>
         ),

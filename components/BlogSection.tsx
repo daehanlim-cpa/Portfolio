@@ -38,9 +38,9 @@ export default function BlogSection({ showHeading = true }: { showHeading?: bool
             <div className="mb-8 flex items-end justify-between gap-6">
                 {showHeading ? (
                     <div>
-                        <p className="text-label uppercase text-ink-quaternary">Writing</p>
-                        <h2 className="mt-4 text-display-sm font-light text-ink">
-                            Notes on the <em className="font-serif italic">craft and the career.</em>
+                        <p className="text-caption font-medium text-ink-tertiary">Writing</p>
+                        <h2 className="mt-3 text-display-sm font-semibold tracking-[-0.03em] text-ink sm:text-display">
+                            Notes on the craft. <span className="text-ink-quaternary">And the career.</span>
                         </h2>
                     </div>
                 ) : (
@@ -58,7 +58,7 @@ export default function BlogSection({ showHeading = true }: { showHeading?: bool
                             className="group grid gap-2 py-7 sm:grid-cols-[1fr_auto] sm:items-baseline sm:gap-10"
                         >
                             <div className="min-w-0">
-                                <h3 className="font-serif text-title-sm text-ink transition-colors sm:text-title">
+                                <h3 className="text-title-sm font-semibold tracking-[-0.02em] text-ink transition-colors group-hover:text-ink-secondary">
                                     {post.title[language]}
                                 </h3>
                                 <p className="mt-2 text-body text-ink-tertiary">{post.description[language]}</p>

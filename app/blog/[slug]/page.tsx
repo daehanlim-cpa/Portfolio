@@ -30,7 +30,7 @@ export default function BlogPostPage() {
                     return `<h3 key="${index}" class="text-body-lg font-medium text-ink mt-10 mb-3">${line.slice(4)}</h3>`;
                 }
                 if (line.startsWith('## ')) {
-                    return `<h2 key="${index}" class="font-serif text-title text-ink mt-14 mb-4">${line.slice(3)}</h2>`;
+                    return `<h2 key="${index}" class="text-title font-semibold tracking-[-0.02em] text-ink mt-14 mb-4">${line.slice(3)}</h2>`;
                 }
                 if (line.startsWith('# ')) {
                     // Skip the first H1 header (it's already shown as the page title)
@@ -38,7 +38,7 @@ export default function BlogPostPage() {
                         firstH1Skipped = true;
                         return '';
                     }
-                    return `<h1 key="${index}" class="font-serif text-display-sm text-ink mb-8">${line.slice(2)}</h1>`;
+                    return `<h1 key="${index}" class="text-display-sm font-semibold tracking-[-0.03em] text-ink mb-8">${line.slice(2)}</h1>`;
                 }
 
                 // Bold text
@@ -103,7 +103,7 @@ export default function BlogPostPage() {
 
                 {/* Post Metadata */}
                 <div className="mb-10 border-b border-line-soft pb-8">
-                    <h1 className="font-serif text-display-sm text-ink sm:text-display">
+                    <h1 className="text-display-sm font-semibold tracking-[-0.03em] text-ink sm:text-display">
                         {post.title[language]}
                     </h1>
                     {post.tags && post.tags.length > 0 && (

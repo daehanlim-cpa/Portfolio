@@ -26,12 +26,10 @@ const config: Config = {
                     soft: "var(--line-soft)",
                 },
                 accent: "var(--accent)",
-                signal: "var(--signal)",
                 "on-ink": "var(--on-ink)",
             },
             fontFamily: {
                 sans: ["var(--font-inter)", "system-ui", "sans-serif"],
-                serif: ["var(--font-serif)", "Georgia", "serif"],
             },
             /*
              * Display sizes carry negative tracking and tight leading; body sizes
