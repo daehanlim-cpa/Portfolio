@@ -116,6 +116,7 @@ export const method: Array<{ step: string; title: string; body: string }> = [
 /** Newest first. The resume page renders this same list. */
 export const certifications = [
     { name: "Claude Certified Architect – Foundations", issuer: "Anthropic" },
+    { name: "Claude Certified Associate – Foundations", issuer: "Anthropic" },
     { name: "Gemini Enterprise Agent Development, Certified Partner Specialist", issuer: "Google" },
     { name: "Gemini Enterprise Deployment, Certified Partner Specialist", issuer: "Google" },
     { name: "SnowPro Specialty: Gen AI", issuer: "Snowflake" },
