@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import SiteNav from "@/components/site/SiteNav";
 import SiteFooter from "@/components/site/SiteFooter";
@@ -103,6 +104,10 @@ export default function RootLayout({
                     {children}
                 </main>
                 <SiteFooter />
+                {/* Vercel Web Analytics: cookieless page-view counts. It loads from
+                    and reports to this site's own /_vercel/insights path, so the
+                    CSP's 'self' already allows it. */}
+                <Analytics />
             </body>
         </html>
     );
