@@ -1,48 +1,52 @@
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI, TaskType } from "@google/generative-ai";
-import {
-    loadEmbeddings,
-    searchChunks,
-    type EmbedRequestWithDimensions,
-} from "@/lib/embeddings";
-import { CHAT_MODEL, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL } from "@/lib/models";
-import { SYSTEM_INSTRUCTION, buildContextBlock, buildTurnPrompt } from "@/lib/prompt";
-import { checkLimits, logTranscript, CONVERSATION_LIMIT } from "@/lib/ratelimit";
+import { siteCorpus } from "@/lib/corpus";
+import { LlmUnavailableError, cachedSystem, chatStream, type LlmMessage } from "@/lib/llm";
+import { SYSTEM_INSTRUCTION, buildReference } from "@/lib/prompt";
+import { pickSources } from "@/lib/sources";
+import { INJECTION_REPLY, LEAK_REPLY, PERSONAL_INFO_REPLY, createOutputGuard, redact, screen } from "@/lib/safety";
+import { checkLimits, isBlocked, logTranscript, recordStrike, CONVERSATION_LIMIT } from "@/lib/ratelimit";
 import {
     GREETING_REPLY,
     MAX_REPLAYED_TURNS,
-    OFF_TOPIC_REPLY,
     clientIp,
     isAllowedOrigin,
     isGreeting,
     limitMessage,
-    topicVerdict,
+    sanitizeHistory,
     validateBody,
     type ChatMessage,
 } from "@/lib/guardrails";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+/** Headroom for a long streamed answer. */
+export const maxDuration = 60;
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "");
+/** Cost ceiling for a single answer. Typical answers use a few hundred tokens. */
+const MAX_ANSWER_TOKENS = 2048;
 
-type ChatStatus = "ok" | "greeting" | "off_topic";
+const EMPTY_ANSWER =
+    "I can't help with that one. Ask me about Daehan's work, projects or background, or reach him at daehanlim1@gmail.com.";
 
-function textStream(body: string, status: ChatStatus, remaining: number) {
-    return new Response(body, {
-        status: 200,
-        headers: {
-            "Content-Type": "text/plain; charset=utf-8",
-            "Cache-Control": "no-store",
-            "X-Chat-Status": status,
-            "X-Conversation-Remaining": String(Math.max(0, remaining)),
-        },
-    });
+const UNAVAILABLE = "The assistant isn't available right now. You can reach Daehan directly at daehanlim1@gmail.com.";
+
+/** "blocked" renders as a quiet notice and is left out of replayed history. */
+type ChatStatus = "ok" | "greeting" | "guarded" | "blocked";
+
+/** `remaining` is omitted for replies that didn't consume quota; the client keeps its count. */
+function textStream(body: string, status: ChatStatus, remaining?: number) {
+    const headers: Record<string, string> = {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+        "X-Chat-Status": status,
+    };
+    if (remaining !== undefined) headers["X-Conversation-Remaining"] = String(Math.max(0, remaining));
+    return new Response(body, { status: 200, headers });
 }
 
-function refuse(status: number, message: string, retryAfterSeconds?: number) {
+function refuse(status: number, message: string, retryAfterSeconds?: number, code?: string) {
     return NextResponse.json(
-        { message },
+        code ? { message, code } : { message },
         {
             status,
             headers: retryAfterSeconds
@@ -52,14 +56,14 @@ function refuse(status: number, message: string, retryAfterSeconds?: number) {
     );
 }
 
-/** Gemini requires history to begin with a user turn. */
-function buildHistory(messages: ChatMessage[]) {
-    const prior = messages.slice(0, -1).slice(-MAX_REPLAYED_TURNS);
+/**
+ * Replayed turns: sanitized (see sanitizeHistory), trimmed to the most recent,
+ * and starting on a user turn so the exchange reads coherently.
+ */
+function buildHistory(messages: ChatMessage[]): LlmMessage[] {
+    const prior = sanitizeHistory(messages.slice(0, -1)).slice(-MAX_REPLAYED_TURNS);
     while (prior.length && prior[0].role !== "user") prior.shift();
-    return prior.map((m) => ({
-        role: m.role === "user" ? "user" : "model",
-        parts: [{ text: m.content }],
-    }));
+    return prior.map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.content }));
 }
 
 export async function POST(request: Request) {
@@ -82,11 +86,29 @@ export async function POST(request: Request) {
     }
     const { messages, question } = validated;
 
-    const sessionId =
-        request.headers.get("x-chat-session")?.slice(0, 64) || `anon-${clientIp(request)}`;
+    const ip = clientIp(request);
+    const sessionId = request.headers.get("x-chat-session")?.slice(0, 64) || `anon-${ip}`;
 
-    // 3. Quota. Short-circuits before the global budget is touched.
-    const limits = await checkLimits(sessionId, clientIp(request));
+    // 3. Repeat offenders are refused before anything else is done for them.
+    if (await isBlocked(ip)) {
+        await logTranscript(sessionId, { question, answer: "", blocked: "ip_blocked" });
+        return refuse(429, limitMessage("blocked"));
+    }
+
+    // 4. Screening: injection attempts and requests for private details get a
+    // fixed reply with no model call. Only injection counts toward a block;
+    // asking for a phone number is nosy, not hostile.
+    const verdict = screen(question);
+    if (verdict) {
+        const reply = verdict === "injection" ? INJECTION_REPLY : PERSONAL_INFO_REPLY;
+        if (verdict === "injection") await recordStrike(ip);
+        console.warn(`[safety] ${verdict} screened from ${ip}`);
+        await logTranscript(sessionId, { question, answer: reply, blocked: verdict });
+        return textStream(reply, verdict === "injection" ? "blocked" : "guarded");
+    }
+
+    // 5. Quota. Short-circuits before the global budget is touched.
+    const limits = await checkLimits(sessionId, ip);
     if (!limits.ok) {
         await logTranscript(sessionId, {
             question,
@@ -100,103 +122,59 @@ export async function POST(request: Request) {
         );
     }
 
-    // 4. Greetings get a canned welcome — no model call at all.
+    // 6. Greetings get a canned welcome — no model call at all.
     if (isGreeting(question)) {
         return textStream(GREETING_REPLY, "greeting", limits.conversationRemaining);
     }
 
-    if (!process.env.GOOGLE_API_KEY) {
-        console.error("[chat] GOOGLE_API_KEY is not configured");
-        return refuse(
-            503,
-            "The assistant isn't available right now. You can reach Daehan directly at daehanlim1@gmail.com."
-        );
-    }
-
-    const chunks = loadEmbeddings();
-    if (chunks.length === 0) {
-        console.error("[chat] embeddings.json is empty - run `npm run build:embeddings`");
-        return refuse(
-            503,
-            "The assistant isn't available right now. You can reach Daehan directly at daehanlim1@gmail.com."
-        );
-    }
-
     try {
-        // 5. One embedding call. This is all an off-topic question ever costs.
-        const embeddingModel = genAI.getGenerativeModel({ model: EMBEDDING_MODEL });
-        const embedded = await embeddingModel.embedContent({
-            content: { role: "user", parts: [{ text: question }] },
-            taskType: TaskType.RETRIEVAL_QUERY,
-            outputDimensionality: EMBEDDING_DIMENSIONS,
-        } satisfies EmbedRequestWithDimensions as unknown as Parameters<
-            typeof embeddingModel.embedContent
-        >[0]);
-        const results = searchChunks(embedded.embedding.values, chunks, 8);
-        const verdict = topicVerdict(results);
+        // 7. One generation call, with the whole site as cached reference. There
+        // is no relevance gate: the site is small enough to send in full, and the
+        // system instruction handles questions that stray off topic. Personal
+        // data the visitor typed is removed before it leaves the server.
+        const generation = new AbortController();
+        request.signal.addEventListener("abort", () => generation.abort(), { once: true });
+        const deltas = chatStream(
+            cachedSystem(SYSTEM_INSTRUCTION, buildReference(siteCorpus())),
+            [...buildHistory(messages), { role: "user", content: redact(question) }],
+            { maxTokens: MAX_ANSWER_TOKENS, signal: generation.signal }
+        );
+        // The stream connects lazily; pull the first delta here so a missing
+        // key or unreachable API becomes a clean 503, not a half-open stream.
+        const first = await deltas.next();
 
-        if (verdict === "off_topic") {
-            console.log(
-                `[chat] off-topic (top score ${results[0]?.score.toFixed(3) ?? "n/a"}) - no generation call`
-            );
-            await logTranscript(sessionId, {
-                question,
-                answer: OFF_TOPIC_REPLY,
-                blocked: "off_topic",
-            });
-            return textStream(OFF_TOPIC_REPLY, "off_topic", limits.conversationRemaining);
-        }
-
-        // 6. Only now do we spend a generation call.
-        const model = genAI.getGenerativeModel({
-            model: CHAT_MODEL,
-            systemInstruction: SYSTEM_INSTRUCTION,
-        });
-
-        const result = await model.generateContentStream({
-            contents: [
-                ...buildHistory(messages),
-                {
-                    role: "user",
-                    parts: [
-                        {
-                            text: buildTurnPrompt(
-                                buildContextBlock(results),
-                                question,
-                                verdict === "thin"
-                            ),
-                        },
-                    ],
-                },
-            ],
-            generationConfig: {
-                // Raised from 0.2: the assistant is meant to converse now, not
-                // just extract. Still low enough to keep it factual.
-                temperature: 0.45,
-                maxOutputTokens: 1536,
-            },
-        });
-
-        const sources = results
-            .filter(({ chunk }) => chunk.sourceType === "project" && chunk.sourceId)
-            .slice(0, 3)
-            .map(({ chunk }) => ({
-                title: chunk.sourceTitle ?? chunk.section,
-                href: `/project/${chunk.sourceId}`,
-            }));
+        const sources = pickSources(question);
 
         const encoder = new TextEncoder();
+        // Every delta passes the output guard: it redacts personal data and
+        // stops the answer if the model starts reciting its instructions.
+        const guard = createOutputGuard();
         let full = "";
+        const emit = (controller: ReadableStreamDefaultController, text: string) => {
+            if (!text) return;
+            full += text;
+            controller.enqueue(encoder.encode(text));
+        };
 
         const stream = new ReadableStream({
             async start(controller) {
                 try {
-                    for await (const chunk of result.stream) {
-                        const text = chunk.text();
-                        if (!text) continue;
-                        full += text;
-                        controller.enqueue(encoder.encode(text));
+                    if (!first.done && first.value) emit(controller, guard.push(first.value));
+                    for await (const text of deltas) {
+                        emit(controller, guard.push(text));
+                        if (guard.tripped) break;
                     }
+                    if (guard.tripped) {
+                        generation.abort();
+                        void recordStrike(ip);
+                        console.warn(`[safety] output guard stopped a prompt leak for ${ip}`);
+                        emit(controller, (full ? "\n\n" : "") + LEAK_REPLY);
+                    } else {
+                        emit(controller, guard.end());
+                    }
+                    // A declined or empty answer would otherwise render as a
+                    // blank bubble.
+                    if (!full.trim()) emit(controller, EMPTY_ANSWER);
                 } catch (error) {
                     console.error("[chat] stream error:", error);
                     if (!full) {
@@ -222,6 +200,10 @@ export async function POST(request: Request) {
             },
         });
     } catch (error) {
+        if (error instanceof LlmUnavailableError) {
+            console.error(`[chat] Claude unavailable (${error.code}):`, error.message);
+            return refuse(503, UNAVAILABLE, undefined, error.code);
+        }
         console.error("[chat] error:", error);
         return refuse(500, "Sorry — something went wrong. Please try again.");
     }

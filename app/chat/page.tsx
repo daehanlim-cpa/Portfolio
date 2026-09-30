@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-/** The chat now lives at the root. Kept so existing links and shares survive. */
+/** The chat moved from /chat to the root, and then to /ask. Kept so old links survive. */
 export default function ChatPage() {
-    redirect("/");
+    redirect("/ask");
 }

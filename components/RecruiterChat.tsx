@@ -79,7 +79,25 @@ function staticFollowUps(history: WireMessage[]): string[] {
 const MAX_INPUT_CHARS = 1000;
 const EMAIL = "daehanlim1@gmail.com";
 
-/** Minimal, injection-safe inline formatter: **bold** and *italic* only. */
+/**
+ * The assistant points visitors to pages by path ("see /project/liquidity-platform").
+ * Only this site's own routes are matched, so a link can never lead off-site.
+ */
+const SITE_PATH = /((?<![\w.:/])\/(?:project|blog)\/[a-z0-9-]+|(?<![\w.:/])\/(?:work|writing|resume)\b)/g;
+
+function linkify(text: string, keyPrefix: string) {
+    return text.split(SITE_PATH).map((part, i) =>
+        i % 2 === 1 ? (
+            <Link key={`${keyPrefix}-l${i}`} href={part} className="underline underline-offset-2 hover:opacity-70">
+                {part}
+            </Link>
+        ) : (
+            <span key={`${keyPrefix}-t${i}`}>{part}</span>
+        )
+    );
+}
+
+/** Minimal, injection-safe inline formatter: **bold**, *italic* and site links only. */
 function inline(text: string, keyPrefix: string) {
     const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g).filter(Boolean);
     return parts.map((part, i) => {
@@ -90,7 +108,7 @@ function inline(text: string, keyPrefix: string) {
         if (part.startsWith("*") && part.endsWith("*") && part.length > 2) {
             return <em key={key}>{part.slice(1, -1)}</em>;
         }
-        return <span key={key}>{part}</span>;
+        return <span key={key}>{linkify(part, key)}</span>;
     });
 }
 
@@ -241,7 +259,7 @@ function SendButton({
             onClick={onClick}
             disabled={disabled}
             aria-label="Send message"
-            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-white transition-colors duration-200 hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-20 ${className}`}
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-on-ink transition-colors duration-200 hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-20 ${className}`}
         >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <path
@@ -349,7 +367,14 @@ function Composer({
     );
 }
 
-export default function RecruiterChat({ variant = "page" }: { variant?: ChatVariant }) {
+export default function RecruiterChat({
+    variant = "page",
+    initialQuestion,
+}: {
+    variant?: ChatVariant;
+    /** Asked on arrival — the home-page hero hands its question over this way. */
+    initialQuestion?: string;
+}) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
     const [isStreaming, setIsStreaming] = useState(false);
@@ -368,6 +393,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
     const sessionRef = useRef<string>("");
     const followUpAbort = useRef<AbortController | null>(null);
     const chatAbort = useRef<AbortController | null>(null);
+    const askedInitial = useRef(false);
 
     const isLanding = variant === "landing";
     const isCompact = variant === "compact";
@@ -505,10 +531,13 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                 }));
                 // 409 = conversation exhausted, 429 = rate limited: both end the session.
                 if (response.status === 409 || response.status === 429) setClosed(true);
+                // A short reason code (e.g. "billing") tells the site owner what
+                // to fix; the details stay in the server log.
+                const code = typeof data.code === "string" ? ` (code: ${data.code})` : "";
                 setMessages((prev) =>
                     resolvePending(prev, {
                         role: "assistant",
-                        content: data.message,
+                        content: data.message + code,
                         notice: true,
                     })
                 );
@@ -526,7 +555,9 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                 }
             }
 
-            const notice = response.headers.get("X-Chat-Status") === "off_topic";
+            // Screened-out attempts render as a quiet notice, which also keeps
+            // them out of the history sent back with the next question.
+            const notice = response.headers.get("X-Chat-Status") === "blocked";
 
             // The pending turn already exists; this only tags it as a notice so
             // canned replies render in the quieter style.
@@ -599,6 +630,19 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
 
     const exchanges = messages.filter((m) => m.role === "user").length;
     const showEmailCta = exchanges >= 5 || closed;
+    /*
+     * Send the handed-over question once. The ref guard matters: Strict Mode
+     * runs effects twice in development, which would otherwise ask it twice.
+     * The query string is dropped afterwards so a refresh doesn't re-ask.
+     */
+    useEffect(() => {
+        if (!initialQuestion || askedInitial.current) return;
+        askedInitial.current = true;
+        window.history.replaceState(null, "", window.location.pathname);
+        send(initialQuestion);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initialQuestion]);
+
     const isEmpty = messages.length === 0;
     // Only surface the counter near the end — a running tally from message one
     // makes an open conversation feel metered.
@@ -637,7 +681,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
         />
     );
 
-    const disclaimer = "Answers come from Daehan's resume and project work.";
+    const disclaimer = "Answers come from the content of Daehan's website.";
 
     if (showHero) {
         return (
@@ -692,7 +736,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                 omits this bar entirely. */}
             {!isLanding && (
                 <header
-                    className={`sticky top-0 z-10 border-b border-line-soft bg-white/80 py-4 pl-6 backdrop-blur-xl backdrop-saturate-150 ${
+                    className={`sticky top-0 z-10 border-b border-line-soft glass py-4 pl-6 backdrop-blur-xl backdrop-saturate-150 ${
                         isCompact ? "pr-14" : "pr-6"
                     }`}
                 >
@@ -786,7 +830,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
                                     <div
                                         className={`max-w-[86%] text-[15px] leading-relaxed ${
                                             message.role === "user"
-                                                ? "rounded-[22px] bg-ink px-4 py-2.5 text-white"
+                                                ? "rounded-[22px] bg-ink px-4 py-2.5 text-on-ink"
                                                 : message.notice
                                                   ? "rounded-[22px] border border-line-soft bg-surface px-4 py-3 text-ink-tertiary"
                                                   : "rounded-[22px] bg-surface-muted px-4 py-3 text-ink"
@@ -858,7 +902,7 @@ export default function RecruiterChat({ variant = "page" }: { variant?: ChatVari
 
             {/* Composer */}
             <div
-                className={`bg-white/80 backdrop-blur-xl backdrop-saturate-150 ${
+                className={`glass backdrop-blur-xl backdrop-saturate-150 ${
                     isLanding ? "px-5 pb-6 pt-2 sm:px-6" : "border-t border-line-soft px-6 py-4"
                 }`}
             >

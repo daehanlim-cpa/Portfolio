@@ -1,3 +1,5 @@
+import { certifications } from "@/data/site";
+
 export default function ResumeContent() {
     return (
         <div className="space-y-8 bg-surface rounded-lg border border-line-soft p-8">
@@ -147,13 +149,7 @@ export default function ResumeContent() {
             <div>
                 <h3 className="text-lg font-normal mb-3">Licenses & Certifications</h3>
                 <div className="flex flex-wrap gap-2">
-                    {[
-                        "Certified Public Accountant (CPA)",
-                        "Snowpro Advanced: Data Engineer",
-                        "Snowpro Advanced: Data Architect",
-                        "SnowPro Core Certification",
-                        "Databricks Certified Data Engineer Associate",
-                    ].map((cert) => (
+                    {certifications.map(({ name: cert }) => (
                         <span
                             key={cert}
                             className="px-3 py-1 bg-surface-muted text-xs text-ink-secondary rounded border border-line-soft"

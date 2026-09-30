@@ -1,5 +1,6 @@
 import { Redis } from "@upstash/redis";
 import { Ratelimit } from "@upstash/ratelimit";
+import { redact } from "./safety";
 
 export type LimitReason = "conversation" | "ip_hourly" | "ip_daily" | "global_daily";
 
@@ -191,17 +192,66 @@ export async function checkLimits(sessionId: string, ip: string): Promise<LimitR
     return { ok: true, conversationRemaining };
 }
 
+/* ------------------------------------------------------------------ *
+ * Strikes: repeated malicious attempts block the IP for a day.        *
+ * ------------------------------------------------------------------ */
+
+/** Blocked attempts allowed per hour before the IP is shut out. */
+const STRIKE_LIMIT = 3;
+const STRIKE_WINDOW_S = 60 * 60;
+const BLOCK_S = 24 * 60 * 60;
+
+const memoryBlocks = new Map<string, number>();
+
+/**
+ * Records a screened-out attempt. One can be an accident (a curious visitor
+ * asking what the instructions are); three in an hour is probing, and the IP
+ * is refused outright for a day, before any other work is done.
+ */
+export async function recordStrike(ip: string): Promise<void> {
+    try {
+        if (redis) {
+            const key = `chat:strikes:${ip}`;
+            const count = await redis.incr(key);
+            if (count === 1) await redis.expire(key, STRIKE_WINDOW_S);
+            if (count >= STRIKE_LIMIT) {
+                await redis.set(`chat:blocked:${ip}`, "1", { ex: BLOCK_S });
+                console.warn(`[safety] blocked ${ip} for ${BLOCK_S / 3600}h after ${count} attempts`);
+            }
+            return;
+        }
+        const strikes = memoryLimit(`strikes:${ip}`, STRIKE_LIMIT - 1, STRIKE_WINDOW_S * 1000);
+        if (!strikes.success) memoryBlocks.set(ip, Date.now() + BLOCK_S * 1000);
+    } catch (error) {
+        console.error("[safety] recording strike failed:", error);
+    }
+}
+
+export async function isBlocked(ip: string): Promise<boolean> {
+    try {
+        if (redis) return (await redis.exists(`chat:blocked:${ip}`)) === 1;
+        const until = memoryBlocks.get(ip);
+        return until !== undefined && until > Date.now();
+    } catch {
+        // Fail open: a Redis outage shouldn't take the assistant down for everyone.
+        return false;
+    }
+}
+
 /** Transcript logging. Best-effort: a logging failure must never break a reply. */
 export async function logTranscript(
     sessionId: string,
-    entry: { question: string; answer: string; blocked?: LimitReason | "off_topic" }
+    entry: { question: string; answer: string; blocked?: LimitReason | "injection" | "personal_info" | "ip_blocked" }
 ): Promise<void> {
     if (!redis) return;
     try {
         const key = `chat:log:${sessionId}`;
-        await redis.rpush(key, JSON.stringify({ ...entry, at: new Date().toISOString() }));
+        // Visitors sometimes paste their own contact details; those never
+        // reach storage.
+        const safe = { ...entry, question: redact(entry.question), answer: redact(entry.answer) };
+        await redis.rpush(key, JSON.stringify({ ...safe, at: new Date().toISOString() }));
         await redis.expire(key, 60 * 60 * 24 * 30);
-        await redis.lpush("chat:recent", `${sessionId}|${entry.question.slice(0, 120)}`);
+        await redis.lpush("chat:recent", `${sessionId}|${safe.question.slice(0, 120)}`);
         await redis.ltrim("chat:recent", 0, 499);
     } catch (error) {
         console.error("[ratelimit] transcript logging failed:", error);

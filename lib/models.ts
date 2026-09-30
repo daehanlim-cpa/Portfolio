@@ -1,21 +1,10 @@
 /**
- * Model ids, in one place because two routes now depend on them — `/api/chat`
- * and `/api/followups`. When these were inline constants there was nothing
- * stopping the two from drifting onto different models.
+ * The Claude model behind the assistant, in one place because both API routes
+ * use it.
+ *
+ * Claude Haiku 4.5 by default: the assistant answers from site content it is
+ * handed in full, which a small fast model does well, at about $0.004 per
+ * question. Set RESUME_CHAT_MODEL to e.g. claude-sonnet-5 or claude-opus-5 for
+ * stronger reasoning on role-fit questions, at higher cost.
  */
-
-/**
- * Verified against the live API. Two traps informed this choice:
- * - gemini-2.5-flash still appears in ListModels but is closed to new keys.
- * - The full 3.x Flash models think by default and thought tokens count against
- *   maxOutputTokens; gemini-3.6-flash burned ~380 of a 400 budget on thinking
- *   and truncated every answer mid-sentence. Thinking cannot be disabled there.
- * This model emits zero thought tokens, which suits grounded extractive answers
- * and keeps cost low. Raise maxOutputTokens if you switch to a thinking model.
- */
-export const CHAT_MODEL = process.env.RESUME_CHAT_MODEL || "gemini-3.5-flash-lite";
-
-export const EMBEDDING_MODEL = process.env.RESUME_EMBEDDING_MODEL || "gemini-embedding-001";
-
-/** Must match EMBEDDING_DIMENSIONS in scripts/build-embeddings.ts. */
-export const EMBEDDING_DIMENSIONS = 768;
+export const CHAT_MODEL = process.env.RESUME_CHAT_MODEL || "claude-haiku-4-5";
